@@ -1,0 +1,32 @@
+{
+  "name": "p11-yellowpages",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "l:c": "eslint \"./**/*.tsx\"",
+    "l:f": "eslint \"./**/*.tsx\" --fix",
+    "p:c": "prettier --config .prettierrc \"./**/*.+(js|mjs|json|ts|tsx)\" --check --ignore-unknown",
+    "p:f": "prettier --config .prettierrc \"./**/*.+(js|mjs|json|ts|tsx)\" --write --ignore-unknown"
+  },
+  "dependencies": {
+    "next": "15.2.5",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.1",
+    "@eslint/js": "9.24.0",
+    "@types/node": "22.14.0",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.2",
+    "eslint": "9.24.0",
+    "eslint-config-next": "15.2.5",
+    "eslint-config-prettier": "10.1.1",
+    "prettier": "3.5.3",
+    "typescript": "5.8.3"
+  }
+}

@@ -1,0 +1,7 @@
+#! /bin/bash
+
+# This runs before every push to version control
+
+# Pre push checks for clients
+echo "Pre push checks for clients"
+

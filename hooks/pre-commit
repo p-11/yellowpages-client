@@ -1,0 +1,16 @@
+#! /bin/bash
+
+# This runs before every commit to version control
+
+# Lint and prettier check for clients
+echo "Pre commit check for clients"
+npm run l:c
+if [ $? -ne 0 ]; then
+  echo "Lint check failed"
+  exit 1
+fi
+npm run p:c
+if [ $? -ne 0 ]; then
+  echo "Prettier check failed"
+  exit 1
+fi
