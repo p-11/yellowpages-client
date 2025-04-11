@@ -1,0 +1,10 @@
+.highlightedBox {
+    margin-top: 12px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    padding-left: 24px;
+    padding-right: 24px;
+    border-radius: 6px;
+    background-color: #111;
+    border: 2px solid #191919;
+}
