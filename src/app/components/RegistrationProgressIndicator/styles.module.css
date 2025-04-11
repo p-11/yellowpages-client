@@ -10,7 +10,7 @@
 
 .progressIndicators {
     display: flex;
-    gap: 16px;
+    gap: 10px;
 }
 
 .progressIndicator {
@@ -26,5 +26,9 @@
 @media only screen and (min-width: 720px) {
     .activeStep {
         font-size: 1.25rem;
+    }
+
+    .progressIndicators {
+        gap: 16px;
     }
 }
