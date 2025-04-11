@@ -4,7 +4,7 @@ import './globals.css';
 
 const geistMono = localFont({
   src: './fonts/GeistMonoVF.woff',
-  weight: '400'
+  weight: '300 400'
 });
 
 export const metadata: Metadata = {
