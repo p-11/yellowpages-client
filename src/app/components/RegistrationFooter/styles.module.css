@@ -6,9 +6,3 @@
     align-items: center;
     gap: 18px;
 }
-
-@media only screen and (min-width: 768px) {
-    .registrationFooter {
-        gap: 26px;
-    }
-}

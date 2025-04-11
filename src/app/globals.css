@@ -1,4 +1,5 @@
 body {
+  margin: 0;
   background-color: #0a0a0a;
   color: #fafafa;
   font-family: 'Geist Mono', Courier, monospace;
@@ -16,8 +17,8 @@ main {
   max-width: 920px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 24px;
+  padding-right: 24px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
