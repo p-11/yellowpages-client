@@ -7,7 +7,7 @@ import { Toolbar } from '@/app/components/Toolbar';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CopyIcon } from '@/app/icons/CopyIcon';
 import { EyeIcon } from '@/app/icons/EyeIcon';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { mockSeedPhrase } from '@/mock-data';
 import { Warning } from '@/app/components/Warning';
@@ -16,15 +16,31 @@ import { RegistrationFooter } from '@/app/components/RegistrationFooter';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { RegistrationFooterLink } from '@/app/components/RegistrationFooterLink';
 import styles from './styles.module.css';
+import { CheckIcon } from '@/app/icons/CheckIcon';
 
 export default function RegistrationStep1Page() {
   const [isSeedPhraseVisible, setIsSeedPhraseVisible] = useState(false);
+  const [isCopiedIndicatorVisible, setIsCopiedIndicatorVisible] =
+    useState(false);
   const [seedPhrase] = useState(mockSeedPhrase);
 
-  const copySeedPhrase = useCallback(
-    () => navigator.clipboard.writeText(seedPhrase),
-    [seedPhrase]
-  );
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const copySeedPhrase = useCallback(() => {
+    navigator.clipboard.writeText(seedPhrase);
+
+    setIsCopiedIndicatorVisible(true);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      setIsCopiedIndicatorVisible(false);
+      timeoutRef.current = null;
+    }, 1000);
+  }, [seedPhrase]);
+
   const toggleSeedPhraseVisibility = useCallback(
     () => setIsSeedPhraseVisible(!isSeedPhraseVisible),
     [isSeedPhraseVisible]
@@ -50,20 +66,29 @@ export default function RegistrationStep1Page() {
         </span>
       </HighlightedBox>
       <Toolbar>
-        <ToolbarButton onClick={copySeedPhrase}>
-          <CopyIcon />
-          Copy
-        </ToolbarButton>
         <ToolbarButton onClick={toggleSeedPhraseVisibility}>
           {isSeedPhraseVisible ? (
             <>
               <EyeOffIcon />
-              Conceal
+              Hide
             </>
           ) : (
             <>
               <EyeIcon />
-              Reveal
+              Show
+            </>
+          )}
+        </ToolbarButton>
+        <ToolbarButton onClick={copySeedPhrase}>
+          {isCopiedIndicatorVisible ? (
+            <>
+              <CheckIcon />
+              Copied
+            </>
+          ) : (
+            <>
+              <CopyIcon />
+              Copy
             </>
           )}
         </ToolbarButton>
