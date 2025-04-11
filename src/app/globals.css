@@ -8,15 +8,19 @@ body {
 p {
   color: #888;
   line-height: 1.75rem;
+  font-size: 15px;
 }
 
 main {
-  padding-top: 60px;
+  margin-top: 38px;
   max-width: 920px;
   margin-left: auto;
   margin-right: auto;
   padding-left: 16px;
   padding-right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 a {
@@ -40,4 +44,15 @@ button {
 button:hover {
   color: #fafafa;
   cursor: pointer;
+}
+
+
+@media only screen and (min-width: 768px) {
+  main {
+    margin-top: 80px;
+  }
+
+  p {
+      font-size: 16px;
+  }
 }

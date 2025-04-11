@@ -1,14 +1,17 @@
-.mainArea {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-}
-
 .seedPhrase {
     filter: blur(6px);
     line-height: 1.8rem;
+    letter-spacing: 1px;
+    font-size: 15px;
 }
 
 .visibleSeedPhrase {
     filter: none;
+}
+
+@media only screen and (min-width: 768px) {
+    .registrationStepTitle {
+        margin-top: 60px;
+        font-size: 1.8rem;
+    }
 }
