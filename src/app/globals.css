@@ -5,8 +5,13 @@ body {
   font-weight: 300;
 }
 
+p {
+  color: #888;
+  line-height: 1.75rem;
+}
+
 main {
-  padding-top: 10svh;
+  padding-top: 60px;
   max-width: 920px;
   margin-left: auto;
   margin-right: auto;
@@ -20,4 +25,19 @@ a {
 
 a:hover {
   color: #fafafa;
+}
+
+button {
+  font-family: 'Geist Mono', Courier, monospace;
+  color: #888;
+  background: none;
+  border: none;
+  font-size: 15px;
+  padding: 0;
+  line-height: 1rem;
+}
+
+button:hover {
+  color: #fafafa;
+  cursor: pointer;
 }

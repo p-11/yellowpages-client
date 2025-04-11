@@ -1,0 +1,5 @@
+.toolbar {
+    padding-top: 14px;
+    display: flex;
+    gap: 24px;
+}

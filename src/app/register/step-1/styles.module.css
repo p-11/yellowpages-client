@@ -1,0 +1,14 @@
+.mainArea {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.seedPhrase {
+    filter: blur(6px);
+    line-height: 1.8rem;
+}
+
+.visibleSeedPhrase {
+    filter: none;
+}
