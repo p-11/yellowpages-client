@@ -1,0 +1,24 @@
+.registrationProgressIndicator {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.activeStep {
+    font-size: 1.25rem;
+}
+
+.progressIndicators {
+    display: flex;
+    gap: 16px;
+}
+
+.progressIndicator {
+    flex: 1;
+    height: 2px;
+    background-color: #444444;
+}
+
+.activeProgressIndicator {
+    background-color: #fafafa;
+}
