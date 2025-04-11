@@ -12,7 +12,7 @@
 .progressIndicator {
     flex: 1;
     height: 2px;
-    background-color: #444444;
+    background-color: #222;
 }
 
 .activeProgressIndicator {
