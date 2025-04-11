@@ -11,8 +11,11 @@ import { useCallback, useState } from 'react';
 import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { mockSeedPhrase } from '@/mock-data';
 import { Warning } from '@/app/components/Warning';
-import styles from './styles.module.css';
 import { RegistrationHeader } from '@/app/components/RegistrationHeader';
+import { RegistrationFooter } from '@/app/components/RegistrationFooter';
+import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
+import { RegistrationFooterLink } from '@/app/components/RegistrationFooterLink';
+import styles from './styles.module.css';
 
 export default function RegistrationStep1Page() {
   const [isSeedPhraseVisible, setIsSeedPhraseVisible] = useState(false);
@@ -38,9 +41,7 @@ export default function RegistrationStep1Page() {
           This is the 24-word seed phrase for your new Post-Quantum address.
         </p>
       </RegistrationHeader>
-      <Warning>
-        Save this somewhere safe and do not share it with anyone
-      </Warning>
+      <Warning>Save it somewhere safe and do not share it with anyone</Warning>
       <HighlightedBox>
         <span
           className={`${styles.seedPhrase} ${isSeedPhraseVisible ? styles.visibleSeedPhrase : ''}`}
@@ -67,6 +68,14 @@ export default function RegistrationStep1Page() {
           )}
         </ToolbarButton>
       </Toolbar>
+      <RegistrationFooter>
+        <RegistrationFooterLink variant='secondary' href='/'>
+          Cancel
+        </RegistrationFooterLink>
+        <RegistrationFooterLink variant='primary' href='/register/step-2'>
+          Continue <ArrowRightIcon />
+        </RegistrationFooterLink>
+      </RegistrationFooter>
     </main>
   );
 }

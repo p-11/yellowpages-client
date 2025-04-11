@@ -19,9 +19,13 @@
     background-color: #fafafa;
 }
 
-@media only screen and (min-width: 720px) {
+.activeStep {
+    font-size: 15px;
+}
+
+@media only screen and (min-width: 768px) {
     .activeStep {
-        font-size: 1.1rem;
+        font-size: 18px;
     }
 
     .progressIndicators {

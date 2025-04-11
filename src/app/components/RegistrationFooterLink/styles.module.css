@@ -1,0 +1,38 @@
+.primaryRegistrationFooterLink {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: #0a0a0a;
+    background-color: #fafafa;
+    padding-left: 18px;
+    padding-right: 16px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.primaryRegistrationFooterLink:hover {
+    color: #0a0a0a;
+}
+
+.secondaryRegistrationFooterLink {
+    text-decoration: none;
+    font-size: 14px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+@media only screen and (min-width: 768px) {
+    .primaryRegistrationFooterLink, .secondaryRegistrationFooterLink {
+        font-size: 15px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+}
