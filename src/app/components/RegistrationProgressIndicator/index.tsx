@@ -9,7 +9,7 @@ export function RegistrationProgressIndicator({
 }) {
   return (
     <div className={styles.registrationProgressIndicator}>
-      <span className={styles.activeStep}>{activeStep}</span>
+      <span className={styles.activeStep}>Register: {activeStep}</span>
       <div className={styles.progressIndicators}>
         {steps.map((step, i) => {
           const isHighlighted = i <= steps.indexOf(activeStep);
