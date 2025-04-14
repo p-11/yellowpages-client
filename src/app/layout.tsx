@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 
@@ -6,10 +5,6 @@ const geistMono = localFont({
   src: './fonts/GeistMonoVF.woff',
   weight: '300 400 500'
 });
-
-export const metadata: Metadata = {
-  title: 'Home'
-};
 
 export default function RootLayout({
   children
