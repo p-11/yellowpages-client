@@ -1,4 +1,4 @@
-.primaryRegistrationFooterLink {
+.primaryRegistrationFooterButton {
     display: flex;
     gap: 6px;
     align-items: center;
@@ -11,15 +11,13 @@
     border-radius: 6px;
     font-weight: 500;
     font-size: 14px;
-    text-decoration: none;
 }
 
-.primaryRegistrationFooterLink:hover {
-    color: #0a0a0a;
+.primaryRegistrationFooterButton:disabled {
+    background-color: #666;
 }
 
-.secondaryRegistrationFooterLink {
-    text-decoration: none;
+.secondaryRegistrationFooterButton {
     font-size: 14px;
     padding-left: 16px;
     padding-right: 16px;
@@ -31,7 +29,7 @@
 }
 
 @media only screen and (min-width: 768px) {
-    .primaryRegistrationFooterLink, .secondaryRegistrationFooterLink {
+    .primaryRegistrationFooterButton, .secondaryRegistrationFooterButton {
         font-size: 15px;
         padding-top: 7px;
         padding-bottom: 7px;
