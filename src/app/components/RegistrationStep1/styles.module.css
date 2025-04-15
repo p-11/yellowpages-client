@@ -8,3 +8,8 @@
 .visibleSeedPhrase {
     filter: none;
 }
+
+.warning {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}

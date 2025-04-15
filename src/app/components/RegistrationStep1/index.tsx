@@ -65,7 +65,9 @@ export function RegistrationStep1() {
           This is the 24-word seed phrase for your new Post-Quantum address.
         </p>
       </RegistrationHeader>
-      <Warning>Save it somewhere safe and do not share it with anyone</Warning>
+      <Warning className={styles.warning}>
+        Save it somewhere safe and do not share it with anyone
+      </Warning>
       <HighlightedBox>
         <span
           className={`${styles.seedPhrase} ${isSeedPhraseVisible ? styles.visibleSeedPhrase : ''}`}
