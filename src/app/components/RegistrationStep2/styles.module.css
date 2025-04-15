@@ -16,6 +16,7 @@
     border: 2px solid #191919;
     border-radius: 6px;
     width: 100%;
+    font-size: 14px;
     position: relative;
 }
 
@@ -46,7 +47,66 @@
 }
 
 .toolbar {
+    opacity: 0;
+    pointer-events: none;
     margin-top: 22px;
+    transition: opacity 0.25s ease;
+}
+
+.selected .toolbar {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.registrationFooter {
+    width: 100%;
+    margin-bottom: 60px;
+    padding-top: 24px;
+    border-top: 1px solid transparent;
+}
+
+.registrationFooterActions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 18px;
+}
+
+.selectionCompleted .registrationFooter, .attemptFailed .registrationFooter {
+    position: sticky;
+    bottom: 0;
+    background-color: #0a0a0a;
+    border-top: 1px solid #191919;
+    width: 100%;
+    margin-bottom: 0;
+    padding-bottom: 60px;
+}
+
+.alertOverlay {
+    position: relative;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.attemptFailed .alertOverlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.attemptFailed .grid {
+    opacity: 0.25;
+    pointer-events: none;
+}
+
+.alertMessage {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding-bottom: 24px;
+    padding-top: 24px;
+    background-color: #0a0a0a;
+    border-top: 1px solid #111;
 }
 
 @media only screen and (min-width: 620px) {
@@ -58,5 +118,10 @@
 @media only screen and (min-width: 768px) {
     .grid {
         margin-top: 0px;
+    }
+
+    .alertMessage {
+        display: flex;
+        justify-content: flex-end;
     }
 }

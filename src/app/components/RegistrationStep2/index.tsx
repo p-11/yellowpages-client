@@ -5,41 +5,61 @@ import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
 import { RegistrationHeader } from '@/app/components/RegistrationHeader';
-import { RegistrationFooter } from '@/app/components/RegistrationFooter';
 import { RegistrationFooterButton } from '@/app/components/RegistrationFooterButton';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { useRegistrationContext } from '@/app/providers/RegistrationProvider';
 import { ToolbarButton } from '../ToolbarButton';
 import { RefreshIcon } from '@/app/icons/RefreshIcon';
+import { Warning } from '@/app/components/Warning';
 import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
   const { push, back } = useRouter();
   const { seedPhrase } = useRegistrationContext();
   const [selectedSeedWords, setSelectedSeedWords] = useState<Array<string>>([]);
+  const [progress, setProgress] = useState<
+    'started' | 'selected' | 'selectionCompleted' | 'attemptFailed'
+  >('started');
 
   const shuffledSeedWords = useMemo(() => {
-    const seedWords = seedPhrase.split(' ');
+    const seedWords = seedPhrase.length ? seedPhrase.split(' ') : [];
     return shuffleSeedWords(seedWords);
   }, [seedPhrase]);
 
-  const selectSeedWord = useCallback((selectedSeedWord: string) => {
-    setSelectedSeedWords(prev => [...prev, selectedSeedWord]);
+  const selectSeedWord = useCallback(
+    (selectedSeedWord: string) => {
+      const newSelectedSeedWords = [...selectedSeedWords, selectedSeedWord];
+      setSelectedSeedWords(newSelectedSeedWords);
+
+      if (newSelectedSeedWords.length < shuffledSeedWords.length) {
+        setProgress('selected');
+      } else {
+        setProgress('selectionCompleted');
+      }
+    },
+    [selectedSeedWords, shuffledSeedWords]
+  );
+
+  const restart = useCallback(() => {
+    window.scrollTo(0, 0);
+    setSelectedSeedWords([]);
+    setProgress('started');
   }, []);
 
-  const restart = useCallback(() => setSelectedSeedWords([]), []);
-
-  const confirm = useCallback(() => {
+  const confirmSelection = useCallback(() => {
     const selectedSeedPhrase = selectedSeedWords.join(' ');
 
     if (selectedSeedPhrase === seedPhrase) {
       push('/register/step-3');
+    } else {
+      setSelectedSeedWords([]);
+      setProgress('attemptFailed');
     }
   }, [selectedSeedWords, seedPhrase, push]);
 
   return (
-    <main>
+    <main className={styles[progress]}>
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 2' />
         <RegistrationStepTitle>Confirm your seed phrase</RegistrationStepTitle>
@@ -71,19 +91,34 @@ export const RegistrationStep2 = () => {
           <RefreshIcon /> Start again
         </ToolbarButton>
       </div>
-      <RegistrationFooter>
-        <RegistrationFooterButton variant='secondary' onClick={back}>
-          <ArrowLeftIcon />
-          Back
-        </RegistrationFooterButton>
-        <RegistrationFooterButton
-          variant='primary'
-          onClick={confirm}
-          disabled={selectedSeedWords.length !== shuffledSeedWords.length}
-        >
-          Confirm <ArrowRightIcon />
-        </RegistrationFooterButton>
-      </RegistrationFooter>
+      <div className={styles.registrationFooter}>
+        <div className={styles.alertOverlay}>
+          <div className={styles.alertMessage}>
+            <Warning>Incorrect order, please try again</Warning>
+          </div>
+        </div>
+        <div className={styles.registrationFooterActions}>
+          {progress === 'attemptFailed' ? (
+            <RegistrationFooterButton variant='primary' onClick={restart}>
+              Try again
+            </RegistrationFooterButton>
+          ) : (
+            <>
+              <RegistrationFooterButton variant='secondary' onClick={back}>
+                <ArrowLeftIcon />
+                Back
+              </RegistrationFooterButton>
+              <RegistrationFooterButton
+                variant='primary'
+                onClick={confirmSelection}
+                disabled={progress !== 'selectionCompleted'}
+              >
+                Confirm <ArrowRightIcon />
+              </RegistrationFooterButton>
+            </>
+          )}
+        </div>
+      </div>
     </main>
   );
 };
