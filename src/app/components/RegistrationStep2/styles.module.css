@@ -1,23 +1,36 @@
 .grid {
     margin-top: 12px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     width: 100%;
-    column-gap: 24px;
-    row-gap: 24px;
+    column-gap: 20px;
+    row-gap: 20px;
 }
 
 .button {
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
     background-color: #111;
-    border: 2px solid #191919;
+    border: 1px solid #191919;
     border-radius: 6px;
     width: 100%;
     font-size: 14px;
     position: relative;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    text-wrap: nowrap;
+}
+
+.button:hover {
+    color: #888;
+    border-color: #222;
+}
+
+.button:hover .buttonIndicator {
+    border-color: #222;
 }
 
 .button:disabled {
@@ -29,17 +42,27 @@
     cursor: inherit;
 }
 
-.selectedIndicator {
-    position: absolute;
-    top: -4px;
-    left: -10px;
+.buttonIndicator {
     width: 28px;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    background-color: #fafafa;
+    height: 28px;
+    border: 1px solid #191919;
     border-radius: 4px;
     font-weight: 500;
     font-size: 14px;
+    color: #0a0a0a;
+    background-color: #0f0f0f;
+}
+
+.button:disabled .buttonIndicator {
+    width: 28px;
+    height: auto;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    background-color: #191919;
+    color: #fafafa;
+    border-radius: 4px;
+    font-size: 14px;
+    border-color: #222;
 }
 
 .button:disabled .selectedIndicator {
@@ -109,9 +132,17 @@
     border-top: 1px solid #111;
 }
 
+@media only screen and (min-width: 420px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 @media only screen and (min-width: 620px) {
     .grid {
         grid-template-columns: 1fr 1fr 1fr;
+        column-gap: 24px;
+        row-gap: 24px;
     }
 }
 

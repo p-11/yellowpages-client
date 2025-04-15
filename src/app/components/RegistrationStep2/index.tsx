@@ -76,11 +76,9 @@ export const RegistrationStep2 = () => {
               disabled={isSelected}
               className={styles.button}
             >
-              {isSelected && (
-                <span className={styles.selectedIndicator}>
-                  {selectedSeedWords.indexOf(seedWord) + 1}
-                </span>
-              )}
+              <span className={styles.buttonIndicator}>
+                {isSelected ? selectedSeedWords.indexOf(seedWord) + 1 : ''}
+              </span>
               {seedWord}
             </button>
           );
