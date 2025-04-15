@@ -57,9 +57,7 @@
 
 .gridButton:disabled .gridButtonIndicator {
     width: 28px;
-    height: auto;
-    padding-top: 6px;
-    padding-bottom: 6px;
+    line-height: 28px;
     background-color: #191919;
     color: #fafafa;
     border-radius: 4px;
