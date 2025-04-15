@@ -5,6 +5,7 @@
     width: 100%;
     column-gap: 20px;
     row-gap: 20px;
+    transition: opacity 0.25s ease;
 }
 
 .gridButton {
@@ -83,6 +84,7 @@
     margin-bottom: 60px;
     padding-top: 24px;
     border-top: 1px solid transparent;
+    transition: border-top 0.25s ease;
 }
 
 .registrationFooterActions {
