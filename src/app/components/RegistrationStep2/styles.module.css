@@ -131,7 +131,7 @@
     border-top: 1px solid #111;
 }
 
-@media only screen and (min-width: 420px) {
+@media only screen and (min-width: 380px) {
     .grid {
         grid-template-columns: 1fr 1fr;
     }
