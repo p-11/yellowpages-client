@@ -15,21 +15,28 @@ import { RefreshIcon } from '@/app/icons/RefreshIcon';
 import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
+  const { push, back } = useRouter();
   const { seedPhrase } = useRegistrationContext();
-  const shuffledSeedPhraseWords = useMemo(
-    () => shuffleSeedPhraseWords(seedPhrase.split(' ')),
-    [seedPhrase]
-  );
-  const [selectedWords, setSelectedWords] = useState<Array<string>>([]);
-  const router = useRouter();
+  const [selectedSeedWords, setSelectedSeedWords] = useState<Array<string>>([]);
 
-  const selectWord = useCallback((selectedWord: string) => {
-    setSelectedWords(prev =>
-      prev.includes(selectedWord) ? prev : [...prev, selectedWord]
-    );
+  const shuffledSeedWords = useMemo(() => {
+    const seedWords = seedPhrase.split(' ');
+    return shuffleSeedWords(seedWords);
+  }, [seedPhrase]);
+
+  const selectSeedWord = useCallback((selectedSeedWord: string) => {
+    setSelectedSeedWords(prev => [...prev, selectedSeedWord]);
   }, []);
 
-  const restart = useCallback(() => setSelectedWords([]), []);
+  const restart = useCallback(() => setSelectedSeedWords([]), []);
+
+  const confirm = useCallback(() => {
+    const selectedSeedPhrase = selectedSeedWords.join(' ');
+
+    if (selectedSeedPhrase === seedPhrase) {
+      push('/register/step-3');
+    }
+  }, [selectedSeedWords, seedPhrase, push]);
 
   return (
     <main>
@@ -39,22 +46,22 @@ export const RegistrationStep2 = () => {
         <p>Select each word in the correct order to continue.</p>
       </RegistrationHeader>
       <div className={styles.grid}>
-        {shuffledSeedPhraseWords.map((seedPhraseWord, index) => {
-          const isSelected = selectedWords.includes(seedPhraseWord);
+        {shuffledSeedWords.map((seedWord, index) => {
+          const isSelected = selectedSeedWords.includes(seedWord);
 
           return (
             <button
               key={index}
-              onClick={() => selectWord(seedPhraseWord)}
+              onClick={() => selectSeedWord(seedWord)}
               disabled={isSelected}
               className={styles.button}
             >
               {isSelected && (
                 <span className={styles.selectedIndicator}>
-                  {selectedWords.indexOf(seedPhraseWord) + 1}
+                  {selectedSeedWords.indexOf(seedWord) + 1}
                 </span>
               )}
-              {seedPhraseWord}
+              {seedWord}
             </button>
           );
         })}
@@ -65,17 +72,14 @@ export const RegistrationStep2 = () => {
         </ToolbarButton>
       </div>
       <RegistrationFooter>
-        <RegistrationFooterButton
-          variant='secondary'
-          onClick={() => router.back()}
-        >
+        <RegistrationFooterButton variant='secondary' onClick={back}>
           <ArrowLeftIcon />
           Back
         </RegistrationFooterButton>
         <RegistrationFooterButton
           variant='primary'
-          onClick={() => router.push('/register/step-3')}
-          disabled={selectedWords.length !== shuffledSeedPhraseWords.length}
+          onClick={confirm}
+          disabled={selectedSeedWords.length !== shuffledSeedWords.length}
         >
           Confirm <ArrowRightIcon />
         </RegistrationFooterButton>
@@ -85,7 +89,7 @@ export const RegistrationStep2 = () => {
 };
 
 // Fisher–Yates shuffle
-const shuffleSeedPhraseWords = (seedPhrase: Array<string>) => {
+const shuffleSeedWords = (seedPhrase: Array<string>) => {
   const shuffled = [...seedPhrase];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
