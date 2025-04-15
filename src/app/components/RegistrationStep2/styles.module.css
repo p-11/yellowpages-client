@@ -7,7 +7,7 @@
     row-gap: 20px;
 }
 
-.button {
+.gridButton {
     padding-left: 4px;
     padding-right: 4px;
     padding-top: 4px;
@@ -24,25 +24,22 @@
     text-wrap: nowrap;
 }
 
-.button:hover {
+.gridButton:hover {
     color: #888;
     border-color: #222;
 }
 
-.button:hover .buttonIndicator {
-    border-color: #222;
-}
-
-.button:disabled {
+.gridButton:disabled {
     background-color: #191919;
 }
 
-.button:disabled:hover {
+.gridButton:disabled:hover {
     color: #888;
     cursor: inherit;
+    border-color: #191919;
 }
 
-.buttonIndicator {
+.gridButtonIndicator {
     width: 28px;
     height: 28px;
     border: 1px solid #191919;
@@ -53,7 +50,11 @@
     background-color: #0f0f0f;
 }
 
-.button:disabled .buttonIndicator {
+.gridButton:hover .gridButtonIndicator {
+    border-color: #222;
+}
+
+.gridButton:disabled .gridButtonIndicator {
     width: 28px;
     height: auto;
     padding-top: 6px;
@@ -63,10 +64,6 @@
     border-radius: 4px;
     font-size: 14px;
     border-color: #222;
-}
-
-.button:disabled .selectedIndicator {
-    color: #0a0a0a;
 }
 
 .toolbar {
@@ -105,14 +102,14 @@
     padding-bottom: 60px;
 }
 
-.alertOverlay {
+.warningOverlay {
     position: relative;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s ease;
 }
 
-.attemptFailed .alertOverlay {
+.attemptFailed .warningOverlay {
     opacity: 1;
     pointer-events: auto;
 }
@@ -122,7 +119,7 @@
     pointer-events: none;
 }
 
-.alertMessage {
+.warningMessage {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -151,7 +148,7 @@
         margin-top: 0px;
     }
 
-    .alertMessage {
+    .warningMessage {
         display: flex;
         justify-content: flex-end;
     }

@@ -15,7 +15,7 @@ import { Warning } from '@/app/components/Warning';
 import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
-  const { push, back } = useRouter();
+  const router = useRouter();
   const { seedPhrase } = useRegistrationContext();
   const [selectedSeedWords, setSelectedSeedWords] = useState<Array<string>>([]);
   const [progress, setProgress] = useState<
@@ -51,12 +51,12 @@ export const RegistrationStep2 = () => {
     const selectedSeedPhrase = selectedSeedWords.join(' ');
 
     if (selectedSeedPhrase === seedPhrase) {
-      push('/register/step-3');
+      router.push('/register/step-3');
     } else {
       setSelectedSeedWords([]);
       setProgress('attemptFailed');
     }
-  }, [selectedSeedWords, seedPhrase, push]);
+  }, [selectedSeedWords, seedPhrase, router]);
 
   return (
     <main className={styles[progress]}>
@@ -74,9 +74,9 @@ export const RegistrationStep2 = () => {
               key={index}
               onClick={() => selectSeedWord(seedWord)}
               disabled={isSelected}
-              className={styles.button}
+              className={styles.gridButton}
             >
-              <span className={styles.buttonIndicator}>
+              <span className={styles.gridButtonIndicator}>
                 {isSelected ? selectedSeedWords.indexOf(seedWord) + 1 : ''}
               </span>
               {seedWord}
@@ -90,9 +90,9 @@ export const RegistrationStep2 = () => {
         </ToolbarButton>
       </div>
       <div className={styles.registrationFooter}>
-        <div className={styles.alertOverlay}>
-          <div className={styles.alertMessage}>
-            <Warning>Incorrect order, please try again</Warning>
+        <div className={styles.warningOverlay}>
+          <div className={styles.warningMessage}>
+            <Warning>Incorrect order, please try again.</Warning>
           </div>
         </div>
         <div className={styles.registrationFooterActions}>
@@ -102,7 +102,10 @@ export const RegistrationStep2 = () => {
             </RegistrationFooterButton>
           ) : (
             <>
-              <RegistrationFooterButton variant='secondary' onClick={back}>
+              <RegistrationFooterButton
+                variant='secondary'
+                onClick={router.back}
+              >
                 <ArrowLeftIcon />
                 Back
               </RegistrationFooterButton>
