@@ -1,0 +1,46 @@
+.grid {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    column-gap: 24px;
+    row-gap: 24px;
+}
+
+.button {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: #111;
+    border: 1px solid #191919;
+    border-radius: 6px;
+    width: 100%;
+    position: relative;
+}
+
+.button:disabled {
+    background-color: #191919;
+}
+
+.button:disabled:hover {
+    color: #888;
+    cursor: inherit;
+}
+
+.selectedIndicator {
+    position: absolute;
+    top: -4px;
+    left: -10px;
+    width: 28px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    background-color: #fafafa;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.button:disabled .selectedIndicator {
+    color: #0a0a0a;
+}
