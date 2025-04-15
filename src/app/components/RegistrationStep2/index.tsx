@@ -10,6 +10,8 @@ import { RegistrationFooterButton } from '@/app/components/RegistrationFooterBut
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { useRegistrationContext } from '@/app/providers/RegistrationProvider';
+import { ToolbarButton } from '../ToolbarButton';
+import { RefreshIcon } from '@/app/icons/RefreshIcon';
 import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
@@ -26,6 +28,8 @@ export const RegistrationStep2 = () => {
       prev.includes(selectedWord) ? prev : [...prev, selectedWord]
     );
   }, []);
+
+  const restart = useCallback(() => setSelectedWords([]), []);
 
   return (
     <main>
@@ -54,6 +58,11 @@ export const RegistrationStep2 = () => {
             </button>
           );
         })}
+      </div>
+      <div className={styles.toolbar}>
+        <ToolbarButton onClick={restart}>
+          <RefreshIcon /> Start again
+        </ToolbarButton>
       </div>
       <RegistrationFooter>
         <RegistrationFooterButton

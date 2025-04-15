@@ -44,3 +44,7 @@
 .button:disabled .selectedIndicator {
     color: #0a0a0a;
 }
+
+.toolbar {
+    margin-top: 24px;
+}
