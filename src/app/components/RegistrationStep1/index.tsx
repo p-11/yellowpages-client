@@ -28,8 +28,9 @@ export function RegistrationStep1() {
   const router = useRouter();
 
   useEffect(() => {
-    if (seedPhrase) return;
-    generateSeedPhrase();
+    if (!seedPhrase) {
+      generateSeedPhrase();
+    }
   }, [seedPhrase, generateSeedPhrase]);
 
   const copySeedPhrase = useCallback(() => {
