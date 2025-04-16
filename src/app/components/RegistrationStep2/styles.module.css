@@ -1,0 +1,155 @@
+.grid {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    column-gap: 20px;
+    row-gap: 20px;
+    transition: opacity 0.25s ease;
+}
+
+.gridButton {
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    background-color: #111;
+    border: 1px solid #191919;
+    border-radius: 6px;
+    width: 100%;
+    font-size: 14px;
+    position: relative;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    text-wrap: nowrap;
+}
+
+.gridButton:hover {
+    color: #888;
+    border-color: #222;
+}
+
+.gridButton:disabled {
+    background-color: #191919;
+}
+
+.gridButton:disabled:hover {
+    color: #888;
+    cursor: inherit;
+    border-color: #191919;
+}
+
+.gridButtonIndicator {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #191919;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #0a0a0a;
+    background-color: #0f0f0f;
+}
+
+.gridButton:hover .gridButtonIndicator {
+    border-color: #222;
+}
+
+.gridButton:disabled .gridButtonIndicator {
+    width: 28px;
+    line-height: 28px;
+    background-color: #191919;
+    color: #fafafa;
+    border-radius: 4px;
+    font-size: 14px;
+    border-color: #222;
+}
+
+.toolbar {
+    opacity: 0;
+    pointer-events: none;
+    margin-top: 22px;
+    transition: opacity 0.25s ease;
+}
+
+.selectionStarted .toolbar {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.registrationFooter {
+    width: 100%;
+    margin-bottom: 60px;
+    padding-top: 24px;
+    border-top: 1px solid transparent;
+    transition: border-top 0.25s ease;
+}
+
+.registrationFooterActions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 18px;
+}
+
+.selectionCompleted .registrationFooter, .attemptFailed .registrationFooter {
+    position: sticky;
+    bottom: 0;
+    background-color: #0a0a0a;
+    border-top: 1px solid #191919;
+    width: 100%;
+    margin-bottom: 0;
+    padding-bottom: 60px;
+}
+
+.warningOverlay {
+    position: relative;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.attemptFailed .warningOverlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.attemptFailed .grid {
+    opacity: 0.25;
+    pointer-events: none;
+}
+
+.warningMessage {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding-bottom: 24px;
+    padding-top: 24px;
+    background-color: #0a0a0a;
+    border-top: 1px solid #111;
+}
+
+@media only screen and (min-width: 380px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media only screen and (min-width: 620px) {
+    .grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        column-gap: 24px;
+        row-gap: 24px;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    .grid {
+        margin-top: 0px;
+    }
+
+    .warningMessage {
+        display: flex;
+        justify-content: flex-end;
+    }
+}

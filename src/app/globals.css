@@ -13,7 +13,7 @@ p {
 }
 
 main {
-  margin-top: 52px;
+  margin-top: 36px;
   max-width: 920px;
   margin-left: auto;
   margin-right: auto;
@@ -33,13 +33,14 @@ a:hover {
 }
 
 button {
-  font-family: 'Geist Mono', Courier, monospace;
+  font-family: inherit;
   color: #888;
   background: none;
   border: none;
   font-size: 15px;
   padding: 0;
   line-height: 1rem;
+  font-weight: 300;
 }
 
 button:hover {

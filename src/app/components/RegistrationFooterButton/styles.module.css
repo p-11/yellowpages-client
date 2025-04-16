@@ -1,4 +1,4 @@
-.primaryRegistrationFooterLink {
+.primaryRegistrationFooterButton {
     display: flex;
     gap: 6px;
     align-items: center;
@@ -11,24 +11,29 @@
     border-radius: 6px;
     font-weight: 500;
     font-size: 14px;
-    text-decoration: none;
+    height: 36px;
 }
 
-.primaryRegistrationFooterLink:hover {
+.primaryRegistrationFooterButton:hover {
     color: #0a0a0a;
 }
 
-.secondaryRegistrationFooterLink {
-    text-decoration: none;
+.primaryRegistrationFooterButton:disabled {
+    background-color: #666;
+}
+
+.secondaryRegistrationFooterButton {
     font-size: 14px;
     padding-left: 16px;
     padding-right: 16px;
-    padding-top: 6px;
-    padding-bottom: 6px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    height: 36px;
 }
 
 @media only screen and (min-width: 768px) {
-    .primaryRegistrationFooterLink, .secondaryRegistrationFooterLink {
+    .primaryRegistrationFooterButton, .secondaryRegistrationFooterButton {
         font-size: 15px;
         padding-top: 7px;
         padding-bottom: 7px;
