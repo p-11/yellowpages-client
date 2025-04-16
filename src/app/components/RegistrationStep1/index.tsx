@@ -14,24 +14,18 @@ import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { EyeIcon } from '@/app/icons/EyeIcon';
 import { CheckIcon } from '@/app/icons/CheckIcon';
 import { CopyIcon } from '@/app/icons/CopyIcon';
-import { useRegistrationContext } from '@/app/providers/RegistrationProvider';
 import { RegistrationFooterButton } from '@/app/components/RegistrationFooterButton';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
+import { registrationData } from '@/core/registrationData';
 import styles from './styles.module.css';
 
 export function RegistrationStep1() {
   const [isSeedPhraseVisible, setIsSeedPhraseVisible] = useState(false);
   const [isCopiedIndicatorVisible, setIsCopiedIndicatorVisible] =
     useState(false);
-  const { seedPhrase, generateSeedPhrase } = useRegistrationContext();
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    if (!seedPhrase) {
-      generateSeedPhrase();
-    }
-  }, [seedPhrase, generateSeedPhrase]);
+  const { seedPhrase, clearSensitiveState } = useSensitiveState();
 
   const copySeedPhrase = useCallback(() => {
     navigator.clipboard.writeText(seedPhrase);
@@ -52,6 +46,17 @@ export function RegistrationStep1() {
     () => setIsSeedPhraseVisible(!isSeedPhraseVisible),
     [isSeedPhraseVisible]
   );
+
+  const cancelRegistration = useCallback(() => {
+    clearSensitiveState();
+    registrationData.clearSeedPhrase();
+    router.replace('/');
+  }, [router, clearSensitiveState]);
+
+  const continueToNextStep = useCallback(() => {
+    clearSensitiveState();
+    router.push('/register/step-2');
+  }, [router, clearSensitiveState]);
 
   if (!seedPhrase) return null;
 
@@ -107,13 +112,13 @@ export function RegistrationStep1() {
       <RegistrationFooter>
         <RegistrationFooterButton
           variant='secondary'
-          onClick={() => router.replace('/')}
+          onClick={cancelRegistration}
         >
           Cancel
         </RegistrationFooterButton>
         <RegistrationFooterButton
           variant='primary'
-          onClick={() => router.push('/register/step-2')}
+          onClick={continueToNextStep}
         >
           Continue <ArrowRightIcon />
         </RegistrationFooterButton>
@@ -121,3 +126,24 @@ export function RegistrationStep1() {
     </main>
   );
 }
+
+const useSensitiveState = () => {
+  const [seedPhrase, setSeedPhrase] = useState('');
+
+  const clearSensitiveState = useCallback(() => {
+    setSeedPhrase('');
+  }, []);
+
+  useEffect(() => {
+    setSeedPhrase(registrationData.generateSeedPhrase());
+
+    return function cleanup() {
+      clearSensitiveState();
+    };
+  }, [clearSensitiveState]);
+
+  return {
+    seedPhrase,
+    clearSensitiveState
+  };
+};

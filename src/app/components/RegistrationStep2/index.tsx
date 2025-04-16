@@ -8,10 +8,10 @@ import { RegistrationHeader } from '@/app/components/RegistrationHeader';
 import { RegistrationFooterButton } from '@/app/components/RegistrationFooterButton';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
-import { useRegistrationContext } from '@/app/providers/RegistrationProvider';
 import { ToolbarButton } from '../ToolbarButton';
 import { RefreshIcon } from '@/app/icons/RefreshIcon';
 import { Warning } from '@/app/components/Warning';
+import { registrationData } from '@/core/registrationData';
 import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
@@ -130,7 +130,6 @@ export const RegistrationStep2 = () => {
 };
 
 const useSensitiveState = () => {
-  const { seedPhrase } = useRegistrationContext();
   const [selectedSeedWords, setSelectedSeedWords] = useState<Array<string>>([]);
   const [shuffledSeedWords, setShuffledSeedWords] = useState<Array<string>>([]);
 
@@ -140,13 +139,13 @@ const useSensitiveState = () => {
   }, []);
 
   useEffect(() => {
-    const seedWords = seedPhrase.length ? seedPhrase.split(' ') : [];
+    const seedWords = registrationData.getSeedPhrase().split(' ');
     setShuffledSeedWords(shuffleSeedWords(seedWords));
 
     return function cleanup() {
       clearSensitiveState();
     };
-  }, [seedPhrase, clearSensitiveState]);
+  }, [clearSensitiveState]);
 
   const addSelectedSeedWord = useCallback(
     (selectedSeedWord: string) =>
@@ -161,8 +160,8 @@ const useSensitiveState = () => {
 
   const verifySelectedSeedWords = useCallback(() => {
     const selectedSeedPhrase = selectedSeedWords.join(' ');
-    return selectedSeedPhrase === seedPhrase;
-  }, [selectedSeedWords, seedPhrase]);
+    return selectedSeedPhrase === registrationData.getSeedPhrase();
+  }, [selectedSeedWords]);
 
   return {
     selectedSeedWords,
