@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
@@ -16,50 +16,58 @@ import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
   const router = useRouter();
-  const { seedPhrase } = useRegistrationContext();
-  const [selectedSeedWords, setSelectedSeedWords] = useState<Array<string>>([]);
-  const [progress, setProgress] = useState<
-    'started' | 'selected' | 'selectionCompleted' | 'attemptFailed'
-  >('started');
+  const [showFailedAttemptWarning, setShowFailedAttemptWarning] =
+    useState(false);
+  const {
+    selectedSeedWords,
+    shuffledSeedWords,
+    addSelectedSeedWord,
+    verifySelectedSeedWords,
+    clearSelectedSeedWords,
+    clearSensitiveState
+  } = useSensitiveState();
 
-  const shuffledSeedWords = useMemo(() => {
-    const seedWords = seedPhrase.length ? seedPhrase.split(' ') : [];
-    return shuffleSeedWords(seedWords);
-  }, [seedPhrase]);
+  const selectionCompleted =
+    shuffledSeedWords.length > 0 &&
+    selectedSeedWords.length === shuffledSeedWords.length;
+  const selectionStarted = selectedSeedWords.length > 0;
 
-  const selectSeedWord = useCallback(
-    (selectedSeedWord: string) => {
-      const newSelectedSeedWords = [...selectedSeedWords, selectedSeedWord];
-      setSelectedSeedWords(newSelectedSeedWords);
+  const confirmSelection = useCallback(() => {
+    const isCorrect = verifySelectedSeedWords();
 
-      if (newSelectedSeedWords.length < shuffledSeedWords.length) {
-        setProgress('selected');
-      } else {
-        setProgress('selectionCompleted');
-      }
-    },
-    [selectedSeedWords, shuffledSeedWords]
-  );
+    if (isCorrect) {
+      clearSensitiveState();
+      router.push('/register/step-3');
+    } else {
+      clearSelectedSeedWords();
+      setShowFailedAttemptWarning(true);
+    }
+  }, [
+    verifySelectedSeedWords,
+    clearSelectedSeedWords,
+    clearSensitiveState,
+    router
+  ]);
+
+  const tryAgain = useCallback(() => {
+    window.scrollTo(0, 0);
+    setShowFailedAttemptWarning(false);
+  }, []);
 
   const restart = useCallback(() => {
     window.scrollTo(0, 0);
-    setSelectedSeedWords([]);
-    setProgress('started');
-  }, []);
+    clearSelectedSeedWords();
+  }, [clearSelectedSeedWords]);
 
-  const confirmSelection = useCallback(() => {
-    const selectedSeedPhrase = selectedSeedWords.join(' ');
-
-    if (selectedSeedPhrase === seedPhrase) {
-      router.push('/register/step-3');
-    } else {
-      setSelectedSeedWords([]);
-      setProgress('attemptFailed');
-    }
-  }, [selectedSeedWords, seedPhrase, router]);
+  const goBack = useCallback(() => {
+    clearSensitiveState();
+    router.back();
+  }, [router, clearSensitiveState]);
 
   return (
-    <main className={styles[progress]}>
+    <main
+      className={`${showFailedAttemptWarning ? styles.attemptFailed : ''} ${selectionStarted ? styles.selectionStarted : ''} ${selectionCompleted ? styles.selectionCompleted : ''}`}
+    >
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 2' />
         <RegistrationStepTitle>Confirm your seed phrase</RegistrationStepTitle>
@@ -72,7 +80,7 @@ export const RegistrationStep2 = () => {
           return (
             <button
               key={index}
-              onClick={() => selectSeedWord(seedWord)}
+              onClick={() => addSelectedSeedWord(seedWord)}
               disabled={isSelected}
               className={styles.gridButton}
             >
@@ -96,23 +104,20 @@ export const RegistrationStep2 = () => {
           </div>
         </div>
         <div className={styles.registrationFooterActions}>
-          {progress === 'attemptFailed' ? (
-            <RegistrationFooterButton variant='primary' onClick={restart}>
+          {showFailedAttemptWarning ? (
+            <RegistrationFooterButton variant='primary' onClick={tryAgain}>
               Try again
             </RegistrationFooterButton>
           ) : (
             <>
-              <RegistrationFooterButton
-                variant='secondary'
-                onClick={router.back}
-              >
+              <RegistrationFooterButton variant='secondary' onClick={goBack}>
                 <ArrowLeftIcon />
                 Back
               </RegistrationFooterButton>
               <RegistrationFooterButton
                 variant='primary'
                 onClick={confirmSelection}
-                disabled={progress !== 'selectionCompleted'}
+                disabled={!selectionCompleted}
               >
                 Confirm <ArrowRightIcon />
               </RegistrationFooterButton>
@@ -122,6 +127,51 @@ export const RegistrationStep2 = () => {
       </div>
     </main>
   );
+};
+
+const useSensitiveState = () => {
+  const { seedPhrase } = useRegistrationContext();
+  const [selectedSeedWords, setSelectedSeedWords] = useState<Array<string>>([]);
+  const [shuffledSeedWords, setShuffledSeedWords] = useState<Array<string>>([]);
+
+  const clearSensitiveState = useCallback(() => {
+    setSelectedSeedWords([]);
+    setShuffledSeedWords([]);
+  }, []);
+
+  useEffect(() => {
+    const seedWords = seedPhrase.length ? seedPhrase.split(' ') : [];
+    setShuffledSeedWords(shuffleSeedWords(seedWords));
+
+    return function cleanup() {
+      clearSensitiveState();
+    };
+  }, [seedPhrase, clearSensitiveState]);
+
+  const addSelectedSeedWord = useCallback(
+    (selectedSeedWord: string) =>
+      setSelectedSeedWords(current => [...current, selectedSeedWord]),
+    []
+  );
+
+  const clearSelectedSeedWords = useCallback(
+    () => setSelectedSeedWords([]),
+    []
+  );
+
+  const verifySelectedSeedWords = useCallback(() => {
+    const selectedSeedPhrase = selectedSeedWords.join(' ');
+    return selectedSeedPhrase === seedPhrase;
+  }, [selectedSeedWords, seedPhrase]);
+
+  return {
+    selectedSeedWords,
+    shuffledSeedWords,
+    addSelectedSeedWord,
+    clearSelectedSeedWords,
+    clearSensitiveState,
+    verifySelectedSeedWords
+  };
 };
 
 // Fisher–Yates shuffle

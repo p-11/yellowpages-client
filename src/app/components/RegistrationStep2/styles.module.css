@@ -72,7 +72,7 @@
     transition: opacity 0.25s ease;
 }
 
-.selected .toolbar {
+.selectionStarted .toolbar {
     opacity: 1;
     pointer-events: auto;
 }
