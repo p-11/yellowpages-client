@@ -2,11 +2,9 @@ import { mockSeedPhrase, mockSigningMessage } from '@/mock-data';
 
 class RegistrationData {
   private seedPhrase: string;
-  private signingMessage: string;
 
   constructor() {
     this.seedPhrase = '';
-    this.signingMessage = '';
   }
 
   generateSeedPhrase() {
@@ -17,8 +15,7 @@ class RegistrationData {
 
   generateSigningMessage() {
     // TODO: generateSigningMessage logic
-    this.signingMessage = mockSigningMessage;
-    return this.signingMessage;
+    return mockSigningMessage;
   }
 
   getSeedPhrase() {
@@ -27,10 +24,6 @@ class RegistrationData {
 
   clearSeedPhrase() {
     this.seedPhrase = '';
-  }
-
-  clearSigningMessage() {
-    this.signingMessage = '';
   }
 }
 

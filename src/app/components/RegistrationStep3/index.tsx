@@ -30,12 +30,14 @@ export function RegistrationStep3() {
     signature,
     changeBitcoinAddress,
     changeSignature,
-    resetSigningMessage,
+    resetSignature,
     generateSigningMessage,
     clearSensitiveState
   } = useSensitiveState();
+  const [hasConfirmedBitcoinAddress, setHasConfirmedBitcoinAddress] =
+    useState(false);
 
-  const bitcoinAddressConfirmed = signingMessage.length > 0;
+  const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
 
   const copyMessage = useCallback(() => {
     navigator.clipboard.writeText(signingMessage);
@@ -52,20 +54,28 @@ export function RegistrationStep3() {
     }, 1000);
   }, [signingMessage]);
 
+  const confirmBitcoinAddress = useCallback(() => {
+    setHasConfirmedBitcoinAddress(true);
+    generateSigningMessage();
+  }, [generateSigningMessage]);
+
+  const editBitcoinAddress = useCallback(() => {
+    setHasConfirmedBitcoinAddress(false);
+    resetSignature();
+  }, [resetSignature]);
+
   const goBack = useCallback(() => {
     clearSensitiveState();
-    registrationData.clearSigningMessage();
     router.back();
   }, [router, clearSensitiveState]);
 
   const completeRegistration = useCallback(() => {
     clearSensitiveState();
-    registrationData.clearSigningMessage();
     router.push('/registration-complete');
   }, [router, clearSensitiveState]);
 
   return (
-    <main>
+    <main className={hasConfirmedBitcoinAddress ? styles.confirmed : ''}>
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 3' />
         <RegistrationStepTitle>Generate your signature</RegistrationStepTitle>
@@ -74,85 +84,73 @@ export function RegistrationStep3() {
         Your wallet must support message signing with arbitrary data.
       </Warning>
       <div className={styles.step1}>
-        {bitcoinAddressConfirmed ? (
-          <>
-            <div className={styles.inputBox}>
-              <span className={styles.inputLabel}>
-                1. Enter your public Bitcoin address
-              </span>
-              <span className={styles.confirmedInput}>{bitcoinAddress}</span>
-            </div>
-            <Toolbar>
-              <ToolbarButton onClick={resetSigningMessage}>
-                <SquarePenIcon />
-                Edit
-              </ToolbarButton>
-            </Toolbar>
-          </>
-        ) : (
-          <>
-            <div className={styles.inputBox}>
-              <label
-                htmlFor='publicBitcoinAddress'
-                className={styles.inputLabel}
-              >
-                1. Enter your public Bitcoin address
-              </label>
-              <input
-                id='publicBitcoinAddress'
-                value={bitcoinAddress}
-                onChange={e => changeBitcoinAddress(e.target.value)}
-              />
-            </div>
-            <button
-              onClick={generateSigningMessage}
-              className={styles.continueButton}
-              disabled={!bitcoinAddress.length}
-            >
-              Confirm <CheckIcon />
-            </button>
-          </>
-        )}
-      </div>
-      {bitcoinAddressConfirmed && (
-        <>
-          <div className={styles.step2}>
-            <span className={styles.inputLabel}>
-              2. Sign this message with your wallet
-            </span>
-            <HighlightedBox>
-              <span className={styles.signingMessage}>{signingMessage}</span>
-            </HighlightedBox>
-          </div>
+        <div className={styles.inputBox}>
+          <label htmlFor='publicBitcoinAddress' className={styles.inputLabel}>
+            1. Enter your public Bitcoin address
+          </label>
+          <input
+            id='publicBitcoinAddress'
+            hidden={hasConfirmedBitcoinAddress}
+            disabled={hasConfirmedBitcoinAddress}
+            value={bitcoinAddress}
+            onChange={e => changeBitcoinAddress(e.target.value)}
+          />
+          {hasConfirmedBitcoinAddress && (
+            <span className={styles.confirmedInput}>{bitcoinAddress}</span>
+          )}
+        </div>
+        {hasConfirmedBitcoinAddress ? (
           <Toolbar>
-            <ToolbarButton onClick={copyMessage}>
-              {isCopiedIndicatorVisible ? (
-                <>
-                  <CheckIcon stroke='#7fd17f' />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <CopyIcon />
-                  Copy
-                </>
-              )}
+            <ToolbarButton onClick={editBitcoinAddress}>
+              <SquarePenIcon />
+              Edit
             </ToolbarButton>
           </Toolbar>
-          <div className={styles.step3}>
-            <div className={styles.inputBox}>
-              <label htmlFor='signature' className={styles.inputLabel}>
-                3. Enter the generated signature
-              </label>
-              <textarea
-                id='signature'
-                value={signature}
-                onChange={e => changeSignature(e.target.value)}
-              />
-            </div>
-          </div>
-        </>
-      )}
+        ) : (
+          <button
+            className={styles.confirmButton}
+            onClick={confirmBitcoinAddress}
+            disabled={!isBitcoinAddressPopulated}
+          >
+            Confirm <CheckIcon />
+          </button>
+        )}
+      </div>
+      <div className={styles.step2}>
+        <span className={styles.inputLabel}>
+          2. Sign this message with your wallet
+        </span>
+        <HighlightedBox>
+          <span className={styles.signingMessage}>{signingMessage}</span>
+        </HighlightedBox>
+        <Toolbar>
+          <ToolbarButton onClick={copyMessage}>
+            {isCopiedIndicatorVisible ? (
+              <>
+                <CheckIcon stroke='#7fd17f' />
+                Copied
+              </>
+            ) : (
+              <>
+                <CopyIcon />
+                Copy
+              </>
+            )}
+          </ToolbarButton>
+        </Toolbar>
+      </div>
+      <div className={styles.step3}>
+        <div className={styles.inputBox}>
+          <label htmlFor='signature' className={styles.inputLabel}>
+            3. Enter the generated signature
+          </label>
+          <textarea
+            id='signature'
+            value={signature}
+            onChange={e => changeSignature(e.target.value)}
+          />
+        </div>
+      </div>
       <RegistrationFooter>
         <RegistrationFooterButton variant='secondary' onClick={goBack}>
           <ArrowLeftIcon />
@@ -171,20 +169,19 @@ export function RegistrationStep3() {
 }
 
 const useSensitiveState = () => {
-  const [signingMessage, setSigningMessage] = useState('');
   const [bitcoinAddress, setBitcoinAddress] = useState('');
+  const [signingMessage, setSigningMessage] = useState('');
   const [signature, setSignature] = useState('');
 
   const clearSensitiveState = useCallback(() => {
-    setSigningMessage('');
     setBitcoinAddress('');
+    setSigningMessage('');
     setSignature('');
   }, []);
 
   useEffect(() => {
     return function cleanup() {
       clearSensitiveState();
-      registrationData.clearSigningMessage();
     };
   }, [clearSensitiveState]);
 
@@ -200,8 +197,8 @@ const useSensitiveState = () => {
     setSignature(value);
   }, []);
 
-  const resetSigningMessage = useCallback(() => {
-    setSigningMessage('');
+  const resetSignature = useCallback(() => {
+    setSignature('');
   }, []);
 
   return {
@@ -209,9 +206,9 @@ const useSensitiveState = () => {
     signingMessage,
     signature,
     changeBitcoinAddress,
-    changeSignature,
-    resetSigningMessage,
     generateSigningMessage,
+    changeSignature,
+    resetSignature,
     clearSensitiveState
   };
 };

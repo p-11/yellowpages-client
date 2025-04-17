@@ -1,10 +1,5 @@
-.signingMessage {
-    line-height: 1.6rem;
-    font-size: 15px;
-}
-
 .warning {
-    margin-top: 16px;
+    margin-top: 8px;
     margin-bottom: 16px;
 }
 
@@ -28,33 +23,18 @@
     margin-top: 12px;
     background-color: #191919;
     border-radius: 6px;
-    padding-top: 14px;
-    padding-bottom: 14px;
-    padding-right: 18px;
-    padding-left: 18px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-right: 16px;
+    padding-left: 16px;
+    border: 1px solid #191919;
     word-wrap: break-word;
     letter-spacing: 1px;
     font-size: 16px;
     line-height: 1.4rem;
 }
 
-.step1, .step2, .step3 {
-    width: 100%;
-}
-
-.step1 {
-    margin-top: 20px;
-}
-
-.step2 {
-    margin-top: 30px;
-}
-
-.step3 {
-    margin-top: 30px;
-}
-
-.continueButton {
+.confirmButton {
     display: flex;
     gap: 6px;
     align-items: center;
@@ -70,10 +50,37 @@
     transition: opacity 0.25s ease;
 }
 
-.continueButton:hover {
+.confirmButton:hover {
     color: #0a0a0a;
 }
 
-.continueButton:disabled {
+.confirmButton:disabled {
+    pointer-events: none;
     opacity: 0;
+}
+
+.signingMessage {
+    line-height: 1.6rem;
+    font-size: 15px;
+}
+
+.step1, .step2, .step3 {
+    width: 100%;
+    margin-top: 30px;
+}
+
+.step2 {
+    transition: opacity 0.25s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.step3 {
+    transition: opacity 0.25s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.confirmed .step2, .confirmed .step3 {
+    opacity: 1;
 }

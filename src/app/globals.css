@@ -52,7 +52,7 @@ input, textarea {
   font-family: inherit;
   color: #fafafa;
   background: #111;
-  border: 2px solid #191919;
+  border: 1px solid #191919;
   padding-top: 12px;
   padding-bottom: 12px;
   padding-left: 16px;
@@ -65,6 +65,7 @@ input, textarea {
 
 textarea {
   resize: none;
+  min-height: 67px;
 }
 
 input:focus-within, textarea:focus-within {
