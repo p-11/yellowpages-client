@@ -1,10 +1,12 @@
-import { mockSeedPhrase } from '@/mock-data';
+import { mockSeedPhrase, mockSigningMessage } from '@/mock-data';
 
 class RegistrationData {
   private seedPhrase: string;
+  private signingMessage: string;
 
   constructor() {
     this.seedPhrase = '';
+    this.signingMessage = '';
   }
 
   generateSeedPhrase() {
@@ -13,12 +15,22 @@ class RegistrationData {
     return this.seedPhrase;
   }
 
+  generateSigningMessage() {
+    // TODO: generateSigningMessage logic
+    this.signingMessage = mockSigningMessage;
+    return this.signingMessage;
+  }
+
   getSeedPhrase() {
     return this.seedPhrase;
   }
 
   clearSeedPhrase() {
     this.seedPhrase = '';
+  }
+
+  clearSigningMessage() {
+    this.signingMessage = '';
   }
 }
 
