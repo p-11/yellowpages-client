@@ -6,7 +6,6 @@ import { RegistrationProgressIndicator } from '@/app/components/RegistrationProg
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
 import { Warning } from '@/app/components/Warning';
 import { RegistrationHeader } from '@/app/components/RegistrationHeader';
-import { RegistrationFooter } from '@/app/components/RegistrationFooter';
 import { HighlightedBox } from '@/app/components/HighlightedBox';
 import { Toolbar } from '@/app/components/Toolbar';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
@@ -17,6 +16,7 @@ import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { registrationData } from '@/core/registrationData';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { SquarePenIcon } from '@/app/icons/SquarePenIcon';
+import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -36,6 +36,7 @@ export function RegistrationStep3() {
   } = useSensitiveState();
   const [hasConfirmedBitcoinAddress, setHasConfirmedBitcoinAddress] =
     useState(false);
+  const [showFailedAttempt, setShowFailedAttempt] = useState(false);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -75,105 +76,123 @@ export function RegistrationStep3() {
     router.push('/registration-complete');
   }, [router, clearSensitiveState]);
 
+  const tryAgain = useCallback(() => {
+    resetSignature();
+    setShowFailedAttempt(false);
+  }, [resetSignature]);
+
   return (
-    <main className={hasConfirmedBitcoinAddress ? styles.confirmed : ''}>
+    <main
+      className={`${hasConfirmedBitcoinAddress ? styles.confirmed : ''} ${showFailedAttempt ? styles.failedAttempt : ''}`}
+    >
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 3' />
         <RegistrationStepTitle>Generate your signature</RegistrationStepTitle>
       </RegistrationHeader>
-      <Warning className={styles.warning}>
-        Your wallet must support message signing with arbitrary data.
-      </Warning>
-      <div className={styles.step1}>
-        <div className={styles.inputBox}>
-          <label htmlFor='publicBitcoinAddress' className={styles.inputLabel}>
-            1. Enter your public Bitcoin address
-          </label>
-          <input
-            id='publicBitcoinAddress'
-            hidden={hasConfirmedBitcoinAddress}
-            disabled={hasConfirmedBitcoinAddress}
-            value={bitcoinAddress}
-            autoComplete='off'
-            autoCorrect='off'
-            autoCapitalize='off'
-            onChange={e => changeBitcoinAddress(e.target.value)}
-          />
-          {hasConfirmedBitcoinAddress && (
-            <span className={styles.confirmedInput}>{bitcoinAddress}</span>
-          )}
-        </div>
-        <Toolbar>
-          {hasConfirmedBitcoinAddress ? (
-            <ToolbarButton onClick={editBitcoinAddress}>
-              <SquarePenIcon />
-              Edit
-            </ToolbarButton>
-          ) : (
-            <button
-              className={styles.confirmButton}
-              onClick={confirmBitcoinAddress}
-              disabled={!isBitcoinAddressPopulated}
-            >
-              Confirm <CheckIcon />
-            </button>
-          )}
-        </Toolbar>
-      </div>
-      <div className={styles.step2}>
-        <span className={styles.inputLabel}>
-          2. Sign this message with your wallet
-        </span>
-        <HighlightedBox>
-          <span className={styles.signingMessage}>{signingMessage}</span>
-        </HighlightedBox>
-        <Toolbar>
-          <ToolbarButton onClick={copyMessage}>
-            {isCopiedIndicatorVisible ? (
-              <>
-                <CheckIcon stroke='#7fd17f' />
-                Copied
-              </>
-            ) : (
-              <>
-                <CopyIcon />
-                Copy
-              </>
+      <div className={styles.content}>
+        <Warning>
+          Your wallet must support message signing with arbitrary data.
+        </Warning>
+        <div className={styles.step1}>
+          <div className={styles.inputBox}>
+            <label htmlFor='publicBitcoinAddress' className={styles.inputLabel}>
+              1. Enter your public Bitcoin address
+            </label>
+            <input
+              id='publicBitcoinAddress'
+              hidden={hasConfirmedBitcoinAddress}
+              disabled={hasConfirmedBitcoinAddress}
+              value={bitcoinAddress}
+              autoComplete='off'
+              autoCorrect='off'
+              autoCapitalize='off'
+              onChange={e => changeBitcoinAddress(e.target.value)}
+            />
+            {hasConfirmedBitcoinAddress && (
+              <span className={styles.confirmedInput}>{bitcoinAddress}</span>
             )}
-          </ToolbarButton>
-        </Toolbar>
-      </div>
-      <div className={styles.step3}>
-        <div className={styles.inputBox}>
-          <label htmlFor='signature' className={styles.inputLabel}>
-            3. Enter the generated signature
-          </label>
-          <textarea
-            id='signature'
-            value={signature}
-            autoComplete='off'
-            autoCorrect='off'
-            autoCapitalize='off'
-            onChange={e => changeSignature(e.target.value)}
-          />
+          </div>
+          <Toolbar>
+            {hasConfirmedBitcoinAddress ? (
+              <ToolbarButton onClick={editBitcoinAddress}>
+                <SquarePenIcon />
+                Edit
+              </ToolbarButton>
+            ) : (
+              <button
+                className={styles.confirmButton}
+                onClick={confirmBitcoinAddress}
+                disabled={!isBitcoinAddressPopulated}
+              >
+                Confirm <CheckIcon />
+              </button>
+            )}
+          </Toolbar>
+        </div>
+        <div className={styles.step2}>
+          <span className={styles.inputLabel}>
+            2. Sign this message with your wallet
+          </span>
+          <HighlightedBox>
+            <span className={styles.signingMessage}>{signingMessage}</span>
+          </HighlightedBox>
+          <Toolbar>
+            <ToolbarButton onClick={copyMessage}>
+              {isCopiedIndicatorVisible ? (
+                <>
+                  <CheckIcon stroke='#7fd17f' />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <CopyIcon />
+                  Copy
+                </>
+              )}
+            </ToolbarButton>
+          </Toolbar>
+        </div>
+        <div className={styles.step3}>
+          <div className={styles.inputBox}>
+            <label htmlFor='signature' className={styles.inputLabel}>
+              3. Enter the generated signature
+            </label>
+            <textarea
+              id='signature'
+              value={signature}
+              autoComplete='off'
+              autoCorrect='off'
+              autoCapitalize='off'
+              onChange={e => changeSignature(e.target.value)}
+            />
+          </div>
         </div>
       </div>
-      <div
-        className={`${styles.footer} ${!hasConfirmedBitcoinAddress ? styles.stickyFooter : ''}`}
-      >
-        <RegistrationFooter>
+      <div className={styles.footer}>
+        <div className={styles.floatingFooter}>
+          <div className={styles.failedAttemptFooterOverlay}>
+            <Warning>Verification failed, please try again.</Warning>
+          </div>
+        </div>
+        <RegistrationFooterActions>
           <RegistrationFooterButton variant='secondary' onClick={goBack}>
             <ArrowLeftIcon />
             Back
           </RegistrationFooterButton>
-          <RegistrationFooterButton
-            variant='primary'
-            onClick={completeRegistration}
-            disabled={!isSignaturePopulated}
-          >
-            Complete <ArrowRightIcon />
-          </RegistrationFooterButton>
-        </RegistrationFooter>
+          {showFailedAttempt ? (
+            <RegistrationFooterButton variant='primary' onClick={tryAgain}>
+              Try again
+            </RegistrationFooterButton>
+          ) : (
+            <RegistrationFooterButton
+              variant='primary'
+              onClick={completeRegistration}
+              disabled={!isSignaturePopulated}
+            >
+              Complete <ArrowRightIcon />
+            </RegistrationFooterButton>
+          )}
+        </RegistrationFooterActions>
       </div>
     </main>
   );

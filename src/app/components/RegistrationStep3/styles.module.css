@@ -1,3 +1,16 @@
+.content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    transition: opacity 0.25s ease;
+}
+
+.failedAttempt .content {
+    opacity: 0.25;
+    pointer-events: none;
+}
+
 .warning {
     margin-top: 8px;
     margin-bottom: 16px;
@@ -87,14 +100,40 @@
     pointer-events: auto;
 }
 
-.footer {
-    width: 100%;
-    border-top: 1px solid transparent;
+.confirmed .footer {
+    position: relative
 }
 
-.stickyFooter {
+.footer {
+    width: 100%;
     position: sticky;
     background-color: #0a0a0a;
     bottom: 0;
+    padding-top: 40px;
+    padding-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+}
+
+.floatingFooter {
+    position: relative;
+}
+
+.failedAttemptFooterOverlay {
+    position: absolute;
+    background-color: #0a0a0a;
+    padding-top: 24px;
+    bottom: 24px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    pointer-events: none;
     border-top: 1px solid #191919;
+    transition: opacity 0.25s ease;
+}
+
+.failedAttempt .failedAttemptFooterOverlay {
+    opacity: 1;
+    pointer-events: auto;
 }
