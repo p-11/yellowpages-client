@@ -17,8 +17,7 @@ import { RegistrationFooterActions } from '../RegistrationFooterActions';
 
 export const RegistrationStep2 = () => {
   const router = useRouter();
-  const [showFailedAttemptWarning, setShowFailedAttemptWarning] =
-    useState(false);
+  const [isFailedAttempt, setIsFailedAttempt] = useState(false);
   const {
     selectedSeedWords,
     shuffledSeedWords,
@@ -41,7 +40,7 @@ export const RegistrationStep2 = () => {
       router.push('/register/step-3');
     } else {
       clearSelectedSeedWords();
-      setShowFailedAttemptWarning(true);
+      setIsFailedAttempt(true);
     }
   }, [
     verifySelectedSeedWords,
@@ -52,7 +51,7 @@ export const RegistrationStep2 = () => {
 
   const tryAgain = useCallback(() => {
     window.scrollTo(0, 0);
-    setShowFailedAttemptWarning(false);
+    setIsFailedAttempt(false);
   }, []);
 
   const restart = useCallback(() => {
@@ -67,7 +66,7 @@ export const RegistrationStep2 = () => {
 
   return (
     <main
-      className={`${showFailedAttemptWarning ? styles.attemptFailed : ''} ${selectionStarted ? styles.selectionStarted : ''} ${selectionCompleted ? styles.selectionCompleted : ''}`}
+      className={`${isFailedAttempt ? styles.attemptFailed : ''} ${selectionStarted ? styles.selectionStarted : ''} ${selectionCompleted ? styles.selectionCompleted : ''}`}
     >
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 2' />
@@ -105,7 +104,7 @@ export const RegistrationStep2 = () => {
           </div>
         </div>
         <RegistrationFooterActions>
-          {showFailedAttemptWarning ? (
+          {isFailedAttempt ? (
             <RegistrationFooterButton variant='primary' onClick={tryAgain}>
               Try again
             </RegistrationFooterButton>

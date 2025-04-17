@@ -31,9 +31,9 @@ export function RegistrationStep3() {
     generateSigningMessage,
     clearSensitiveState
   } = useSensitiveState();
-  const [hasConfirmedBitcoinAddress, setHasConfirmedBitcoinAddress] =
+  const [isBitcoinAddressConfirmed, setIsBitcoinAddressConfirmed] =
     useState(false);
-  const [showFailedAttempt, setShowFailedAttempt] = useState(false);
+  const [isFailedAttempt, setIsFailedAttempt] = useState(false);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -43,12 +43,12 @@ export function RegistrationStep3() {
   }, [signingMessage]);
 
   const confirmBitcoinAddress = useCallback(() => {
-    setHasConfirmedBitcoinAddress(true);
+    setIsBitcoinAddressConfirmed(true);
     generateSigningMessage();
   }, [generateSigningMessage]);
 
   const editBitcoinAddress = useCallback(() => {
-    setHasConfirmedBitcoinAddress(false);
+    setIsBitcoinAddressConfirmed(false);
     resetSignature();
   }, [resetSignature]);
 
@@ -64,12 +64,12 @@ export function RegistrationStep3() {
 
   const tryAgain = useCallback(() => {
     resetSignature();
-    setShowFailedAttempt(false);
+    setIsFailedAttempt(false);
   }, [resetSignature]);
 
   return (
     <main
-      className={`${hasConfirmedBitcoinAddress ? styles.confirmed : ''} ${showFailedAttempt ? styles.failedAttempt : ''}`}
+      className={`${isBitcoinAddressConfirmed ? styles.confirmed : ''} ${isFailedAttempt ? styles.failedAttempt : ''}`}
     >
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 3' />
@@ -86,20 +86,20 @@ export function RegistrationStep3() {
             </label>
             <input
               id='publicBitcoinAddress'
-              hidden={hasConfirmedBitcoinAddress}
-              disabled={hasConfirmedBitcoinAddress}
+              hidden={isBitcoinAddressConfirmed}
+              disabled={isBitcoinAddressConfirmed}
               value={bitcoinAddress}
               autoComplete='off'
               autoCorrect='off'
               autoCapitalize='off'
               onChange={e => changeBitcoinAddress(e.target.value)}
             />
-            {hasConfirmedBitcoinAddress && (
+            {isBitcoinAddressConfirmed && (
               <span className={styles.confirmedInput}>{bitcoinAddress}</span>
             )}
           </div>
           <Toolbar>
-            {hasConfirmedBitcoinAddress ? (
+            {isBitcoinAddressConfirmed ? (
               <ToolbarButton onClick={editBitcoinAddress}>
                 <SquarePenIcon />
                 Edit
@@ -153,7 +153,7 @@ export function RegistrationStep3() {
             <ArrowLeftIcon />
             Back
           </RegistrationFooterButton>
-          {showFailedAttempt ? (
+          {isFailedAttempt ? (
             <RegistrationFooterButton variant='primary' onClick={tryAgain}>
               Try again
             </RegistrationFooterButton>
