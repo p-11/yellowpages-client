@@ -34,6 +34,8 @@ export function RegistrationStep3() {
   const [isBitcoinAddressConfirmed, setIsBitcoinAddressConfirmed] =
     useState(false);
   const [isFailedAttempt, setIsFailedAttempt] = useState(false);
+  const [autoFocusBitcoinAddressField, setAutoFocusBitcoinAddressField] =
+    useState(false);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -48,6 +50,7 @@ export function RegistrationStep3() {
   }, [generateSigningMessage]);
 
   const editBitcoinAddress = useCallback(() => {
+    setAutoFocusBitcoinAddressField(true);
     setIsBitcoinAddressConfirmed(false);
     resetSignature();
   }, [resetSignature]);
@@ -85,10 +88,12 @@ export function RegistrationStep3() {
               1. Enter your public Bitcoin address
             </label>
             <input
+              key={isBitcoinAddressConfirmed ? 'hidden' : undefined}
               id='publicBitcoinAddress'
               hidden={isBitcoinAddressConfirmed}
               disabled={isBitcoinAddressConfirmed}
               value={bitcoinAddress}
+              autoFocus={autoFocusBitcoinAddressField}
               autoComplete='off'
               autoCorrect='off'
               autoCapitalize='off'
