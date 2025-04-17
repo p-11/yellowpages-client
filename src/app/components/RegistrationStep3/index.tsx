@@ -145,7 +145,7 @@ export function RegistrationStep3() {
       <div className={styles.footer}>
         <div className={styles.floatingFooter}>
           <div className={styles.failedAttemptFooterOverlay}>
-            <Warning>Verification failed, please try again.</Warning>
+            <Warning>Verification failed. Please try again.</Warning>
           </div>
         </div>
         <RegistrationFooterActions>
