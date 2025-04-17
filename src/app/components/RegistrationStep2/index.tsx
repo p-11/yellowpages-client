@@ -66,7 +66,7 @@ export const RegistrationStep2 = () => {
 
   return (
     <main
-      className={`${isFailedAttempt ? styles.attemptFailed : ''} ${selectionStarted ? styles.selectionStarted : ''} ${selectionCompleted ? styles.selectionCompleted : ''}`}
+      className={`${isFailedAttempt ? styles.failedAttempt : ''} ${selectionStarted ? styles.selectionStarted : ''} ${selectionCompleted ? styles.selectionCompleted : ''}`}
     >
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 2' />

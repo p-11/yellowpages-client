@@ -85,7 +85,7 @@
     transition: border-top 0.25s ease;
 }
 
-.selectionCompleted .registrationFooter, .attemptFailed .registrationFooter {
+.selectionCompleted .registrationFooter, .failedAttempt .registrationFooter {
     position: sticky;
     bottom: 0;
     background-color: #0a0a0a;
@@ -102,12 +102,12 @@
     transition: opacity 0.25s ease;
 }
 
-.attemptFailed .warningOverlay {
+.failedAttempt .warningOverlay {
     opacity: 1;
     pointer-events: auto;
 }
 
-.attemptFailed .grid {
+.failedAttempt .grid {
     opacity: 0.25;
     pointer-events: none;
 }
