@@ -98,7 +98,7 @@ export function RegistrationStep1() {
         <ToolbarButton onClick={copySeedPhrase}>
           {isCopiedIndicatorVisible ? (
             <>
-              <CheckIcon />
+              <CheckIcon stroke='#7fd17f' />
               Copied
             </>
           ) : (
