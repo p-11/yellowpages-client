@@ -1,3 +1,4 @@
+import { RegistrationStep3 } from '@/app/components/RegistrationStep3';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -5,5 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function RegistrationStep3Page() {
-  return null;
+  return <RegistrationStep3 />;
 }
