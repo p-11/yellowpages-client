@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
@@ -10,19 +10,16 @@ import { HighlightedBox } from '@/app/components/HighlightedBox';
 import { Toolbar } from '@/app/components/Toolbar';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CheckIcon } from '@/app/icons/CheckIcon';
-import { CopyIcon } from '@/app/icons/CopyIcon';
 import { RegistrationFooterButton } from '@/app/components/RegistrationFooterButton';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { registrationData } from '@/core/registrationData';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { SquarePenIcon } from '@/app/icons/SquarePenIcon';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
+import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
-  const [isCopiedIndicatorVisible, setIsCopiedIndicatorVisible] =
-    useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
   const router = useRouter();
   const {
     signingMessage,
@@ -41,19 +38,8 @@ export function RegistrationStep3() {
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
 
-  const copyMessage = useCallback(() => {
+  const copySigningMessage = useCallback(() => {
     navigator.clipboard.writeText(signingMessage);
-
-    setIsCopiedIndicatorVisible(true);
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setIsCopiedIndicatorVisible(false);
-      timeoutRef.current = null;
-    }, 1000);
   }, [signingMessage]);
 
   const confirmBitcoinAddress = useCallback(() => {
@@ -137,19 +123,7 @@ export function RegistrationStep3() {
             <span className={styles.signingMessage}>{signingMessage}</span>
           </HighlightedBox>
           <Toolbar>
-            <ToolbarButton onClick={copyMessage}>
-              {isCopiedIndicatorVisible ? (
-                <>
-                  <CheckIcon stroke='#7fd17f' />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <CopyIcon />
-                  Copy
-                </>
-              )}
-            </ToolbarButton>
+            <CopyTextToolbarButton onClick={copySigningMessage} />
           </Toolbar>
         </div>
         <div className={styles.step3}>

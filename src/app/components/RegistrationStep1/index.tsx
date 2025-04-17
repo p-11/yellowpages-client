@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
@@ -12,34 +12,19 @@ import { Toolbar } from '@/app/components/Toolbar';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { EyeIcon } from '@/app/icons/EyeIcon';
-import { CheckIcon } from '@/app/icons/CheckIcon';
-import { CopyIcon } from '@/app/icons/CopyIcon';
 import { RegistrationFooterButton } from '@/app/components/RegistrationFooterButton';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { registrationData } from '@/core/registrationData';
 import styles from './styles.module.css';
+import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
 
 export function RegistrationStep1() {
   const [isSeedPhraseVisible, setIsSeedPhraseVisible] = useState(false);
-  const [isCopiedIndicatorVisible, setIsCopiedIndicatorVisible] =
-    useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
   const router = useRouter();
   const { seedPhrase, clearSensitiveState } = useSensitiveState();
 
   const copySeedPhrase = useCallback(() => {
     navigator.clipboard.writeText(seedPhrase);
-
-    setIsCopiedIndicatorVisible(true);
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setIsCopiedIndicatorVisible(false);
-      timeoutRef.current = null;
-    }, 1000);
   }, [seedPhrase]);
 
   const toggleSeedPhraseVisibility = useCallback(
@@ -95,19 +80,7 @@ export function RegistrationStep1() {
             </>
           )}
         </ToolbarButton>
-        <ToolbarButton onClick={copySeedPhrase}>
-          {isCopiedIndicatorVisible ? (
-            <>
-              <CheckIcon stroke='#7fd17f' />
-              Copied
-            </>
-          ) : (
-            <>
-              <CopyIcon />
-              Copy
-            </>
-          )}
-        </ToolbarButton>
+        <CopyTextToolbarButton onClick={copySeedPhrase} />
       </Toolbar>
       <RegistrationFooter>
         <RegistrationFooterButton
