@@ -13,6 +13,7 @@ import { RefreshIcon } from '@/app/icons/RefreshIcon';
 import { Warning } from '@/app/components/Warning';
 import { registrationData } from '@/core/registrationData';
 import styles from './styles.module.css';
+import { RegistrationFooterActions } from '../RegistrationFooterActions';
 
 export const RegistrationStep2 = () => {
   const router = useRouter();
@@ -103,7 +104,7 @@ export const RegistrationStep2 = () => {
             <Warning>Incorrect order, please try again.</Warning>
           </div>
         </div>
-        <div className={styles.registrationFooterActions}>
+        <RegistrationFooterActions>
           {showFailedAttemptWarning ? (
             <RegistrationFooterButton variant='primary' onClick={tryAgain}>
               Try again
@@ -123,7 +124,7 @@ export const RegistrationStep2 = () => {
               </RegistrationFooterButton>
             </>
           )}
-        </div>
+        </RegistrationFooterActions>
       </div>
     </main>
   );

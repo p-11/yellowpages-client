@@ -85,13 +85,6 @@
     transition: border-top 0.25s ease;
 }
 
-.registrationFooterActions {
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    gap: 18px;
-}
-
 .selectionCompleted .registrationFooter, .attemptFailed .registrationFooter {
     position: sticky;
     bottom: 0;
