@@ -99,22 +99,22 @@ export function RegistrationStep3() {
             <span className={styles.confirmedInput}>{bitcoinAddress}</span>
           )}
         </div>
-        {hasConfirmedBitcoinAddress ? (
-          <Toolbar>
+        <Toolbar>
+          {hasConfirmedBitcoinAddress ? (
             <ToolbarButton onClick={editBitcoinAddress}>
               <SquarePenIcon />
               Edit
             </ToolbarButton>
-          </Toolbar>
-        ) : (
-          <button
-            className={styles.confirmButton}
-            onClick={confirmBitcoinAddress}
-            disabled={!isBitcoinAddressPopulated}
-          >
-            Confirm <CheckIcon />
-          </button>
-        )}
+          ) : (
+            <button
+              className={styles.confirmButton}
+              onClick={confirmBitcoinAddress}
+              disabled={!isBitcoinAddressPopulated}
+            >
+              Confirm <CheckIcon />
+            </button>
+          )}
+        </Toolbar>
       </div>
       <div className={styles.step2}>
         <span className={styles.inputLabel}>
