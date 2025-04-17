@@ -38,6 +38,7 @@ export function RegistrationStep3() {
     useState(false);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
+  const isSignaturePopulated = signature.length > 0;
 
   const copyMessage = useCallback(() => {
     navigator.clipboard.writeText(signingMessage);
@@ -93,6 +94,9 @@ export function RegistrationStep3() {
             hidden={hasConfirmedBitcoinAddress}
             disabled={hasConfirmedBitcoinAddress}
             value={bitcoinAddress}
+            autoComplete='off'
+            autoCorrect='off'
+            autoCapitalize='off'
             onChange={e => changeBitcoinAddress(e.target.value)}
           />
           {hasConfirmedBitcoinAddress && (
@@ -147,23 +151,30 @@ export function RegistrationStep3() {
           <textarea
             id='signature'
             value={signature}
+            autoComplete='off'
+            autoCorrect='off'
+            autoCapitalize='off'
             onChange={e => changeSignature(e.target.value)}
           />
         </div>
       </div>
-      <RegistrationFooter>
-        <RegistrationFooterButton variant='secondary' onClick={goBack}>
-          <ArrowLeftIcon />
-          Back
-        </RegistrationFooterButton>
-        <RegistrationFooterButton
-          variant='primary'
-          onClick={completeRegistration}
-          disabled={!signature.length}
-        >
-          Complete <ArrowRightIcon />
-        </RegistrationFooterButton>
-      </RegistrationFooter>
+      <div
+        className={`${styles.footer} ${!hasConfirmedBitcoinAddress ? styles.stickyFooter : ''}`}
+      >
+        <RegistrationFooter>
+          <RegistrationFooterButton variant='secondary' onClick={goBack}>
+            <ArrowLeftIcon />
+            Back
+          </RegistrationFooterButton>
+          <RegistrationFooterButton
+            variant='primary'
+            onClick={completeRegistration}
+            disabled={!isSignaturePopulated}
+          >
+            Complete <ArrowRightIcon />
+          </RegistrationFooterButton>
+        </RegistrationFooter>
+      </div>
     </main>
   );
 }

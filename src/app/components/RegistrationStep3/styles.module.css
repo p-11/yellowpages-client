@@ -12,6 +12,7 @@
 .inputLabel {
     font-size: 15px;
     font-weight: 400;
+    line-height: 1.6rem;
 }
 
 .inputBox input, .inputBox textarea {
@@ -84,4 +85,16 @@
 .confirmed .step2, .confirmed .step3 {
     opacity: 1;
     pointer-events: auto;
+}
+
+.footer {
+    width: 100%;
+    border-top: 1px solid transparent;
+}
+
+.stickyFooter {
+    position: sticky;
+    background-color: #0a0a0a;
+    bottom: 0;
+    border-top: 1px solid #191919;
 }
