@@ -14,6 +14,7 @@ import { Warning } from '@/app/components/Warning';
 import { registrationData } from '@/core/registrationData';
 import styles from './styles.module.css';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
+import { useProtectRegistrationRouteAccess } from '@/app/hooks/useProtectRegistrationRouteAccess';
 
 export const RegistrationStep2 = () => {
   const router = useRouter();
@@ -26,6 +27,8 @@ export const RegistrationStep2 = () => {
     clearSelectedSeedWords,
     clearSensitiveState
   } = useSensitiveState();
+
+  useProtectRegistrationRouteAccess();
 
   const selectionCompleted =
     shuffledSeedWords.length > 0 &&
