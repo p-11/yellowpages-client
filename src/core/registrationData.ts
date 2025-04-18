@@ -1,4 +1,4 @@
-import { mockSeedPhrase } from '@/mock-data';
+import { mockSeedPhrase, mockSigningMessage } from '@/mock-data';
 
 class RegistrationData {
   private seedPhrase: string;
@@ -11,6 +11,11 @@ class RegistrationData {
     // TODO: generateSeedPhrase logic
     this.seedPhrase = mockSeedPhrase;
     return this.seedPhrase;
+  }
+
+  generateSigningMessage() {
+    // TODO: generateSigningMessage logic
+    return mockSigningMessage;
   }
 
   getSeedPhrase() {

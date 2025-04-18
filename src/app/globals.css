@@ -48,6 +48,30 @@ button:hover {
   cursor: pointer;
 }
 
+input, textarea {
+  font-family: inherit;
+  color: #fafafa;
+  background: #111;
+  border: 1px solid #191919;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.4rem;
+}
+
+textarea {
+  resize: none;
+  min-height: 67px;
+}
+
+input:focus-within, textarea:focus-within {
+  outline: none;
+  border-color: #444;
+}
 
 @media only screen and (min-width: 768px) {
   main {
