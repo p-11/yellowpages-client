@@ -126,3 +126,19 @@ const useSensitiveState = () => {
     clearSensitiveState
   };
 };
+
+export const NewSessionWarningDialog = () => {
+  return (
+    <div className={styles.dialog}>
+      <div className={styles.dialogContent}>
+        <p className={styles.dialogTitle}>Your session has refreshed</p>
+        <Warning>Any existing progress has been reset.</Warning>
+        <div className={styles.dialogFooter}>
+          <RegistrationFooterButton variant='primary'>
+            Continue
+          </RegistrationFooterButton>
+        </div>
+      </div>
+    </div>
+  );
+};
