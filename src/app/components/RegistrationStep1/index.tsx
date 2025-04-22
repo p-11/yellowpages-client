@@ -123,7 +123,7 @@ export function RegistrationStep1() {
         <div className={styles.dialog}>
           <div className={styles.dialogContent}>
             <p className={styles.dialogTitle}>Your session has refreshed</p>
-            <Warning>Any existing progress has been reset.</Warning>
+            <Warning>Any existing progress has been reset</Warning>
             <div className={styles.dialogFooter}>
               <Button variant='primary' onClick={acknowledgeSessionWarning}>
                 Continue
