@@ -17,8 +17,9 @@ import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { SquarePenIcon } from '@/app/icons/SquarePenIcon';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
-import styles from './styles.module.css';
 import { useProtectRegistrationRouteAccess } from '@/app/hooks/useProtectRegistrationRouteAccess';
+import { useRegistrationSessionStore } from '@/app/hooks/useRegistrationSessionStore';
+import styles from './styles.module.css';
 
 export function RegistrationStep3() {
   const router = useRouter();
@@ -37,6 +38,7 @@ export function RegistrationStep3() {
   const [isFailedAttempt, setIsFailedAttempt] = useState(false);
   const [autoFocusBitcoinAddressField, setAutoFocusBitcoinAddressField] =
     useState(false);
+  const { clearRegistrationSessionStore } = useRegistrationSessionStore();
 
   useProtectRegistrationRouteAccess();
 
@@ -65,8 +67,9 @@ export function RegistrationStep3() {
 
   const completeRegistration = useCallback(() => {
     clearSensitiveState();
+    clearRegistrationSessionStore();
     router.push('/registration-complete');
-  }, [router, clearSensitiveState]);
+  }, [router, clearSensitiveState, clearRegistrationSessionStore]);
 
   const tryAgain = useCallback(() => {
     resetSignature();
