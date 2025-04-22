@@ -201,6 +201,10 @@ const useSensitiveState = () => {
   }, []);
 
   useEffect(() => {
+    if (!registrationData.getPqAddress()) {
+      registrationData.generatePqAddress();
+    }
+
     return function cleanup() {
       clearSensitiveState();
     };
@@ -211,6 +215,7 @@ const useSensitiveState = () => {
   }, []);
 
   const changeBitcoinAddress = useCallback((value: string) => {
+    registrationData.setBitcoinAddress(value);
     setBitcoinAddress(value);
   }, []);
 
