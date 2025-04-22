@@ -17,11 +17,17 @@ import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { registrationData } from '@/core/registrationData';
 import styles from './styles.module.css';
 import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
+import { useRegistrationProgressContext } from '@/app/providers/RegistrationProgressProvider';
 
 export function RegistrationStep1() {
   const [isSeedPhraseVisible, setIsSeedPhraseVisible] = useState(false);
   const router = useRouter();
   const { seedPhrase, clearSensitiveState } = useSensitiveState();
+  const { setIsRegistrationInProgress } = useRegistrationProgressContext();
+
+  useEffect(() => {
+    setIsRegistrationInProgress(true);
+  }, [setIsRegistrationInProgress]);
 
   const copySeedPhrase = useCallback(() => {
     navigator.clipboard.writeText(seedPhrase);
