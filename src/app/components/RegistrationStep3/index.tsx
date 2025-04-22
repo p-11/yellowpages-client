@@ -10,15 +10,16 @@ import { HighlightedBox } from '@/app/components/HighlightedBox';
 import { Toolbar } from '@/app/components/Toolbar';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CheckIcon } from '@/app/icons/CheckIcon';
-import { RegistrationFooterButton } from '@/app/components/RegistrationFooterButton';
+import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { registrationData } from '@/core/registrationData';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { SquarePenIcon } from '@/app/icons/SquarePenIcon';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
-import styles from './styles.module.css';
 import { useProtectRegistrationRouteAccess } from '@/app/hooks/useProtectRegistrationRouteAccess';
+import { useRegistrationSessionStore } from '@/app/hooks/useRegistrationSessionStore';
+import styles from './styles.module.css';
 
 export function RegistrationStep3() {
   const router = useRouter();
@@ -37,6 +38,7 @@ export function RegistrationStep3() {
   const [isFailedAttempt, setIsFailedAttempt] = useState(false);
   const [autoFocusBitcoinAddressField, setAutoFocusBitcoinAddressField] =
     useState(false);
+  const { clearRegistrationSessionStore } = useRegistrationSessionStore();
 
   useProtectRegistrationRouteAccess();
 
@@ -65,8 +67,9 @@ export function RegistrationStep3() {
 
   const completeRegistration = useCallback(() => {
     clearSensitiveState();
+    clearRegistrationSessionStore();
     router.push('/registration-complete');
-  }, [router, clearSensitiveState]);
+  }, [router, clearSensitiveState, clearRegistrationSessionStore]);
 
   const tryAgain = useCallback(() => {
     resetSignature();
@@ -157,22 +160,22 @@ export function RegistrationStep3() {
           </div>
         </div>
         <RegistrationFooterActions>
-          <RegistrationFooterButton variant='secondary' onClick={goBack}>
+          <Button variant='secondary' onClick={goBack}>
             <ArrowLeftIcon />
             Back
-          </RegistrationFooterButton>
+          </Button>
           {isFailedAttempt ? (
-            <RegistrationFooterButton variant='primary' onClick={tryAgain}>
+            <Button variant='primary' onClick={tryAgain}>
               Try again
-            </RegistrationFooterButton>
+            </Button>
           ) : (
-            <RegistrationFooterButton
+            <Button
               variant='primary'
               onClick={completeRegistration}
               disabled={!isSignaturePopulated}
             >
               Complete <ArrowRightIcon />
-            </RegistrationFooterButton>
+            </Button>
           )}
         </RegistrationFooterActions>
       </div>

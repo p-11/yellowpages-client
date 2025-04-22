@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
 import { RegistrationHeader } from '@/app/components/RegistrationHeader';
-import { RegistrationFooterButton } from '@/app/components/RegistrationFooterButton';
+import { Button } from '@/app/components/Button';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { ToolbarButton } from '../ToolbarButton';
@@ -108,22 +108,22 @@ export const RegistrationStep2 = () => {
         </div>
         <RegistrationFooterActions>
           {isFailedAttempt ? (
-            <RegistrationFooterButton variant='primary' onClick={tryAgain}>
+            <Button variant='primary' onClick={tryAgain}>
               Try again
-            </RegistrationFooterButton>
+            </Button>
           ) : (
             <>
-              <RegistrationFooterButton variant='secondary' onClick={goBack}>
+              <Button variant='secondary' onClick={goBack}>
                 <ArrowLeftIcon />
                 Back
-              </RegistrationFooterButton>
-              <RegistrationFooterButton
+              </Button>
+              <Button
                 variant='primary'
                 onClick={confirmSelection}
                 disabled={!selectionCompleted}
               >
                 Confirm <ArrowRightIcon />
-              </RegistrationFooterButton>
+              </Button>
             </>
           )}
         </RegistrationFooterActions>
