@@ -40,7 +40,14 @@
 .dialogTitle {
     color: #fafafa;
     margin-top: 0px;
+    margin-bottom: 12px;
     font-weight: 400;
+}
+
+.dialogDescription {
+    margin-top: 12px;
+    margin-bottom: 24px;
+    line-height: 1.5rem;
 }
 
 .dialogFooter {
