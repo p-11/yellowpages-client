@@ -15,6 +15,8 @@ import { registrationData } from '@/core/registrationData';
 import styles from './styles.module.css';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import { useProtectRegistrationRouteAccess } from '@/app/hooks/useProtectRegistrationRouteAccess';
+import { useRegistrationProgressContext } from '@/app/providers/RegistrationProgressProvider';
+import { Alert } from '@/app/components/Alert';
 
 export const RegistrationStep2 = () => {
   const router = useRouter();
@@ -27,6 +29,8 @@ export const RegistrationStep2 = () => {
     clearSelectedSeedWords,
     clearSensitiveState
   } = useSensitiveState();
+  const { hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase } =
+    useRegistrationProgressContext();
 
   useProtectRegistrationRouteAccess();
 
@@ -40,6 +44,7 @@ export const RegistrationStep2 = () => {
 
     if (isCorrect) {
       clearSensitiveState();
+      setHasConfirmedSeedPhrase(true);
       router.push('/register/step-3');
     } else {
       clearSelectedSeedWords();
@@ -49,6 +54,7 @@ export const RegistrationStep2 = () => {
     verifySelectedSeedWords,
     clearSelectedSeedWords,
     clearSensitiveState,
+    setHasConfirmedSeedPhrase,
     router
   ]);
 
@@ -67,6 +73,10 @@ export const RegistrationStep2 = () => {
     router.back();
   }, [router, clearSensitiveState]);
 
+  const continueToNextStep = useCallback(() => {
+    router.push('/register/step-3');
+  }, [router]);
+
   return (
     <main
       className={`${isFailedAttempt ? styles.failedAttempt : ''} ${selectionStarted ? styles.selectionStarted : ''} ${selectionCompleted ? styles.selectionCompleted : ''}`}
@@ -74,32 +84,42 @@ export const RegistrationStep2 = () => {
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 2' />
         <RegistrationStepTitle>Confirm your seed phrase</RegistrationStepTitle>
-        <p>Select each word in the correct order to continue.</p>
+        {!hasConfirmedSeedPhrase && (
+          <p>Select each word in the correct order to continue.</p>
+        )}
       </RegistrationHeader>
-      <div className={styles.grid}>
-        {shuffledSeedWords.map((seedWord, index) => {
-          const isSelected = selectedSeedWords.includes(seedWord);
+      {hasConfirmedSeedPhrase ? (
+        <Alert className={styles.confirmedAlert} type='success'>
+          Seed phrase confirmed
+        </Alert>
+      ) : (
+        <>
+          <div className={styles.grid}>
+            {shuffledSeedWords.map((seedWord, index) => {
+              const isSelected = selectedSeedWords.includes(seedWord);
 
-          return (
-            <button
-              key={index}
-              onClick={() => addSelectedSeedWord(seedWord)}
-              disabled={isSelected}
-              className={styles.gridButton}
-            >
-              <span className={styles.gridButtonIndicator}>
-                {isSelected ? selectedSeedWords.indexOf(seedWord) + 1 : ''}
-              </span>
-              {seedWord}
-            </button>
-          );
-        })}
-      </div>
-      <div className={styles.toolbar}>
-        <ToolbarButton onClick={restart}>
-          <RefreshIcon /> Start again
-        </ToolbarButton>
-      </div>
+              return (
+                <button
+                  key={index}
+                  onClick={() => addSelectedSeedWord(seedWord)}
+                  disabled={isSelected}
+                  className={styles.gridButton}
+                >
+                  <span className={styles.gridButtonIndicator}>
+                    {isSelected ? selectedSeedWords.indexOf(seedWord) + 1 : ''}
+                  </span>
+                  {seedWord}
+                </button>
+              );
+            })}
+          </div>
+          <div className={styles.toolbar}>
+            <ToolbarButton onClick={restart}>
+              <RefreshIcon /> Start again
+            </ToolbarButton>
+          </div>
+        </>
+      )}
       <div className={styles.registrationFooter}>
         <div className={styles.warningOverlay}>
           <div className={styles.warningMessage}>
@@ -117,13 +137,19 @@ export const RegistrationStep2 = () => {
                 <ArrowLeftIcon />
                 Back
               </Button>
-              <Button
-                variant='primary'
-                onClick={confirmSelection}
-                disabled={!selectionCompleted}
-              >
-                Confirm <ArrowRightIcon />
-              </Button>
+              {hasConfirmedSeedPhrase ? (
+                <Button variant='primary' onClick={continueToNextStep}>
+                  Continue <ArrowRightIcon />
+                </Button>
+              ) : (
+                <Button
+                  variant='primary'
+                  onClick={confirmSelection}
+                  disabled={!selectionCompleted}
+                >
+                  Confirm <ArrowRightIcon />
+                </Button>
+              )}
             </>
           )}
         </RegistrationFooterActions>
