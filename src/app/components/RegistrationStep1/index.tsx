@@ -12,7 +12,7 @@ import { Toolbar } from '@/app/components/Toolbar';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { EyeIcon } from '@/app/icons/EyeIcon';
-import { RegistrationFooterButton } from '@/app/components/RegistrationFooterButton';
+import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { registrationData } from '@/core/registrationData';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
@@ -112,18 +112,12 @@ export function RegistrationStep1() {
         <CopyTextToolbarButton onClick={copySeedPhrase} />
       </Toolbar>
       <RegistrationFooter>
-        <RegistrationFooterButton
-          variant='secondary'
-          onClick={cancelRegistration}
-        >
+        <Button variant='secondary' onClick={cancelRegistration}>
           Cancel
-        </RegistrationFooterButton>
-        <RegistrationFooterButton
-          variant='primary'
-          onClick={continueToNextStep}
-        >
+        </Button>
+        <Button variant='primary' onClick={continueToNextStep}>
           Continue <ArrowRightIcon />
-        </RegistrationFooterButton>
+        </Button>
       </RegistrationFooter>
       {showSessionWarning && (
         <div className={styles.dialog}>
@@ -131,12 +125,9 @@ export function RegistrationStep1() {
             <p className={styles.dialogTitle}>Your session has refreshed</p>
             <Warning>Any existing progress has been reset.</Warning>
             <div className={styles.dialogFooter}>
-              <RegistrationFooterButton
-                variant='primary'
-                onClick={acknowledgeSessionWarning}
-              >
+              <Button variant='primary' onClick={acknowledgeSessionWarning}>
                 Continue
-              </RegistrationFooterButton>
+              </Button>
             </div>
           </div>
         </div>

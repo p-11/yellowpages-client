@@ -10,7 +10,7 @@ import { HighlightedBox } from '@/app/components/HighlightedBox';
 import { Toolbar } from '@/app/components/Toolbar';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CheckIcon } from '@/app/icons/CheckIcon';
-import { RegistrationFooterButton } from '@/app/components/RegistrationFooterButton';
+import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { registrationData } from '@/core/registrationData';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
@@ -160,22 +160,22 @@ export function RegistrationStep3() {
           </div>
         </div>
         <RegistrationFooterActions>
-          <RegistrationFooterButton variant='secondary' onClick={goBack}>
+          <Button variant='secondary' onClick={goBack}>
             <ArrowLeftIcon />
             Back
-          </RegistrationFooterButton>
+          </Button>
           {isFailedAttempt ? (
-            <RegistrationFooterButton variant='primary' onClick={tryAgain}>
+            <Button variant='primary' onClick={tryAgain}>
               Try again
-            </RegistrationFooterButton>
+            </Button>
           ) : (
-            <RegistrationFooterButton
+            <Button
               variant='primary'
               onClick={completeRegistration}
               disabled={!isSignaturePopulated}
             >
               Complete <ArrowRightIcon />
-            </RegistrationFooterButton>
+            </Button>
           )}
         </RegistrationFooterActions>
       </div>

@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes } from 'react';
 import styles from './styles.module.css';
 
-export function RegistrationFooterButton(
+export function Button(
   props: ButtonHTMLAttributes<HTMLButtonElement> & {
     children: React.ReactNode;
     variant: 'primary' | 'secondary';
@@ -12,8 +12,8 @@ export function RegistrationFooterButton(
       {...props}
       className={
         props.variant === 'primary'
-          ? styles.primaryRegistrationFooterButton
-          : styles.secondaryRegistrationFooterButton
+          ? styles.primaryButton
+          : styles.secondaryButton
       }
     >
       {props.children}
