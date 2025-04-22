@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
-import { Warning } from '@/app/components/Warning';
 import { RegistrationHeader } from '@/app/components/RegistrationHeader';
 import { RegistrationFooter } from '@/app/components/RegistrationFooter';
 import { HighlightedBox } from '@/app/components/HighlightedBox';
@@ -18,6 +17,7 @@ import { registrationData } from '@/core/registrationData';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { useRegistrationProgressContext } from '@/app/providers/RegistrationProgressProvider';
 import { useRegistrationSessionStore } from '@/app/hooks/useRegistrationSessionStore';
+import { Alert } from '@/app/components/Alert';
 import styles from './styles.module.css';
 
 export function RegistrationStep1() {
@@ -85,9 +85,9 @@ export function RegistrationStep1() {
           This is the 24-word seed phrase for your new Post-Quantum address.
         </p>
       </RegistrationHeader>
-      <Warning className={styles.warning}>
+      <Alert className={styles.alert}>
         Save it somewhere safe and do not share it with anyone
-      </Warning>
+      </Alert>
       <HighlightedBox>
         <span
           className={`${styles.seedPhrase} ${isSeedPhraseVisible ? styles.visibleSeedPhrase : ''}`}
@@ -126,10 +126,10 @@ export function RegistrationStep1() {
             <p className={styles.dialogDescription}>
               Your progress has reset and a new seed phrase has been generated.
             </p>
-            <Warning>
+            <Alert>
               If you saved the previous seed phrase, please discard it and
               securely save the new one.
-            </Warning>
+            </Alert>
             <div className={styles.dialogFooter}>
               <Button variant='primary' onClick={acknowledgeSessionWarning}>
                 Continue

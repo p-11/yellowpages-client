@@ -10,7 +10,6 @@ import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { ToolbarButton } from '../ToolbarButton';
 import { RefreshIcon } from '@/app/icons/RefreshIcon';
-import { Warning } from '@/app/components/Warning';
 import { registrationData } from '@/core/registrationData';
 import styles from './styles.module.css';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
@@ -123,7 +122,7 @@ export const RegistrationStep2 = () => {
       <div className={styles.registrationFooter}>
         <div className={styles.warningOverlay}>
           <div className={styles.warningMessage}>
-            <Warning>Incorrect order, please try again.</Warning>
+            <Alert>Incorrect order, please try again.</Alert>
           </div>
         </div>
         <RegistrationFooterActions>
