@@ -28,8 +28,7 @@ export const RegistrationStep2 = () => {
     clearSelectedSeedWords,
     clearSensitiveState
   } = useSensitiveState();
-  const { hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase } =
-    useRegistrationProgressContext();
+  const { showCompletedConfirmationStep } = useRegistrationProgressContext();
 
   useProtectRegistrationRouteAccess();
 
@@ -43,7 +42,6 @@ export const RegistrationStep2 = () => {
 
     if (isCorrect) {
       clearSensitiveState();
-      setHasConfirmedSeedPhrase(true);
       router.push('/register/step-3');
     } else {
       clearSelectedSeedWords();
@@ -53,7 +51,6 @@ export const RegistrationStep2 = () => {
     verifySelectedSeedWords,
     clearSelectedSeedWords,
     clearSensitiveState,
-    setHasConfirmedSeedPhrase,
     router
   ]);
 
@@ -83,11 +80,11 @@ export const RegistrationStep2 = () => {
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 2' />
         <RegistrationStepTitle>Confirm your seed phrase</RegistrationStepTitle>
-        {!hasConfirmedSeedPhrase && (
+        {!showCompletedConfirmationStep && (
           <p>Select each word in the correct order to continue.</p>
         )}
       </RegistrationHeader>
-      {hasConfirmedSeedPhrase ? (
+      {showCompletedConfirmationStep ? (
         <Alert className={styles.confirmedAlert} type='success'>
           Seed phrase confirmed
         </Alert>
@@ -136,7 +133,7 @@ export const RegistrationStep2 = () => {
                 <ArrowLeftIcon />
                 Back
               </Button>
-              {hasConfirmedSeedPhrase ? (
+              {showCompletedConfirmationStep ? (
                 <Button variant='primary' onClick={continueToNextStep}>
                   Continue <ArrowRightIcon />
                 </Button>

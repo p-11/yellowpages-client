@@ -19,6 +19,7 @@ import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
 import { useProtectRegistrationRouteAccess } from '@/app/hooks/useProtectRegistrationRouteAccess';
 import { useRegistrationSessionStore } from '@/app/hooks/useRegistrationSessionStore';
 import { Alert } from '@/app/components/Alert';
+import { useRegistrationProgressContext } from '@/app/providers/RegistrationProgressProvider';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -39,8 +40,13 @@ export function RegistrationStep3() {
   const [autoFocusBitcoinAddressField, setAutoFocusBitcoinAddressField] =
     useState(false);
   const { clearRegistrationSessionStore } = useRegistrationSessionStore();
+  const { setShowCompletedConfirmationStep } = useRegistrationProgressContext();
 
   useProtectRegistrationRouteAccess();
+
+  useEffect(() => {
+    setShowCompletedConfirmationStep(true);
+  }, [setShowCompletedConfirmationStep]);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
