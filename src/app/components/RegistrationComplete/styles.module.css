@@ -1,3 +1,11 @@
+.title {
+    font-size: 1.4rem;
+    letter-spacing: -1px;
+    font-weight: 400;
+    line-height: 2.2rem;
+    margin-bottom: 0;
+}
+
 .content {
     width: 100%;
     display: flex;
@@ -6,134 +14,35 @@
     transition: opacity 0.25s ease;
 }
 
-.failedAttempt .content {
-    opacity: 0.25;
-    pointer-events: none;
-}
-
-.warning {
-    margin-top: 8px;
-    margin-bottom: 16px;
-}
-
-.inputBox {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-}
-
-.inputLabel {
+.pqAddressLabel {
     font-size: 15px;
     font-weight: 400;
     line-height: 1.6rem;
 }
 
-.inputBox input, .inputBox textarea {
-    margin-top: 12px;
-    letter-spacing: 1px;
-}
-
-.confirmedInput {
-    margin-top: 12px;
-    background-color: #191919;
-    border-radius: 6px;
-    padding-top: 12px;
-    padding-bottom: 12px;
-    padding-right: 16px;
-    padding-left: 16px;
-    border: 1px solid #191919;
-    word-wrap: break-word;
-    letter-spacing: 1px;
-    font-size: 16px;
-    line-height: 1.4rem;
-}
-
-.confirmButton {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    color: #0a0a0a;
-    background-color: #fafafa;
-    padding-left: 18px;
-    padding-right: 14px;
-    border-radius: 6px;
-    font-weight: 500;
-    font-size: 14px;
-    height: 32px;
-    margin-top: 8px;
-    transition: opacity 0.25s ease;
-}
-
-.confirmButton:hover {
-    color: #0a0a0a;
-}
-
-.confirmButton:disabled {
-    pointer-events: none;
-    opacity: 0;
-}
-
-.signingMessage {
-    line-height: 1.6rem;
-    font-size: 15px;
-}
-
-.step1, .step2, .step3 {
+.pqAddressBox {
     width: 100%;
-    margin-top: 30px;
 }
 
-.step2 {
-    transition: opacity 0.25s ease;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.step3 {
-    transition: opacity 0.25s ease;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.confirmed .step2, .confirmed .step3 {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.confirmed .footer {
-    position: relative
-}
-
-.footer {
+.completionIndicator {
     width: 100%;
-    position: sticky;
-    background-color: #0a0a0a;
-    bottom: 0;
-    padding-top: 40px;
-    padding-bottom: 60px;
-    display: flex;
-    flex-direction: column;
+    height: 2px;
+    background-color: #222;
 }
 
-.floatingFooter {
-    position: relative;
+.bitcoinAddress, .pqAddress {
+    word-break: break-all;
 }
 
-.failedAttemptFooterOverlay {
-    position: absolute;
-    background-color: #0a0a0a;
-    padding-top: 24px;
-    bottom: 24px;
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    opacity: 0;
-    pointer-events: none;
-    border-top: 1px solid #191919;
-    transition: opacity 0.25s ease;
+.warning {
+    margin-top: 16px;
+    margin-bottom: 32px;
 }
 
-.failedAttempt .failedAttemptFooterOverlay {
-    opacity: 1;
-    pointer-events: auto;
+@media only screen and (min-width: 768px) {
+    .title {
+        margin-top: 32px;
+        font-size: 1.8rem;
+        margin-bottom: 16px;
+    }
 }

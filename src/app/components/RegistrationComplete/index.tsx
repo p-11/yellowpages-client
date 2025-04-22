@@ -1,27 +1,38 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
-import { RegistrationHeader } from '@/app/components/RegistrationHeader';
 import { HighlightedBox } from '@/app/components/HighlightedBox';
 import { registrationData } from '@/core/registrationData';
+import { Toolbar } from '@/app/components/Toolbar';
+import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
+import { Warning } from '@/app/components/Warning';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
-  const { bitcoinAddress, pqAddress } = useSensitiveState();
+  const { pqAddress } = useSensitiveState();
+
+  const copyPqAddress = useCallback(() => {
+    navigator.clipboard.writeText(pqAddress);
+  }, [pqAddress]);
 
   return (
     <main>
-      <RegistrationHeader>
-        <RegistrationStepTitle>Registration complete!</RegistrationStepTitle>
-      </RegistrationHeader>
+      <h1 className={styles.title}>Registration complete!</h1>
       <div className={styles.content}>
-        <HighlightedBox>
-          <span>{pqAddress}</span>
+        <p className={styles.description}>
+          Your post-quantum (PQ) address has been created and cryptographically
+          linked to your Bitcoin address.
+        </p>
+        <Warning className={styles.warning}>
+          Remember to save your new PQ address
+        </Warning>
+        <span className={styles.pqAddressLabel}>Your PQ address</span>
+        <HighlightedBox className={styles.pqAddressBox}>
+          <span className={styles.pqAddress}>{pqAddress}</span>
         </HighlightedBox>
-        <div>
-          <span>{bitcoinAddress}</span>
-        </div>
+        <Toolbar>
+          <CopyTextToolbarButton onClick={copyPqAddress} />
+        </Toolbar>
       </div>
     </main>
   );
