@@ -7,7 +7,7 @@ import { registrationData } from '@/core/registrationData';
 import { Toolbar } from '@/app/components/Toolbar';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { Warning } from '@/app/components/Warning';
-import { RegistrationFooterButton } from '../RegistrationFooterButton';
+import { Button } from '@/app/components/Button';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
@@ -56,9 +56,7 @@ export function RegistrationComplete() {
           <Link href='/faqs'>FAQs page</Link> to learn more.
         </p>
         <div className={styles.footer}>
-          <RegistrationFooterButton variant='primary'>
-            Go to homepage
-          </RegistrationFooterButton>
+          <Button variant='primary'>Go to homepage</Button>
         </div>
       </div>
     </main>
