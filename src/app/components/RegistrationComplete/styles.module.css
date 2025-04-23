@@ -91,7 +91,14 @@
     background-color: #222;
     flex: 1;
     background: linear-gradient(0deg,rgba(34, 34, 34, 1) 0%, rgba(255, 255, 255, 0.8) 100%);
+}
 
+.sectionTitle {
+    margin-top: 60px;
+    font-weight: 400;
+    font-size: 1.2rem;
+    margin-bottom: 0;
+    letter-spacing: -0.05rem;
 }
 
 @media only screen and (min-width: 768px) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { HighlightedBox } from '@/app/components/HighlightedBox';
 import { registrationData } from '@/core/registrationData';
 import { Toolbar } from '@/app/components/Toolbar';
@@ -47,6 +48,12 @@ export function RegistrationComplete() {
         <div className={styles.bitcoinAddressBox}>
           <span className={styles.bitcoinAddress}>{bitcoinAddress}</span>
         </div>
+        <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
+        <p>
+          Check your registration by{' '}
+          <Link href='/search'>searching the registry</Link> or visit our{' '}
+          <Link href='/faqs'>FAQs page</Link> to learn more.
+        </p>
       </div>
     </main>
   );
