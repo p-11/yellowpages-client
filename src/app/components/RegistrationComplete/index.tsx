@@ -21,42 +21,52 @@ export function RegistrationComplete() {
     <main>
       <h1 className={styles.title}>Registration complete!</h1>
       <div className={styles.content}>
-        <p className={styles.description}>
+        <p>
           Your post-quantum (PQ) address has been created and cryptographically
           linked to your Bitcoin address.
         </p>
-        <Warning className={styles.warning}>
-          Remember to save your new PQ address
-        </Warning>
-        <div className={styles.addressSection}>
-          <div className={styles.addressBlocks}>
-            <div className={styles.addressBlock} />
+        <div className={styles.pqAddressSection}>
+          <div className={styles.connectingBlocks}>
+            <div className={styles.connectingBlock} />
             <div className={styles.connectingLine} />
-            <div className={styles.addressBlock} />
+            <div className={styles.connectingBlock} />
           </div>
-          <div className={styles.pqAddressSection}>
+          <div className={styles.pqAddress}>
             <HighlightedBox
               className={styles.pqAddressBox}
-              label='Your PQ address'
+              label='Post-Quantum address'
             >
-              <span className={styles.pqAddress}>{pqAddress}</span>
+              <span className={styles.pqAddressText}>{pqAddress}</span>
             </HighlightedBox>
             <Toolbar>
               <CopyTextToolbarButton onClick={copyPqAddress} />
             </Toolbar>
           </div>
         </div>
-        <div className={styles.bitcoinAddressBox}>
-          <span className={styles.bitcoinAddress}>{bitcoinAddress}</span>
+        <div className={styles.bitcoinAddress}>
+          <span className={styles.bitcoinAddressLabel}>Bitcoin address</span>
+          <div>
+            <span className={styles.bitcoinAddressText}>{bitcoinAddress}</span>
+          </div>
         </div>
-        <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
-        <p>
-          Check your registration by{' '}
-          <Link href='/search'>searching the registry</Link> or visit our{' '}
-          <Link href='/faqs'>FAQs page</Link> to learn more.
-        </p>
+        <div className={styles.warningSection}>
+          <Warning>Remember to save your new post-quantum address</Warning>
+        </div>
+        <div>
+          <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
+          <p>
+            Check your registration by{' '}
+            <Link href='/search'>searching the registry</Link> or visit our{' '}
+            <Link href='/faqs'>FAQs page</Link> to learn more.
+          </p>
+          <p>
+            Own multiple wallets? You can register more than one address. Please
+            note that each address will be linked to a different post-quantum
+            address.
+          </p>
+        </div>
         <div className={styles.footer}>
-          <Button variant='primary'>Go to homepage</Button>
+          <Button variant='primary'>Registry home</Button>
         </div>
       </div>
     </main>
