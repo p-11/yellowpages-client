@@ -9,7 +9,7 @@ import { Warning } from '@/app/components/Warning';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
-  const { pqAddress } = useSensitiveState();
+  const { bitcoinAddress, pqAddress } = useSensitiveState();
 
   const copyPqAddress = useCallback(() => {
     navigator.clipboard.writeText(pqAddress);
@@ -26,13 +26,27 @@ export function RegistrationComplete() {
         <Warning className={styles.warning}>
           Remember to save your new PQ address
         </Warning>
-        <span className={styles.pqAddressLabel}>Your PQ address</span>
-        <HighlightedBox className={styles.pqAddressBox}>
-          <span className={styles.pqAddress}>{pqAddress}</span>
-        </HighlightedBox>
-        <Toolbar>
-          <CopyTextToolbarButton onClick={copyPqAddress} />
-        </Toolbar>
+        <div className={styles.addressSection}>
+          <div className={styles.addressBlocks}>
+            <div className={styles.addressBlock} />
+            <div className={styles.connectingLine} />
+            <div className={styles.addressBlock} />
+          </div>
+          <div className={styles.pqAddressSection}>
+            <HighlightedBox
+              className={styles.pqAddressBox}
+              label='Your PQ address'
+            >
+              <span className={styles.pqAddress}>{pqAddress}</span>
+            </HighlightedBox>
+            <Toolbar>
+              <CopyTextToolbarButton onClick={copyPqAddress} />
+            </Toolbar>
+          </div>
+        </div>
+        <div className={styles.bitcoinAddressBox}>
+          <span className={styles.bitcoinAddress}>{bitcoinAddress}</span>
+        </div>
       </div>
     </main>
   );
