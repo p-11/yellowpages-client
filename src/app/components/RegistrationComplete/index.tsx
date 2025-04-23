@@ -7,6 +7,7 @@ import { registrationData } from '@/core/registrationData';
 import { Toolbar } from '@/app/components/Toolbar';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { Warning } from '@/app/components/Warning';
+import { RegistrationFooterButton } from '../RegistrationFooterButton';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
@@ -54,6 +55,11 @@ export function RegistrationComplete() {
           <Link href='/search'>searching the registry</Link> or visit our{' '}
           <Link href='/faqs'>FAQs page</Link> to learn more.
         </p>
+        <div className={styles.footer}>
+          <RegistrationFooterButton variant='primary'>
+            Go to homepage
+          </RegistrationFooterButton>
+        </div>
       </div>
     </main>
   );
