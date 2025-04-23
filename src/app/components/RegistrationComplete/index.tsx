@@ -6,8 +6,8 @@ import { HighlightedBox } from '@/app/components/HighlightedBox';
 import { registrationData } from '@/core/registrationData';
 import { Toolbar } from '@/app/components/Toolbar';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
-import { Warning } from '@/app/components/Warning';
 import { Button } from '@/app/components/Button';
+import { Alert } from '@/app/components/Alert';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
@@ -50,7 +50,7 @@ export function RegistrationComplete() {
           </div>
         </div>
         <div className={styles.warningSection}>
-          <Warning>Remember to save your new post-quantum address</Warning>
+          <Alert>Remember to save your new post-quantum address</Alert>
         </div>
         <div>
           <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
