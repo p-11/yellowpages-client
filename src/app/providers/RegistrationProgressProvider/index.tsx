@@ -5,6 +5,8 @@ import React, { createContext, useContext, useState } from 'react';
 type RegistrationProgressContextType = {
   isRegistrationInProgress: boolean;
   setIsRegistrationInProgress: (value: boolean) => void;
+  showCompletedConfirmationStep: boolean;
+  setShowCompletedConfirmationStep: (value: boolean) => void;
 };
 
 const RegistrationProgressContext = createContext<
@@ -18,10 +20,17 @@ export const RegistrationProgressProvider = ({
 }) => {
   const [isRegistrationInProgress, setIsRegistrationInProgress] =
     useState(false);
+  const [showCompletedConfirmationStep, setShowCompletedConfirmationStep] =
+    useState(false);
 
   return (
     <RegistrationProgressContext.Provider
-      value={{ isRegistrationInProgress, setIsRegistrationInProgress }}
+      value={{
+        isRegistrationInProgress,
+        showCompletedConfirmationStep,
+        setIsRegistrationInProgress,
+        setShowCompletedConfirmationStep
+      }}
     >
       {children}
     </RegistrationProgressContext.Provider>

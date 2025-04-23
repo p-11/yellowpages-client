@@ -122,6 +122,11 @@
     border-top: 1px solid #111;
 }
 
+.confirmedAlert {
+    margin-top: 16px;
+    margin-bottom: 80px;
+}
+
 @media only screen and (min-width: 380px) {
     .grid {
         grid-template-columns: 1fr 1fr;

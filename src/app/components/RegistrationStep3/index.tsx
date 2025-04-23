@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
-import { Warning } from '@/app/components/Warning';
 import { RegistrationHeader } from '@/app/components/RegistrationHeader';
 import { HighlightedBox } from '@/app/components/HighlightedBox';
 import { Toolbar } from '@/app/components/Toolbar';
@@ -19,6 +18,8 @@ import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
 import { useProtectRegistrationRouteAccess } from '@/app/hooks/useProtectRegistrationRouteAccess';
 import { useRegistrationSessionStore } from '@/app/hooks/useRegistrationSessionStore';
+import { Alert } from '@/app/components/Alert';
+import { useRegistrationProgressContext } from '@/app/providers/RegistrationProgressProvider';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -39,8 +40,13 @@ export function RegistrationStep3() {
   const [autoFocusBitcoinAddressField, setAutoFocusBitcoinAddressField] =
     useState(false);
   const { clearRegistrationSessionStore } = useRegistrationSessionStore();
+  const { setShowCompletedConfirmationStep } = useRegistrationProgressContext();
 
   useProtectRegistrationRouteAccess();
+
+  useEffect(() => {
+    setShowCompletedConfirmationStep(true);
+  }, [setShowCompletedConfirmationStep]);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -85,9 +91,9 @@ export function RegistrationStep3() {
         <RegistrationStepTitle>Generate your signature</RegistrationStepTitle>
       </RegistrationHeader>
       <div className={styles.content}>
-        <Warning>
+        <Alert>
           Your wallet must support message signing with arbitrary data.
-        </Warning>
+        </Alert>
         <div className={styles.step1}>
           <div className={styles.inputBox}>
             <label htmlFor='publicBitcoinAddress' className={styles.inputLabel}>
@@ -156,7 +162,7 @@ export function RegistrationStep3() {
       <div className={styles.footer}>
         <div className={styles.floatingFooter}>
           <div className={styles.failedAttemptFooterOverlay}>
-            <Warning>Verification failed. Please try again.</Warning>
+            <Alert>Verification failed. Please try again.</Alert>
           </div>
         </div>
         <RegistrationFooterActions>
