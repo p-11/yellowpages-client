@@ -11,13 +11,13 @@ import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { ToolbarButton } from '../ToolbarButton';
 import { RefreshIcon } from '@/app/icons/RefreshIcon';
 import { registrationData } from '@/core/registrationData';
-import styles from './styles.module.css';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import { useProtectRegistrationRouteAccess } from '@/app/hooks/useProtectRegistrationRouteAccess';
 import { useRegistrationProgressContext } from '@/app/providers/RegistrationProgressProvider';
 import { Alert } from '@/app/components/Alert';
 import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { EyeIcon } from '@/app/icons/EyeIcon';
+import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
   const router = useRouter();
