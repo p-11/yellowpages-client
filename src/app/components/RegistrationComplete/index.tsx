@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { HighlightedBox } from '@/app/components/HighlightedBox';
 import { registrationData } from '@/core/registrationData';
 import { Toolbar } from '@/app/components/Toolbar';
@@ -12,10 +13,19 @@ import styles from './styles.module.css';
 
 export function RegistrationComplete() {
   const { bitcoinAddress, pqAddress } = useSensitiveState();
+  const router = useRouter();
+
+  useHomepageRedirect();
 
   const copyPqAddress = useCallback(() => {
     navigator.clipboard.writeText(pqAddress);
   }, [pqAddress]);
+
+  const navigateToHomepage = useCallback(() => {
+    router.push('/');
+  }, [router]);
+
+  if (!bitcoinAddress || !pqAddress) return null;
 
   return (
     <main>
@@ -66,12 +76,27 @@ export function RegistrationComplete() {
           </p>
         </div>
         <div className={styles.footer}>
-          <Button variant='primary'>Registry home</Button>
+          <Button variant='primary' onClick={navigateToHomepage}>
+            Registry home
+          </Button>
         </div>
       </div>
     </main>
   );
 }
+
+const useHomepageRedirect = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (
+      !registrationData.getBitcoinAddress() ||
+      !registrationData.getPqAddress()
+    ) {
+      router.replace('/');
+    }
+  }, [router]);
+};
 
 const useSensitiveState = () => {
   const [bitcoinAddress, setBitcoinAddress] = useState('');
