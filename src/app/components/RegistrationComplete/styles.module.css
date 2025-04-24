@@ -1,0 +1,108 @@
+.title {
+    font-size: 1.4rem;
+    letter-spacing: -1px;
+    font-weight: 400;
+    line-height: 2.2rem;
+    margin-bottom: 0;
+}
+
+.pqAddress {
+    width: 100%;
+}
+
+.pqAddressBox {
+    width: 100%;
+}
+
+.pqAddressLabel {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6rem;
+}
+
+.pqAddressSection {
+    margin-top: 42px;
+    position: relative;
+    width: 100%;
+    display: flex;
+    gap: 24px;
+    padding-left: 42px;
+    box-sizing: border-box;
+}
+
+.connectingBlocks {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: -55px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.connectingBlock {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background-color: #222;
+}
+
+.connectingBlock:first-of-type {
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.connectingBlock:last-of-type {
+    margin-bottom: 8px;
+}
+
+.connectingLine {
+    width: 2px;
+    background-color: #222;
+    flex: 1;
+    background: linear-gradient(0deg,rgba(34, 34, 34, 1) 0%, rgba(255, 255, 255, 0.8) 100%);
+}
+
+.bitcoinAddress {
+    margin-left: 42px;
+    margin-top: 30px;
+}
+
+.bitcoinAddressText, .pqAddressText {
+    word-break: break-all;
+}
+
+.bitcoinAddressText {
+    color: #888;
+}
+
+.bitcoinAddressLabel {
+    color: #888;
+    margin-bottom: 10px;
+    display: block
+}
+
+.warningSection {
+    margin-top: 42px;
+    margin-bottom: 42px;
+    display: flex;
+}
+
+.sectionTitle {
+    font-weight: 400;
+    font-size: 1.2rem;
+    margin-bottom: 0;
+    letter-spacing: -0.05rem;
+}
+
+.footer {
+    margin-top: 40px;
+    margin-bottom: 60px;
+}
+
+@media only screen and (min-width: 768px) {
+    .title {
+        margin-top: 32px;
+        font-size: 1.8rem;
+        margin-bottom: 16px;
+    }
+}
