@@ -23,6 +23,13 @@
     gap: 8px;
     align-items: center;
     text-wrap: nowrap;
+    filter: blur(6px);
+    pointer-events: none;
+}
+
+.showSeedWords .gridButton {
+    filter: none;
+    pointer-events: auto;
 }
 
 .gridButton:hover {
