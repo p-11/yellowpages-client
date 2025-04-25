@@ -60,6 +60,12 @@ export const RegistrationSessionProvider = ({
     }
   }, [router]);
 
+  const clearRegistrationData = useCallback(() => {
+    registrationData.clearSeedPhrase();
+    registrationData.clearBitcoinAddress();
+    registrationData.clearPqAddress();
+  }, []);
+
   const onLoadStep1Route = useCallback(() => {
     if (!activeSession.current) {
       startRegistrationSession();
@@ -82,13 +88,16 @@ export const RegistrationSessionProvider = ({
   }, [handleSessionRedirects, endRegistrationSession]);
 
   const onLoadNonRegistrationRoute = useCallback(() => {
-    endRegistrationSession();
-    registrationData.clearSeedPhrase();
-    registrationData.clearBitcoinAddress();
-    registrationData.clearPqAddress();
-  }, [endRegistrationSession]);
+    if (activeSession.current) {
+      endRegistrationSession();
+    }
+
+    clearRegistrationData();
+  }, [endRegistrationSession, clearRegistrationData]);
 
   useEffect(() => {
+    window.addEventListener('beforeunload', clearRegistrationData);
+
     switch (pathname) {
       case '/register/step-1':
         onLoadStep1Route();
@@ -105,13 +114,18 @@ export const RegistrationSessionProvider = ({
       default:
         onLoadNonRegistrationRoute();
     }
+
+    return function cleanup() {
+      window.removeEventListener('beforeunload', clearRegistrationData);
+    };
   }, [
     pathname,
     onLoadStep1Route,
     onLoadStep2Route,
     onLoadStep3Route,
     onLoadCompletionRoute,
-    onLoadNonRegistrationRoute
+    onLoadNonRegistrationRoute,
+    clearRegistrationData
   ]);
 
   return (
