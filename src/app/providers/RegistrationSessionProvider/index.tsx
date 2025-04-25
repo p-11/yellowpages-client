@@ -41,20 +41,13 @@ export const RegistrationSessionProvider = ({
   }, []);
 
   const endRegistrationSession = useCallback(() => {
-    registrationData.clearSeedPhrase();
     activeSession.current = false;
     sessionStorage.removeItem(sessionStorageKey);
     setHasConfirmedSeedPhrase(false);
     setShowNewSessionAlert(false);
   }, []);
 
-  const onLoadStep1Route = useCallback(() => {
-    if (!activeSession.current) {
-      startRegistrationSession();
-    }
-  }, [startRegistrationSession]);
-
-  const handleRedirects = useCallback(() => {
+  const handleSessionRedirects = useCallback(() => {
     if (activeSession.current) return;
 
     const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
@@ -67,22 +60,30 @@ export const RegistrationSessionProvider = ({
     }
   }, [router]);
 
+  const onLoadStep1Route = useCallback(() => {
+    if (!activeSession.current) {
+      startRegistrationSession();
+    }
+  }, [startRegistrationSession]);
+
   const onLoadStep2Route = useCallback(() => {
-    handleRedirects();
-  }, [handleRedirects]);
+    handleSessionRedirects();
+  }, [handleSessionRedirects]);
 
   const onLoadStep3Route = useCallback(() => {
-    handleRedirects();
+    handleSessionRedirects();
     setHasConfirmedSeedPhrase(true);
-  }, [handleRedirects]);
+  }, [handleSessionRedirects]);
 
   const onLoadCompletionRoute = useCallback(() => {
-    handleRedirects();
+    handleSessionRedirects();
     endRegistrationSession();
-  }, [handleRedirects, endRegistrationSession]);
+    registrationData.clearSeedPhrase();
+  }, [handleSessionRedirects, endRegistrationSession]);
 
   const onLoadNonRegistrationRoute = useCallback(() => {
     endRegistrationSession();
+    registrationData.clearSeedPhrase();
     registrationData.clearBitcoinAddress();
     registrationData.clearPqAddress();
   }, [endRegistrationSession]);
