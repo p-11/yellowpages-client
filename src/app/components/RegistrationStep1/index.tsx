@@ -15,35 +15,16 @@ import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { registrationData } from '@/core/registrationData';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
-import { useRegistrationProgressContext } from '@/app/providers/RegistrationProgressProvider';
-import { useRegistrationSessionStore } from '@/app/hooks/useRegistrationSessionStore';
 import { Alert } from '@/app/components/Alert';
+import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import styles from './styles.module.css';
 
 export function RegistrationStep1() {
   const [isSeedPhraseVisible, setIsSeedPhraseVisible] = useState(false);
   const router = useRouter();
-  const { seedPhrase, clearSensitiveState } = useSensitiveState();
-  const { isRegistrationInProgress, setIsRegistrationInProgress } =
-    useRegistrationProgressContext();
-  const {
-    saveRegistrationProgress,
-    clearRegistrationSessionStore,
-    hasExistingRegistrationProgress
-  } = useRegistrationSessionStore();
-  const [showSessionWarning, setShowSessionWarning] = useState(false);
-
-  useEffect(() => {
-    if (!isRegistrationInProgress) {
-      setShowSessionWarning(hasExistingRegistrationProgress());
-      setIsRegistrationInProgress(true);
-    }
-  }, [
-    isRegistrationInProgress,
-    hasExistingRegistrationProgress,
-    clearRegistrationSessionStore,
-    setIsRegistrationInProgress
-  ]);
+  const { seedPhrase } = useSensitiveState();
+  const { showNewSessionAlert, setShowNewSessionAlert } =
+    useRegistrationSessionContext();
 
   const copySeedPhrase = useCallback(() => {
     navigator.clipboard.writeText(seedPhrase);
@@ -55,22 +36,16 @@ export function RegistrationStep1() {
   );
 
   const cancelRegistration = useCallback(() => {
-    clearSensitiveState();
-    clearRegistrationSessionStore();
-    registrationData.clearSeedPhrase();
     router.replace('/');
-  }, [router, clearSensitiveState, clearRegistrationSessionStore]);
+  }, [router]);
 
   const continueToNextStep = useCallback(() => {
-    clearSensitiveState();
-    saveRegistrationProgress();
     router.push('/register/step-2');
-  }, [router, clearSensitiveState, saveRegistrationProgress]);
+  }, [router]);
 
-  const acknowledgeSessionWarning = useCallback(() => {
-    setShowSessionWarning(false);
-    clearRegistrationSessionStore();
-  }, [clearRegistrationSessionStore]);
+  const acknowledgeNewSessionAlert = useCallback(() => {
+    setShowNewSessionAlert(false);
+  }, [setShowNewSessionAlert]);
 
   if (!seedPhrase) return null;
 
@@ -119,7 +94,7 @@ export function RegistrationStep1() {
           Continue <ArrowRightIcon />
         </Button>
       </RegistrationFooter>
-      {showSessionWarning && (
+      {showNewSessionAlert && (
         <div className={styles.dialog}>
           <div className={styles.dialogContent}>
             <p className={styles.dialogTitle}>Your session has refreshed</p>
@@ -131,7 +106,7 @@ export function RegistrationStep1() {
               securely save the new one.
             </Alert>
             <div className={styles.dialogFooter}>
-              <Button variant='primary' onClick={acknowledgeSessionWarning}>
+              <Button variant='primary' onClick={acknowledgeNewSessionAlert}>
                 Continue
               </Button>
             </div>

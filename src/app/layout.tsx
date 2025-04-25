@@ -1,6 +1,6 @@
 import localFont from 'next/font/local';
-import { NavigationEventManager } from '@/app/components/NavigationEventManager';
 import './globals.css';
+import { RegistrationSessionProvider } from '@/app/providers/RegistrationSessionProvider';
 
 const geistMono = localFont({
   src: './fonts/GeistMonoVF.woff',
@@ -18,7 +18,7 @@ export default function RootLayout({
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
       </head>
       <body className={geistMono.className}>
-        <NavigationEventManager>{children}</NavigationEventManager>
+        <RegistrationSessionProvider>{children}</RegistrationSessionProvider>
       </body>
     </html>
   );
