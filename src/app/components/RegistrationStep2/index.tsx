@@ -41,18 +41,12 @@ export const RegistrationStep2 = () => {
     const isCorrect = verifySelectedSeedWords();
 
     if (isCorrect) {
-      clearSensitiveState();
       router.push('/register/step-3');
     } else {
       clearSelectedSeedWords();
       setIsFailedAttempt(true);
     }
-  }, [
-    verifySelectedSeedWords,
-    clearSelectedSeedWords,
-    clearSensitiveState,
-    router
-  ]);
+  }, [verifySelectedSeedWords, clearSelectedSeedWords, router]);
 
   const tryAgain = useCallback(() => {
     window.scrollTo(0, 0);
