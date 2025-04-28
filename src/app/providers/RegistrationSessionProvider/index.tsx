@@ -98,6 +98,12 @@ export const RegistrationSessionProvider = ({
   useEffect(() => {
     window.addEventListener('beforeunload', clearRegistrationData);
 
+    return function cleanup() {
+      window.removeEventListener('beforeunload', clearRegistrationData);
+    };
+  }, [clearRegistrationData]);
+
+  useEffect(() => {
     switch (pathname) {
       case '/register/step-1':
         onLoadStep1Route();
@@ -114,18 +120,13 @@ export const RegistrationSessionProvider = ({
       default:
         onLoadNonRegistrationRoute();
     }
-
-    return function cleanup() {
-      window.removeEventListener('beforeunload', clearRegistrationData);
-    };
   }, [
     pathname,
     onLoadStep1Route,
     onLoadStep2Route,
     onLoadStep3Route,
     onLoadCompletionRoute,
-    onLoadNonRegistrationRoute,
-    clearRegistrationData
+    onLoadNonRegistrationRoute
   ]);
 
   return (
