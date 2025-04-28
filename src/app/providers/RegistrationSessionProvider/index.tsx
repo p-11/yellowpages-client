@@ -29,19 +29,28 @@ export const RegistrationSessionProvider = ({
   children: React.ReactNode;
 }) => {
   const pathname = usePathname();
-  const activeSession = useRef(false);
+  const activeSession = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
 
   const [showNewSessionAlert, setShowNewSessionAlert] = useState(false);
   const [hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase] = useState(false);
 
   const startRegistrationSession = useCallback(() => {
-    activeSession.current = true;
+    activeSession.current = setTimeout(
+      () => {
+        window.location.reload();
+      },
+      1000 * 60 * 30
+    ); // 30 minute session expiry
+
     sessionStorage.setItem(sessionStorageKey, '1');
   }, []);
 
   const endRegistrationSession = useCallback(() => {
-    activeSession.current = false;
+    if (activeSession.current) {
+      clearTimeout(activeSession.current);
+      activeSession.current = null;
+    }
     sessionStorage.removeItem(sessionStorageKey);
     setHasConfirmedSeedPhrase(false);
     setShowNewSessionAlert(false);
@@ -53,7 +62,6 @@ export const RegistrationSessionProvider = ({
     const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
 
     if (hasPreviousSession) {
-      setShowNewSessionAlert(true);
       router.replace('/register/step-1');
     } else {
       router.replace('/');
@@ -67,6 +75,12 @@ export const RegistrationSessionProvider = ({
   }, []);
 
   const onLoadStep1Route = useCallback(() => {
+    const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
+
+    if (hasPreviousSession) {
+      setShowNewSessionAlert(true);
+    }
+
     if (!activeSession.current) {
       startRegistrationSession();
     }
