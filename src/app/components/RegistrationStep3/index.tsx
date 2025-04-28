@@ -16,10 +16,7 @@ import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { SquarePenIcon } from '@/app/icons/SquarePenIcon';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
-import { useProtectRegistrationRouteAccess } from '@/app/hooks/useProtectRegistrationRouteAccess';
-import { useRegistrationSessionStore } from '@/app/hooks/useRegistrationSessionStore';
 import { Alert } from '@/app/components/Alert';
-import { useRegistrationProgressContext } from '@/app/providers/RegistrationProgressProvider';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -31,22 +28,13 @@ export function RegistrationStep3() {
     changeBitcoinAddress,
     changeSignature,
     resetSignature,
-    generateSigningMessage,
-    clearSensitiveState
+    generateSigningMessage
   } = useSensitiveState();
   const [isBitcoinAddressConfirmed, setIsBitcoinAddressConfirmed] =
     useState(false);
   const [isFailedAttempt, setIsFailedAttempt] = useState(false);
   const [autoFocusBitcoinAddressField, setAutoFocusBitcoinAddressField] =
     useState(false);
-  const { clearRegistrationSessionStore } = useRegistrationSessionStore();
-  const { setShowCompletedConfirmationStep } = useRegistrationProgressContext();
-
-  useProtectRegistrationRouteAccess();
-
-  useEffect(() => {
-    setShowCompletedConfirmationStep(true);
-  }, [setShowCompletedConfirmationStep]);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -67,15 +55,12 @@ export function RegistrationStep3() {
   }, [resetSignature]);
 
   const goBack = useCallback(() => {
-    clearSensitiveState();
     router.back();
-  }, [router, clearSensitiveState]);
+  }, [router]);
 
   const completeRegistration = useCallback(() => {
-    clearSensitiveState();
-    clearRegistrationSessionStore();
     router.push('/registration-complete');
-  }, [router, clearSensitiveState, clearRegistrationSessionStore]);
+  }, [router]);
 
   const tryAgain = useCallback(() => {
     resetSignature();

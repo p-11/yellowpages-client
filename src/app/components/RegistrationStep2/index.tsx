@@ -12,11 +12,10 @@ import { ToolbarButton } from '../ToolbarButton';
 import { RefreshIcon } from '@/app/icons/RefreshIcon';
 import { registrationData } from '@/core/registrationData';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
-import { useProtectRegistrationRouteAccess } from '@/app/hooks/useProtectRegistrationRouteAccess';
-import { useRegistrationProgressContext } from '@/app/providers/RegistrationProgressProvider';
 import { Alert } from '@/app/components/Alert';
 import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { EyeIcon } from '@/app/icons/EyeIcon';
+import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
@@ -30,10 +29,8 @@ export const RegistrationStep2 = () => {
     clearSelectedSeedWords,
     clearSensitiveState
   } = useSensitiveState();
-  const { showCompletedConfirmationStep } = useRegistrationProgressContext();
+  const { hasConfirmedSeedPhrase } = useRegistrationSessionContext();
   const [showSeedWords, setShowSeedWords] = useState(false);
-
-  useProtectRegistrationRouteAccess();
 
   const selectionCompleted =
     shuffledSeedWords.length > 0 &&
@@ -44,18 +41,12 @@ export const RegistrationStep2 = () => {
     const isCorrect = verifySelectedSeedWords();
 
     if (isCorrect) {
-      clearSensitiveState();
       router.push('/register/step-3');
     } else {
       clearSelectedSeedWords();
       setIsFailedAttempt(true);
     }
-  }, [
-    verifySelectedSeedWords,
-    clearSelectedSeedWords,
-    clearSensitiveState,
-    router
-  ]);
+  }, [verifySelectedSeedWords, clearSelectedSeedWords, router]);
 
   const tryAgain = useCallback(() => {
     window.scrollTo(0, 0);
@@ -88,11 +79,11 @@ export const RegistrationStep2 = () => {
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 2' />
         <RegistrationStepTitle>Confirm your seed phrase</RegistrationStepTitle>
-        {!showCompletedConfirmationStep && (
+        {!hasConfirmedSeedPhrase && (
           <p>Select each word in the correct order to continue.</p>
         )}
       </RegistrationHeader>
-      {showCompletedConfirmationStep ? (
+      {hasConfirmedSeedPhrase ? (
         <Alert className={styles.confirmedAlert} type='success'>
           Seed phrase confirmed
         </Alert>
@@ -154,7 +145,7 @@ export const RegistrationStep2 = () => {
                 <ArrowLeftIcon />
                 Back
               </Button>
-              {showCompletedConfirmationStep ? (
+              {hasConfirmedSeedPhrase ? (
                 <Button variant='primary' onClick={continueToNextStep}>
                   Continue <ArrowRightIcon />
                 </Button>
