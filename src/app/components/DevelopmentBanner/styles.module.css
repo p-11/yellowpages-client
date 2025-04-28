@@ -1,7 +1,8 @@
 .banner {
     padding-right: 20px;
     padding-left: 20px;
-    background-color: #7c1111;
+    background-color: #2d0000;
+    border-bottom: 1px solid #944848
 }
 
 .bannerContent {
@@ -14,5 +15,5 @@
     padding-top: 16px;
     padding-bottom: 16px;
     font-weight: 400;
-    color: #ffd1d1;
+    color: #ca5c5c;
 }
