@@ -64,13 +64,12 @@ export function RegistrationStep3() {
   const confirmBitcoinAddress = useCallback(() => {
     const isValid = registrationData.validateBitcoinAddress(bitcoinAddress);
 
-    if (!isValid) {
+    if (isValid) {
+      setIsBitcoinAddressConfirmed(true);
+      generateSigningMessage();
+    } else {
       setShowInvalidBitcoinAddressAlert(true);
-      return;
     }
-
-    setIsBitcoinAddressConfirmed(true);
-    generateSigningMessage();
   }, [generateSigningMessage, bitcoinAddress]);
 
   const editBitcoinAddress = useCallback(() => {
