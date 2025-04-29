@@ -38,13 +38,13 @@ export const RegistrationSessionProvider = ({
   const startRegistrationSession = useCallback(() => {
     activeSession.current = setTimeout(
       () => {
-        window.location.reload();
+        router.replace('/session-expired');
       },
       1000 * 60 * 30
     ); // 30 minute session expiry
 
     sessionStorage.setItem(sessionStorageKey, '1');
-  }, []);
+  }, [router]);
 
   const endRegistrationSession = useCallback(() => {
     if (activeSession.current) {
@@ -109,6 +109,15 @@ export const RegistrationSessionProvider = ({
     clearRegistrationData();
   }, [endRegistrationSession, clearRegistrationData]);
 
+  const onLoadSessionExpiredRoute = useCallback(() => {
+    if (activeSession.current) {
+      endRegistrationSession();
+      clearRegistrationData();
+    } else {
+      router.replace('/');
+    }
+  }, [endRegistrationSession, clearRegistrationData, router]);
+
   useEffect(() => {
     window.addEventListener('beforeunload', clearRegistrationData);
 
@@ -131,6 +140,9 @@ export const RegistrationSessionProvider = ({
       case '/registration-complete':
         onLoadCompletionRoute();
         break;
+      case '/session-expired':
+        onLoadSessionExpiredRoute();
+        break;
       default:
         onLoadNonRegistrationRoute();
     }
@@ -140,6 +152,7 @@ export const RegistrationSessionProvider = ({
     onLoadStep2Route,
     onLoadStep3Route,
     onLoadCompletionRoute,
+    onLoadSessionExpiredRoute,
     onLoadNonRegistrationRoute
   ]);
 
