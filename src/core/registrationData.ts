@@ -55,6 +55,16 @@ class RegistrationData {
   clearBitcoinAddress() {
     this.bitcoinAddress = '';
   }
+
+  validateBitcoinAddress(bitcoinAddress: string) {
+    // TODO: validateBitcoinAddress logic
+    return bitcoinAddress.length > 3;
+  }
+
+  validateSignature(signature: string) {
+    // TODO: validateSignature logic
+    return signature.length > 3;
+  }
 }
 
 export const registrationData = new RegistrationData();
