@@ -15,8 +15,6 @@ export function RegistrationComplete() {
   const { bitcoinAddress, pqAddress } = useSensitiveState();
   const router = useRouter();
 
-  useHomepageRedirect();
-
   const copyPqAddress = useCallback(() => {
     navigator.clipboard.writeText(pqAddress);
   }, [pqAddress]);
@@ -84,19 +82,6 @@ export function RegistrationComplete() {
     </main>
   );
 }
-
-const useHomepageRedirect = () => {
-  const router = useRouter();
-
-  useEffect(() => {
-    if (
-      !registrationData.getBitcoinAddress() ||
-      !registrationData.getPqAddress()
-    ) {
-      router.replace('/');
-    }
-  }, [router]);
-};
 
 const useSensitiveState = () => {
   const [bitcoinAddress, setBitcoinAddress] = useState('');
