@@ -17,6 +17,12 @@ import { registrationData } from '@/core/registrationData';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle
+} from '../Dialog';
 import styles from './styles.module.css';
 
 export function RegistrationStep1() {
@@ -95,23 +101,21 @@ export function RegistrationStep1() {
         </Button>
       </RegistrationFooter>
       {showNewSessionAlert && (
-        <div className={styles.dialog}>
-          <div className={styles.dialogContent}>
-            <p className={styles.dialogTitle}>Your session has refreshed</p>
-            <p className={styles.dialogDescription}>
-              Your progress has reset and a new seed phrase has been generated.
-            </p>
-            <Alert>
-              If you saved the previous seed phrase, please discard it and
-              securely save the new one.
-            </Alert>
-            <div className={styles.dialogFooter}>
-              <Button variant='primary' onClick={acknowledgeNewSessionAlert}>
-                Continue
-              </Button>
-            </div>
-          </div>
-        </div>
+        <Dialog>
+          <DialogTitle>Your session has refreshed</DialogTitle>
+          <DialogDescription>
+            Your progress has reset and a new seed phrase has been generated.
+          </DialogDescription>
+          <Alert>
+            If you saved the previous seed phrase, please discard it and
+            securely save the new one.
+          </Alert>
+          <DialogFooter>
+            <Button variant='primary' onClick={acknowledgeNewSessionAlert}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </Dialog>
       )}
     </main>
   );
