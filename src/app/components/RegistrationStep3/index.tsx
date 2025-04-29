@@ -205,9 +205,9 @@ export function RegistrationStep3() {
         <Dialog>
           <DialogTitle>Invalid Bitcoin address</DialogTitle>
           <DialogDescription>
-            The address provided isn&apos;t in a valid format. Please make sure
-            this is your public Bitcoin address and try again.
+            Please check the Bitcoin address entered and try again.
           </DialogDescription>
+          <Alert>Make sure to enter your public Bitcoin address</Alert>
           <DialogFooter>
             <Button variant='primary' onClick={acknowledgeBitcoinAddressAlert}>
               Continue
