@@ -102,20 +102,17 @@ export const RegistrationSessionProvider = ({
   }, [handleSessionRedirects, endRegistrationSession]);
 
   const onLoadNonRegistrationRoute = useCallback(() => {
-    if (activeSession.current) {
-      endRegistrationSession();
-    }
-
+    endRegistrationSession();
     clearRegistrationData();
   }, [endRegistrationSession, clearRegistrationData]);
 
   const onLoadSessionExpiredRoute = useCallback(() => {
-    if (activeSession.current) {
-      endRegistrationSession();
-      clearRegistrationData();
-    } else {
+    if (!activeSession.current) {
       router.replace('/');
     }
+
+    endRegistrationSession();
+    clearRegistrationData();
   }, [endRegistrationSession, clearRegistrationData, router]);
 
   useEffect(() => {
