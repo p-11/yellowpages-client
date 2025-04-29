@@ -17,6 +17,12 @@ import { SquarePenIcon } from '@/app/icons/SquarePenIcon';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
 import { Alert } from '@/app/components/Alert';
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle
+} from '../Dialog';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -35,6 +41,8 @@ export function RegistrationStep3() {
   const [isFailedAttempt, setIsFailedAttempt] = useState(false);
   const [autoFocusBitcoinAddressField, setAutoFocusBitcoinAddressField] =
     useState(false);
+  const [showInvalidBitcoinAddressAlert, setShowInvalidBitcoinAddressAlert] =
+    useState(false);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -43,10 +51,21 @@ export function RegistrationStep3() {
     navigator.clipboard.writeText(signingMessage);
   }, [signingMessage]);
 
+  const acknowledgeBitcoinAddressAlert = useCallback(() => {
+    setShowInvalidBitcoinAddressAlert(false);
+  }, []);
+
   const confirmBitcoinAddress = useCallback(() => {
+    const isValid = registrationData.validateBitcoinAddress(bitcoinAddress);
+
+    if (!isValid) {
+      setShowInvalidBitcoinAddressAlert(true);
+      return;
+    }
+
     setIsBitcoinAddressConfirmed(true);
     generateSigningMessage();
-  }, [generateSigningMessage]);
+  }, [generateSigningMessage, bitcoinAddress]);
 
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
@@ -170,6 +189,20 @@ export function RegistrationStep3() {
           )}
         </RegistrationFooterActions>
       </div>
+      {showInvalidBitcoinAddressAlert && (
+        <Dialog>
+          <DialogTitle>Invalid Bitcoin address</DialogTitle>
+          <DialogDescription>
+            The address provided isn&apos;t in a valid format. Please make sure
+            this is your public Bitcoin address and try again.
+          </DialogDescription>
+          <DialogFooter>
+            <Button variant='primary' onClick={acknowledgeBitcoinAddressAlert}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
     </main>
   );
 }
