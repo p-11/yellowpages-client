@@ -40,8 +40,8 @@ export const RegistrationSessionProvider = ({
       () => {
         router.replace('/session-expired');
       },
-      1000 * 60 * 30
-    ); // 30 minute session expiry
+      1000 * 60 * 30 // 30 minute session expiry
+    );
 
     sessionStorage.setItem(sessionStorageKey, '1');
   }, [router]);
