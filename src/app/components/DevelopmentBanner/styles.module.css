@@ -1,0 +1,19 @@
+.banner {
+    padding-right: 20px;
+    padding-left: 20px;
+    background-color: #2d0000;
+    border-bottom: 1px solid #944848
+}
+
+.bannerContent {
+    font-size: 14px;
+    border-radius: 6px;
+    max-width: 920px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5rem;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    font-weight: 400;
+    color: #df6060;
+}
