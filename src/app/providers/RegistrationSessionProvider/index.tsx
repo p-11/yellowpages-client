@@ -29,19 +29,28 @@ export const RegistrationSessionProvider = ({
   children: React.ReactNode;
 }) => {
   const pathname = usePathname();
-  const activeSession = useRef(false);
+  const activeSession = useRef<ReturnType<typeof setTimeout>>(null);
   const router = useRouter();
 
   const [showNewSessionAlert, setShowNewSessionAlert] = useState(false);
   const [hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase] = useState(false);
 
   const startRegistrationSession = useCallback(() => {
-    activeSession.current = true;
+    activeSession.current = setTimeout(
+      () => {
+        router.replace('/session-expired');
+      },
+      1000 * 60 * 30 // 30 minute session expiry
+    );
+
     sessionStorage.setItem(sessionStorageKey, '1');
-  }, []);
+  }, [router]);
 
   const endRegistrationSession = useCallback(() => {
-    activeSession.current = false;
+    if (activeSession.current) {
+      clearTimeout(activeSession.current);
+      activeSession.current = null;
+    }
     sessionStorage.removeItem(sessionStorageKey);
     setHasConfirmedSeedPhrase(false);
     setShowNewSessionAlert(false);
@@ -53,7 +62,6 @@ export const RegistrationSessionProvider = ({
     const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
 
     if (hasPreviousSession) {
-      setShowNewSessionAlert(true);
       router.replace('/register/step-1');
     } else {
       router.replace('/');
@@ -68,6 +76,12 @@ export const RegistrationSessionProvider = ({
 
   const onLoadStep1Route = useCallback(() => {
     if (!activeSession.current) {
+      const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
+
+      if (hasPreviousSession) {
+        setShowNewSessionAlert(true);
+      }
+
       startRegistrationSession();
     }
   }, [startRegistrationSession]);
@@ -88,12 +102,18 @@ export const RegistrationSessionProvider = ({
   }, [handleSessionRedirects, endRegistrationSession]);
 
   const onLoadNonRegistrationRoute = useCallback(() => {
-    if (activeSession.current) {
-      endRegistrationSession();
-    }
-
+    endRegistrationSession();
     clearRegistrationData();
   }, [endRegistrationSession, clearRegistrationData]);
+
+  const onLoadSessionExpiredRoute = useCallback(() => {
+    if (!activeSession.current) {
+      router.replace('/');
+    }
+
+    endRegistrationSession();
+    clearRegistrationData();
+  }, [endRegistrationSession, clearRegistrationData, router]);
 
   useEffect(() => {
     window.addEventListener('beforeunload', clearRegistrationData);
@@ -117,6 +137,9 @@ export const RegistrationSessionProvider = ({
       case '/registration-complete':
         onLoadCompletionRoute();
         break;
+      case '/session-expired':
+        onLoadSessionExpiredRoute();
+        break;
       default:
         onLoadNonRegistrationRoute();
     }
@@ -126,6 +149,7 @@ export const RegistrationSessionProvider = ({
     onLoadStep2Route,
     onLoadStep3Route,
     onLoadCompletionRoute,
+    onLoadSessionExpiredRoute,
     onLoadNonRegistrationRoute
   ]);
 
