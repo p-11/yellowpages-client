@@ -75,13 +75,13 @@ export const RegistrationSessionProvider = ({
   }, []);
 
   const onLoadStep1Route = useCallback(() => {
-    const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
-
-    if (hasPreviousSession) {
-      setShowNewSessionAlert(true);
-    }
-
     if (!activeSession.current) {
+      const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
+
+      if (hasPreviousSession) {
+        setShowNewSessionAlert(true);
+      }
+
       startRegistrationSession();
     }
   }, [startRegistrationSession]);
