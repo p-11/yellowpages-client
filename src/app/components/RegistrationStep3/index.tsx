@@ -17,6 +17,12 @@ import { SquarePenIcon } from '@/app/icons/SquarePenIcon';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
 import { Alert } from '@/app/components/Alert';
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle
+} from '../Dialog';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -35,6 +41,10 @@ export function RegistrationStep3() {
   const [isFailedAttempt, setIsFailedAttempt] = useState(false);
   const [autoFocusBitcoinAddressField, setAutoFocusBitcoinAddressField] =
     useState(false);
+  const [showInvalidBitcoinAddressAlert, setShowInvalidBitcoinAddressAlert] =
+    useState(false);
+  const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
+    useState(false);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -43,10 +53,24 @@ export function RegistrationStep3() {
     navigator.clipboard.writeText(signingMessage);
   }, [signingMessage]);
 
+  const acknowledgeBitcoinAddressAlert = useCallback(() => {
+    setShowInvalidBitcoinAddressAlert(false);
+  }, []);
+
+  const acknowledgeSignatureAlert = useCallback(() => {
+    setShowInvalidSignatureAlert(false);
+  }, []);
+
   const confirmBitcoinAddress = useCallback(() => {
-    setIsBitcoinAddressConfirmed(true);
-    generateSigningMessage();
-  }, [generateSigningMessage]);
+    const isValid = registrationData.validateBitcoinAddress(bitcoinAddress);
+
+    if (isValid) {
+      setIsBitcoinAddressConfirmed(true);
+      generateSigningMessage();
+    } else {
+      setShowInvalidBitcoinAddressAlert(true);
+    }
+  }, [generateSigningMessage, bitcoinAddress]);
 
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
@@ -59,8 +83,14 @@ export function RegistrationStep3() {
   }, [router]);
 
   const completeRegistration = useCallback(() => {
-    router.push('/registration-complete');
-  }, [router]);
+    const isValid = registrationData.validateSignature(signature);
+
+    if (isValid) {
+      router.push('/registration-complete');
+    } else {
+      setShowInvalidSignatureAlert(true);
+    }
+  }, [router, signature]);
 
   const tryAgain = useCallback(() => {
     resetSignature();
@@ -170,6 +200,33 @@ export function RegistrationStep3() {
           )}
         </RegistrationFooterActions>
       </div>
+      {showInvalidBitcoinAddressAlert && (
+        <Dialog>
+          <DialogTitle>Invalid Bitcoin address</DialogTitle>
+          <DialogDescription>
+            Please check the Bitcoin address entered and try again.
+          </DialogDescription>
+          <Alert>Make sure to enter your public Bitcoin address</Alert>
+          <DialogFooter>
+            <Button variant='primary' onClick={acknowledgeBitcoinAddressAlert}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
+      {showInvalidSignatureAlert && (
+        <Dialog>
+          <DialogTitle>Invalid signature</DialogTitle>
+          <DialogDescription>
+            Please check the signature entered and try again.
+          </DialogDescription>
+          <DialogFooter>
+            <Button variant='primary' onClick={acknowledgeSignatureAlert}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
     </main>
   );
 }

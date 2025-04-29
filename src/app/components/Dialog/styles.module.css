@@ -1,0 +1,41 @@
+.dialog {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: rgba(0,0,0,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialogContent {
+    margin-left: 24px;
+    margin-right: 24px;
+    width: 100%;
+    max-width: 420px;
+    background-color: #0a0a0a;
+    border: 1px solid #191919;
+    padding: 24px;
+    border-radius: 6px;
+}
+
+.dialogTitle {
+    color: #fafafa;
+    margin-top: 0px;
+    margin-bottom: 12px;
+    font-weight: 400;
+}
+
+.dialogDescription {
+    margin-top: 12px;
+    margin-bottom: 24px;
+    line-height: 1.5rem;
+}
+
+.dialogFooter {
+    margin-top: 32px;
+    display: flex;
+    justify-content: flex-end;
+}
