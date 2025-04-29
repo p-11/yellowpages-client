@@ -43,6 +43,8 @@ export function RegistrationStep3() {
     useState(false);
   const [showInvalidBitcoinAddressAlert, setShowInvalidBitcoinAddressAlert] =
     useState(false);
+  const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
+    useState(false);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -53,6 +55,10 @@ export function RegistrationStep3() {
 
   const acknowledgeBitcoinAddressAlert = useCallback(() => {
     setShowInvalidBitcoinAddressAlert(false);
+  }, []);
+
+  const acknowledgeSignatureAlert = useCallback(() => {
+    setShowInvalidSignatureAlert(false);
   }, []);
 
   const confirmBitcoinAddress = useCallback(() => {
@@ -78,8 +84,14 @@ export function RegistrationStep3() {
   }, [router]);
 
   const completeRegistration = useCallback(() => {
-    router.push('/registration-complete');
-  }, [router]);
+    const isValid = registrationData.validateSignature(signature);
+
+    if (isValid) {
+      router.push('/registration-complete');
+    } else {
+      setShowInvalidSignatureAlert(true);
+    }
+  }, [router, signature]);
 
   const tryAgain = useCallback(() => {
     resetSignature();
@@ -198,6 +210,19 @@ export function RegistrationStep3() {
           </DialogDescription>
           <DialogFooter>
             <Button variant='primary' onClick={acknowledgeBitcoinAddressAlert}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
+      {showInvalidSignatureAlert && (
+        <Dialog>
+          <DialogTitle>Invalid signature</DialogTitle>
+          <DialogDescription>
+            Please check the signature entered and try again.
+          </DialogDescription>
+          <DialogFooter>
+            <Button variant='primary' onClick={acknowledgeSignatureAlert}>
               Continue
             </Button>
           </DialogFooter>
