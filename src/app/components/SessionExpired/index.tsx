@@ -33,7 +33,7 @@ export function SessionExpired() {
             Start again
           </Button>
           <Button variant='secondary' onClick={cancel}>
-            Cancel
+            Registry home
           </Button>
         </div>
       </div>
