@@ -29,7 +29,7 @@ export const RegistrationSessionProvider = ({
   children: React.ReactNode;
 }) => {
   const pathname = usePathname();
-  const activeSession = useRef<NodeJS.Timeout | null>(null);
+  const activeSession = useRef<ReturnType<typeof setTimeout>>(null);
   const router = useRouter();
 
   const [showNewSessionAlert, setShowNewSessionAlert] = useState(false);
