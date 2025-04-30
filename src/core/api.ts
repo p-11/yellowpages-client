@@ -38,6 +38,16 @@ const domains = {
  * - Throws on network errors.
  * - Throws on HTTP errors (non-2xx), including response text.
  * - Parses JSON.
+ *
+ * Handle errors:
+ *
+ * try {
+ *  const x = await foo();
+ *  console.log(x);
+ * } catch (error) {
+ *  if (error instanceof Error) console.error(error.message);
+ *  else console.error(error);
+ * }
  */
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   let response: Response;
@@ -116,15 +126,3 @@ export async function createProof(body: {
     })
   });
 }
-
-export const TEMP_BILLY_TO_REMOVE = async () => {
-  try {
-    const proof = await searchYellowpagesByBtcAddress(
-      'bc1qpttqp409mq8jdvhcepvxqpek7ckvxqw28l5jac'
-    );
-    console.log(proof);
-  } catch (error) {
-    if (error instanceof Error) console.error(error.message);
-    else console.error(String(error));
-  }
-};
