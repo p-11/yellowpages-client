@@ -1,0 +1,65 @@
+.button {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: #0a0a0a;
+    background-color: #fafafa;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    height: 42px;
+    justify-content: center;
+}
+
+.button:hover {
+    color: #0a0a0a;
+}
+
+.inputBox {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    position: relative;
+}
+
+.inputBox input {
+    letter-spacing: 1px;
+    background-color: #191919;
+}
+
+.inputBox input::placeholder {
+    opacity: 0.7;
+}
+
+.title {
+    font-size: 1.4rem;
+    letter-spacing: -1px;
+    font-weight: 400;
+    line-height: 2.2rem;
+    margin-bottom: 0;
+}
+
+.searchArea {
+    margin-top: 12px;
+    display: flex;
+    gap: 18px;
+    flex-direction: column;
+    width: 100%;
+}
+
+@media only screen and (min-width: 768px) {
+    .searchArea {
+        margin-top: 24px;
+        flex-direction: row;
+    }
+
+    .button {
+        padding-left: 30px;
+        padding-right: 30px;
+        height: 48px;
+    }
+  }
