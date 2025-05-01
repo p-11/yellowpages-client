@@ -1,6 +1,7 @@
 import {
   generateSeedPhrase,
   generateSignedMessages,
+  generateKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature
@@ -30,6 +31,15 @@ describe('crypto module', () => {
 
   test('mnemonic is 24 words', () => {
     expect(mnemonic.split(/\s+/)).toHaveLength(24);
+  });
+
+  test('ML_DSA_44 key pair is deterministic', () => {
+    const msg = 'hello world';
+    const signedMessagesOne = generateSignedMessages(mnemonic, msg);
+    const signedMessagesTwo = generateSignedMessages(mnemonic, msg);
+    expect(signedMessagesOne.ML_DSA_44.publicKey).toEqual(
+      signedMessagesTwo.ML_DSA_44.publicKey
+    );
   });
 
   test('ML_DSA_44 signed message is valid', () => {
