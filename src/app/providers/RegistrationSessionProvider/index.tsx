@@ -98,8 +98,8 @@ export const RegistrationSessionProvider = ({
   const onLoadCompletionRoute = useCallback(() => {
     handleSessionRedirects();
     endRegistrationSession();
-    setSeedPhrase('');
-  }, [handleSessionRedirects, endRegistrationSession, setSeedPhrase]);
+    clearSensitiveState();
+  }, [handleSessionRedirects, endRegistrationSession, clearSensitiveState]);
 
   const onLoadNonRegistrationRoute = useCallback(() => {
     endRegistrationSession();
