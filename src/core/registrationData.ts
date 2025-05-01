@@ -1,28 +1,12 @@
-import { mockPqAddress, mockSeedPhrase, mockSigningMessage } from '@/mock-data';
+import { mockPqAddress, mockSigningMessage } from '@/mock-data';
 
 class RegistrationData {
-  private seedPhrase: string;
   private pqAddress: string;
   private bitcoinAddress: string;
 
   constructor() {
-    this.seedPhrase = '';
     this.pqAddress = '';
     this.bitcoinAddress = '';
-  }
-
-  generateSeedPhrase() {
-    // TODO: generateSeedPhrase logic
-    this.seedPhrase = mockSeedPhrase;
-    return this.seedPhrase;
-  }
-
-  getSeedPhrase() {
-    return this.seedPhrase;
-  }
-
-  clearSeedPhrase() {
-    this.seedPhrase = '';
   }
 
   generateSigningMessage() {

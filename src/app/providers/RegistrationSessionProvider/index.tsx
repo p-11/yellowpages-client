@@ -1,5 +1,6 @@
 'use client';
 
+import { generateSeedPhrase } from '@/core/cryptography';
 import { registrationData } from '@/core/registrationData';
 import { usePathname, useRouter } from 'next/navigation';
 import React, {
@@ -15,6 +16,7 @@ type RegistrationSessionContextType = {
   showNewSessionAlert: boolean;
   setShowNewSessionAlert: (_value: boolean) => void;
   hasConfirmedSeedPhrase: boolean;
+  seedPhrase: string;
 };
 
 const RegistrationSessionContext = createContext<
@@ -34,17 +36,22 @@ export const RegistrationSessionProvider = ({
 
   const [showNewSessionAlert, setShowNewSessionAlert] = useState(false);
   const [hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase] = useState(false);
+  const { seedPhrase, clearSensitiveState, setSeedPhrase } =
+    useSensitiveState();
 
   const startRegistrationSession = useCallback(() => {
     activeSession.current = setTimeout(
       () => {
+        clearSensitiveState();
         router.replace('/session-expired');
       },
       1000 * 60 * 30 // 30 minute session expiry
     );
 
     sessionStorage.setItem(sessionStorageKey, '1');
-  }, [router]);
+
+    setSeedPhrase(generateSeedPhrase());
+  }, [router, setSeedPhrase, clearSensitiveState]);
 
   const endRegistrationSession = useCallback(() => {
     if (activeSession.current) {
@@ -67,12 +74,6 @@ export const RegistrationSessionProvider = ({
       router.replace('/');
     }
   }, [router]);
-
-  const clearRegistrationData = useCallback(() => {
-    registrationData.clearSeedPhrase();
-    registrationData.clearBitcoinAddress();
-    registrationData.clearPqAddress();
-  }, []);
 
   const onLoadStep1Route = useCallback(() => {
     if (!activeSession.current) {
@@ -103,8 +104,8 @@ export const RegistrationSessionProvider = ({
 
   const onLoadNonRegistrationRoute = useCallback(() => {
     endRegistrationSession();
-    clearRegistrationData();
-  }, [endRegistrationSession, clearRegistrationData]);
+    clearSensitiveState();
+  }, [endRegistrationSession, clearSensitiveState]);
 
   const onLoadSessionExpiredRoute = useCallback(() => {
     if (!activeSession.current) {
@@ -112,16 +113,16 @@ export const RegistrationSessionProvider = ({
     }
 
     endRegistrationSession();
-    clearRegistrationData();
-  }, [endRegistrationSession, clearRegistrationData, router]);
+    clearSensitiveState();
+  }, [endRegistrationSession, clearSensitiveState, router]);
 
   useEffect(() => {
-    window.addEventListener('beforeunload', clearRegistrationData);
+    window.addEventListener('beforeunload', clearSensitiveState);
 
     return function cleanup() {
-      window.removeEventListener('beforeunload', clearRegistrationData);
+      window.removeEventListener('beforeunload', clearSensitiveState);
     };
-  }, [clearRegistrationData]);
+  }, [clearSensitiveState]);
 
   useEffect(() => {
     switch (pathname) {
@@ -156,6 +157,7 @@ export const RegistrationSessionProvider = ({
   return (
     <RegistrationSessionContext.Provider
       value={{
+        seedPhrase,
         showNewSessionAlert,
         hasConfirmedSeedPhrase,
         setShowNewSessionAlert
@@ -174,4 +176,24 @@ export const useRegistrationSessionContext = () => {
     );
   }
   return context;
+};
+
+const useSensitiveState = () => {
+  const [seedPhrase, setSeedPhrase] = useState('');
+
+  const clearSensitiveState = useCallback(() => {
+    setSeedPhrase('');
+  }, []);
+
+  useEffect(() => {
+    return function cleanup() {
+      clearSensitiveState();
+    };
+  }, [clearSensitiveState]);
+
+  return {
+    seedPhrase,
+    clearSensitiveState,
+    setSeedPhrase
+  };
 };
