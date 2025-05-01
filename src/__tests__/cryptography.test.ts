@@ -32,7 +32,7 @@ describe('crypto module', () => {
     expect(mnemonic.split(/\s+/)).toHaveLength(24);
   });
 
-  test('ML_DSA_44 signed messaage is valid', () => {
+  test('ML_DSA_44 signed message is valid', () => {
     const msg = 'hello world';
     const signedMessages = generateSignedMessages(mnemonic, msg);
     // Convert base64 strings to byte arrays
