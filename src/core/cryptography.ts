@@ -63,6 +63,8 @@ const isValidBitcoinSignature = (
       message,
       address,
       signedMessage,
+      // Note that '' corresponds to a message prefix
+      // and setting to null defaults to Bitcoin messagePrefix
       '',
       true
     );
@@ -95,7 +97,7 @@ const PQ_ALGORITHM_BYTE_LENGTH = (algorithm: PQ_SIGNATURE_ALGORITHM) => {
 const BIP85_PURPOSE = 83696968; // "BIPS" on phone keypad
 const BIP85_HMAC_KEY = 'bip-entropy-from-k'; // from standard
 // Set as an env var to pass BIP-85 test vectors
-const DEFAULT_APP_NO = parseInt(process.env.BIP85_APP_NO ?? '703131', 10); // 703131 = P11 -> UTF-8
+const DEFAULT_APP_NO = parseInt(process.env.BIP85_APP_NO ?? '503131', 10); // 503131 = P11 -> UTF-8
 
 /*
  * Helper Function to convert bytes to base64

@@ -1,7 +1,6 @@
 import {
   generateSeedPhrase,
   generateSignedMessages,
-  generateKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature
