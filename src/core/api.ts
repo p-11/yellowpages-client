@@ -29,7 +29,7 @@ const domains = {
     ? 'https://verification-api.yellowpages.xyz'
     : 'https://verification-api.yellowpages-development.xyz',
   proofService: IS_PROD
-    ? 'https://bar.foo.com'
+    ? 'https://not.implemented.com'
     : 'https://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
 };
 
