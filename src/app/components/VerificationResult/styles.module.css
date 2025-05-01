@@ -23,16 +23,17 @@
     display: flex;
     width: 100%;
     flex-direction: column;
-    position: relative;
 }
 
-.inputBox input {
+.inputLabel {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6rem;
+}
+
+.inputBox input, .inputBox textarea {
+    margin-top: 12px;
     letter-spacing: 1px;
-    background-color: #191919;
-}
-
-.inputBox input::placeholder {
-    opacity: 0.7;
 }
 
 .title {
@@ -45,16 +46,52 @@
 
 .searchArea {
     margin-top: 12px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.footer {
     display: flex;
     gap: 18px;
-    flex-direction: column;
-    width: 100%;
+    margin-top: 40px;
+}
+
+.registration {
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.registrationCardRow {
+    padding-top: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #222;
+}
+
+.registrationCardRow:last-of-type {
+    border-bottom: none;
+}
+
+.registrationDetailsLabel {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.registrationDetailsValue {
+    overflow-wrap: anywhere;
+}
+
+.emptyResult {
+    margin-top: 20px;
+}
+
+.bitcoinAddress {
+    overflow-wrap: anywhere;
+    color: #fafafa;
 }
 
 @media only screen and (min-width: 768px) {
     .searchArea {
         margin-top: 24px;
-        flex-direction: row;
     }
 
     .button {

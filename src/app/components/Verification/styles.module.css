@@ -1,0 +1,70 @@
+.button {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: #0a0a0a;
+    background-color: #fafafa;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    height: 42px;
+    justify-content: center;
+}
+
+.button:hover {
+    color: #0a0a0a;
+}
+
+.inputBox {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+}
+
+.inputLabel {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6rem;
+}
+
+.inputBox input, .inputBox textarea {
+    margin-top: 12px;
+    letter-spacing: 1px;
+}
+
+.title {
+    font-size: 1.4rem;
+    letter-spacing: -1px;
+    font-weight: 400;
+    line-height: 2.2rem;
+    margin-bottom: 0;
+}
+
+.searchArea {
+    margin-top: 12px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.footer {
+    display: flex;
+    gap: 18px;
+    margin-top: 40px;
+    justify-content: flex-end;
+}
+
+@media only screen and (min-width: 768px) {
+    .searchArea {
+        margin-top: 24px;
+    }
+
+    .button {
+        padding-left: 30px;
+        padding-right: 30px;
+        height: 48px;
+    }
+  }

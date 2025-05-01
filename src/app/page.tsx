@@ -9,6 +9,7 @@ export default function HomePage() {
   return (
     <main>
       <Link href='/register/step-1'>Register</Link>
+      <Link href='/verification'>Check the registry</Link>
     </main>
   );
 }
