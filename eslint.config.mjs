@@ -22,8 +22,15 @@ export default defineConfig([
 
     rules: {
       'no-console': 'warn',
-      'no-unused-vars': 'warn',
-
+      // Turn unused-vars into a warning, but ignore any name beginning with "_"
+      'no-unused-vars': [
+        'warn',
+        {
+          varsIgnorePattern: '^_', // ignore `const _foo = ...`
+          argsIgnorePattern: '^_', // ignore `( _bar ) => …`
+          ignoreRestSiblings: true // keep rest-destructured props from complaining
+        }
+      ],
       quotes: [
         'error',
         'single',

@@ -13,7 +13,7 @@ import React, {
 
 type RegistrationSessionContextType = {
   showNewSessionAlert: boolean;
-  setShowNewSessionAlert: (value: boolean) => void;
+  setShowNewSessionAlert: (_value: boolean) => void;
   hasConfirmedSeedPhrase: boolean;
 };
 
