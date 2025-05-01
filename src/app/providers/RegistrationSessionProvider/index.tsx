@@ -1,7 +1,6 @@
 'use client';
 
 import { generateSeedPhrase } from '@/core/cryptography';
-import { registrationData } from '@/core/registrationData';
 import { usePathname, useRouter } from 'next/navigation';
 import React, {
   createContext,
@@ -99,8 +98,8 @@ export const RegistrationSessionProvider = ({
   const onLoadCompletionRoute = useCallback(() => {
     handleSessionRedirects();
     endRegistrationSession();
-    registrationData.clearSeedPhrase();
-  }, [handleSessionRedirects, endRegistrationSession]);
+    setSeedPhrase('');
+  }, [handleSessionRedirects, endRegistrationSession, setSeedPhrase]);
 
   const onLoadNonRegistrationRoute = useCallback(() => {
     endRegistrationSession();
