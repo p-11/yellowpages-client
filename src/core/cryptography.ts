@@ -2,7 +2,7 @@ import { mnemonicToSeedSync, generateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { HDKey } from '@scure/bip32';
 import { hmac } from '@noble/hashes/hmac';
-import { sha512 } from '@noble/hashes/sha2';
+import { sha512, sha256 } from '@noble/hashes/sha2';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import {
   validate,
@@ -71,6 +71,14 @@ const isValidBitcoinSignature = (
   } catch {
     return false;
   }
+};
+
+/*
+ * Generate PQ address from public key bytes
+ */
+const generateAddress = (publicKey: Uint8Array): string => {
+  const hash = sha256(publicKey);
+  return bytesToBase64(hash);
 };
 
 /*
@@ -161,6 +169,8 @@ const deriveBip85Entropy = ({
   derIndex: number;
   length: number;
 }): Uint8Array => {
+  // Length cannot be longer than 64 bytes (hmac 512 limit)
+  if (length > 64) throw new Error('Length cannot be longer than 64 bytes');
   // Convert string xprv to HDKey if needed
   const master = ensureXPrv(root);
   // Derivation path for BIP-85
@@ -179,7 +189,7 @@ const deriveBip85Entropy = ({
  *
  * @param mnemonic24 24-word BIP-39 phrase
  * @param algorithm  which PQ_SIGNATURE_ALGORITHM enum to use
- * @returns Uint8Array of entropy ready for ml_dsa65.keygen or slh_dsa_sha2_128s.keygen
+ * @returns Uint8Array of entropy
  */
 const deriveEntropyFromMnemonic = ({
   mnemonic24,
@@ -224,7 +234,7 @@ const generateKeypair = (
         return {
           publicKey: keypair.publicKey,
           privateKey: keypair.secretKey,
-          address: 'temp_address_as_no_encoding'
+          address: generateAddress(keypair.publicKey)
         };
       }
       default:
@@ -294,8 +304,11 @@ const generateSignedMessages = (
 };
 
 export {
+  bytesToBase64,
+  generateAddress,
   generateSeedPhrase,
   generateSignedMessages,
+  generateKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature
