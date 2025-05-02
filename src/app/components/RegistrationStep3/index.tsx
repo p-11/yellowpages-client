@@ -29,6 +29,7 @@ import {
   isValidBitcoinAddress,
   isValidBitcoinSignature
 } from '@/core/cryptography';
+import { createProof } from '@/core/api';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -49,6 +50,7 @@ export function RegistrationStep3() {
     useState(false);
   const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
     useState(false);
+  const [showFailedRequestAlert, setShowFailedRequestAlert] = useState(false);
   const {
     bitcoinAddress,
     seedPhrase,
@@ -70,6 +72,10 @@ export function RegistrationStep3() {
 
   const acknowledgeSignatureAlert = useCallback(() => {
     setShowInvalidSignatureAlert(false);
+  }, []);
+
+  const acknowledgeFailedRequestAlert = useCallback(() => {
+    setShowFailedRequestAlert(false);
   }, []);
 
   const confirmBitcoinAddress = useCallback(() => {
@@ -94,13 +100,25 @@ export function RegistrationStep3() {
     router.back();
   }, [router]);
 
-  const completeRegistration = useCallback(() => {
+  const completeRegistration = useCallback(async () => {
     if (isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)) {
       const signedMessages = generateSignedMessages(seedPhrase, signingMessage);
 
       setPqAddress(signedMessages.ML_DSA_44.address);
 
-      router.push('/registration-complete');
+      try {
+        await createProof({
+          btcAddress: bitcoinAddress,
+          btcSignedMessage: signature,
+          mldsa44Address: signedMessages.ML_DSA_44.address,
+          mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
+          mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage
+        });
+
+        router.push('/registration-complete');
+      } catch {
+        setShowFailedRequestAlert(true);
+      }
     } else {
       setShowInvalidSignatureAlert(true);
     }
@@ -250,6 +268,29 @@ export function RegistrationStep3() {
           </DialogDescription>
           <DialogFooter>
             <Button variant='primary' onClick={acknowledgeSignatureAlert}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
+      {showFailedRequestAlert && (
+        <Dialog>
+          <DialogTitle>Oops, something went wrong</DialogTitle>
+          <DialogDescription>
+            Please make sure that your Bitcoin address and signature are correct
+            and try again.
+          </DialogDescription>
+          <Alert>
+            If the error persists, please reach out to{' '}
+            <a
+              href='mailto:team@projecteleven.com'
+              className={styles.contactLink}
+            >
+              team@projecteleven.com
+            </a>
+          </Alert>
+          <DialogFooter>
+            <Button variant='primary' onClick={acknowledgeFailedRequestAlert}>
               Continue
             </Button>
           </DialogFooter>
