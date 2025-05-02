@@ -1,6 +1,5 @@
 'use client';
 
-import { generateSeedPhrase } from '@/core/cryptography';
 import { usePathname, useRouter } from 'next/navigation';
 import React, {
   createContext,
@@ -10,6 +9,10 @@ import React, {
   useRef,
   useState
 } from 'react';
+import {
+  generateSeedPhrase,
+  generateSignedMessages
+} from '@/core/cryptography';
 
 type RegistrationSessionContextType = {
   showNewSessionAlert: boolean;
@@ -17,9 +20,11 @@ type RegistrationSessionContextType = {
   hasConfirmedSeedPhrase: boolean;
   seedPhrase: string;
   bitcoinAddress: string;
-  pqAddress: string;
   setBitcoinAddress: (_value: string) => void;
-  setPqAddress: (_value: string) => void;
+  signedMessages: ReturnType<typeof generateSignedMessages> | undefined;
+  setSignedMessages: (
+    _value: ReturnType<typeof generateSignedMessages>
+  ) => void;
 };
 
 const RegistrationSessionContext = createContext<
@@ -42,11 +47,11 @@ export const RegistrationSessionProvider = ({
   const {
     seedPhrase,
     bitcoinAddress,
-    pqAddress,
+    signedMessages,
+    setSignedMessages,
     clearSensitiveState,
     setSeedPhrase,
     setBitcoinAddress,
-    setPqAddress,
     clearSeedPhrase
   } = useSensitiveState();
 
@@ -168,9 +173,9 @@ export const RegistrationSessionProvider = ({
   return (
     <RegistrationSessionContext.Provider
       value={{
+        signedMessages,
+        setSignedMessages,
         bitcoinAddress,
-        pqAddress,
-        setPqAddress,
         setBitcoinAddress,
         seedPhrase,
         showNewSessionAlert,
@@ -196,7 +201,8 @@ export const useRegistrationSessionContext = () => {
 const useSensitiveState = () => {
   const [seedPhrase, setSeedPhrase] = useState('');
   const [bitcoinAddress, setBitcoinAddress] = useState('');
-  const [pqAddress, setPqAddress] = useState('');
+  const [signedMessages, setSignedMessages] =
+    useState<ReturnType<typeof generateSignedMessages>>();
 
   const clearSeedPhrase = useCallback(() => {
     setSeedPhrase('');
@@ -205,7 +211,7 @@ const useSensitiveState = () => {
   const clearSensitiveState = useCallback(() => {
     setSeedPhrase('');
     setBitcoinAddress('');
-    setPqAddress('');
+    setSignedMessages(undefined);
   }, []);
 
   useEffect(() => {
@@ -217,11 +223,11 @@ const useSensitiveState = () => {
   return {
     seedPhrase,
     bitcoinAddress,
-    pqAddress,
+    signedMessages,
     clearSensitiveState,
     clearSeedPhrase,
     setSeedPhrase,
     setBitcoinAddress,
-    setPqAddress
+    setSignedMessages
   };
 };

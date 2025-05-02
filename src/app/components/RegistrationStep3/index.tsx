@@ -54,9 +54,9 @@ export function RegistrationStep3() {
   const {
     bitcoinAddress,
     seedPhrase,
+    signedMessages,
     setBitcoinAddress,
-    setPqAddress,
-    pqAddress
+    setSignedMessages
   } = useRegistrationSessionContext();
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
@@ -80,15 +80,23 @@ export function RegistrationStep3() {
 
   const confirmBitcoinAddress = useCallback(() => {
     if (isValidBitcoinAddress(bitcoinAddress)) {
-      setIsBitcoinAddressConfirmed(true);
+      const signedMessages = generateSignedMessages(seedPhrase, signingMessage);
       generateSigningMessage({
         bitcoinAddress: bitcoinAddress,
-        mldsa44Address: pqAddress
+        mldsa44Address: signedMessages.ML_DSA_44.address
       });
+      setSignedMessages(signedMessages);
+      setIsBitcoinAddressConfirmed(true);
     } else {
       setShowInvalidBitcoinAddressAlert(true);
     }
-  }, [generateSigningMessage, bitcoinAddress, pqAddress]);
+  }, [
+    generateSigningMessage,
+    bitcoinAddress,
+    seedPhrase,
+    signingMessage,
+    setSignedMessages
+  ]);
 
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
@@ -101,11 +109,10 @@ export function RegistrationStep3() {
   }, [router]);
 
   const completeRegistration = useCallback(async () => {
-    if (isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)) {
-      const signedMessages = generateSignedMessages(seedPhrase, signingMessage);
-
-      setPqAddress(signedMessages.ML_DSA_44.address);
-
+    if (
+      signedMessages &&
+      isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
+    ) {
       try {
         await createProof({
           btcAddress: bitcoinAddress,
@@ -122,14 +129,7 @@ export function RegistrationStep3() {
     } else {
       setShowInvalidSignatureAlert(true);
     }
-  }, [
-    router,
-    signature,
-    bitcoinAddress,
-    signingMessage,
-    seedPhrase,
-    setPqAddress
-  ]);
+  }, [router, signature, bitcoinAddress, signingMessage, signedMessages]);
 
   const tryAgain = useCallback(() => {
     resetSignature();

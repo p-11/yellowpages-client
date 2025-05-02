@@ -12,18 +12,20 @@ import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessi
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
-  const { pqAddress, bitcoinAddress } = useRegistrationSessionContext();
+  const { signedMessages, bitcoinAddress } = useRegistrationSessionContext();
   const router = useRouter();
 
   const copyPqAddress = useCallback(() => {
-    navigator.clipboard.writeText(pqAddress);
-  }, [pqAddress]);
+    if (signedMessages) {
+      navigator.clipboard.writeText(signedMessages.ML_DSA_44.address);
+    }
+  }, [signedMessages]);
 
   const navigateToHomepage = useCallback(() => {
     router.push('/');
   }, [router]);
 
-  if (!bitcoinAddress || !pqAddress) return null;
+  if (!bitcoinAddress || !signedMessages) return null;
 
   return (
     <main>
@@ -44,7 +46,9 @@ export function RegistrationComplete() {
               className={styles.pqAddressBox}
               label='Post-Quantum address'
             >
-              <span className={styles.pqAddressText}>{pqAddress}</span>
+              <span className={styles.pqAddressText}>
+                {signedMessages.ML_DSA_44.address}
+              </span>
             </HighlightedBox>
             <Toolbar>
               <CopyTextToolbarButton onClick={copyPqAddress} />
