@@ -80,7 +80,7 @@ export function RegistrationStep3() {
 
   const confirmBitcoinAddress = useCallback(() => {
     if (isValidBitcoinAddress(bitcoinAddress)) {
-      const signedMessages = generateSignedMessages(seedPhrase, signingMessage);
+      const signedMessages = generateSignedMessages(seedPhrase, bitcoinAddress);
       generateSigningMessage({
         bitcoinAddress: bitcoinAddress,
         mldsa44Address: signedMessages.ML_DSA_44.address
