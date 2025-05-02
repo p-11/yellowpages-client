@@ -90,13 +90,7 @@ export function RegistrationStep3() {
     } else {
       setShowInvalidBitcoinAddressAlert(true);
     }
-  }, [
-    generateSigningMessage,
-    bitcoinAddress,
-    seedPhrase,
-    signingMessage,
-    setSignedMessages
-  ]);
+  }, [generateSigningMessage, bitcoinAddress, seedPhrase, setSignedMessages]);
 
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
