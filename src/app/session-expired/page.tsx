@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { SessionExpired } from '../components/SessionExpired';
+import { SessionExpired } from '@/app/components/SessionExpired';
 
 export const metadata: Metadata = {
   title: 'Session Expired'

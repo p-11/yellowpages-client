@@ -21,7 +21,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTitle
-} from '../Dialog';
+} from '@/app/components/Dialog';
 import styles from './styles.module.css';
 
 export function RegistrationStep1() {

@@ -13,8 +13,8 @@ import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { SquarePenIcon } from '@/app/icons/SquarePenIcon';
-import { RegistrationFooterActions } from '../RegistrationFooterActions';
-import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
+import { RegistrationFooterActions } from '@/app/components/RegistrationFooterActions';
+import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { Alert } from '@/app/components/Alert';
 import {
   Dialog,
