@@ -1,10 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { HighlightedBox } from '@/app/components/HighlightedBox';
-import { registrationData } from '@/core/registrationData';
 import { Toolbar } from '@/app/components/Toolbar';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { Button } from '@/app/components/Button';
@@ -13,8 +12,7 @@ import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessi
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
-  const { pqAddress } = useSensitiveState();
-  const { bitcoinAddress } = useRegistrationSessionContext();
+  const { pqAddress, bitcoinAddress } = useRegistrationSessionContext();
   const router = useRouter();
 
   const copyPqAddress = useCallback(() => {
@@ -84,24 +82,3 @@ export function RegistrationComplete() {
     </main>
   );
 }
-
-const useSensitiveState = () => {
-  const [pqAddress, setPqAddress] = useState('');
-
-  const clearSensitiveState = useCallback(() => {
-    setPqAddress('');
-  }, []);
-
-  useEffect(() => {
-    setPqAddress(registrationData.getPqAddress());
-
-    return function cleanup() {
-      clearSensitiveState();
-    };
-  }, [clearSensitiveState]);
-
-  return {
-    pqAddress,
-    clearSensitiveState
-  };
-};

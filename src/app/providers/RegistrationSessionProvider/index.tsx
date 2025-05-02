@@ -17,7 +17,9 @@ type RegistrationSessionContextType = {
   hasConfirmedSeedPhrase: boolean;
   seedPhrase: string;
   bitcoinAddress: string;
+  pqAddress: string;
   setBitcoinAddress: (_value: string) => void;
+  setPqAddress: (_value: string) => void;
 };
 
 const RegistrationSessionContext = createContext<
@@ -40,9 +42,11 @@ export const RegistrationSessionProvider = ({
   const {
     seedPhrase,
     bitcoinAddress,
+    pqAddress,
     clearSensitiveState,
     setSeedPhrase,
     setBitcoinAddress,
+    setPqAddress,
     clearSeedPhrase
   } = useSensitiveState();
 
@@ -165,6 +169,8 @@ export const RegistrationSessionProvider = ({
     <RegistrationSessionContext.Provider
       value={{
         bitcoinAddress,
+        pqAddress,
+        setPqAddress,
         setBitcoinAddress,
         seedPhrase,
         showNewSessionAlert,
@@ -190,6 +196,7 @@ export const useRegistrationSessionContext = () => {
 const useSensitiveState = () => {
   const [seedPhrase, setSeedPhrase] = useState('');
   const [bitcoinAddress, setBitcoinAddress] = useState('');
+  const [pqAddress, setPqAddress] = useState('');
 
   const clearSeedPhrase = useCallback(() => {
     setSeedPhrase('');
@@ -198,6 +205,7 @@ const useSensitiveState = () => {
   const clearSensitiveState = useCallback(() => {
     setSeedPhrase('');
     setBitcoinAddress('');
+    setPqAddress('');
   }, []);
 
   useEffect(() => {
@@ -209,9 +217,11 @@ const useSensitiveState = () => {
   return {
     seedPhrase,
     bitcoinAddress,
+    pqAddress,
     clearSensitiveState,
     clearSeedPhrase,
     setSeedPhrase,
-    setBitcoinAddress
+    setBitcoinAddress,
+    setPqAddress
   };
 };

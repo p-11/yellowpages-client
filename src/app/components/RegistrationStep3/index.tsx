@@ -11,7 +11,6 @@ import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CheckIcon } from '@/app/icons/CheckIcon';
 import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
-import { registrationData } from '@/core/registrationData';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { SquarePenIcon } from '@/app/icons/SquarePenIcon';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
@@ -25,6 +24,7 @@ import {
 } from '../Dialog';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import {
+  generateSignedMessages,
   isValidBitcoinAddress,
   isValidBitcoinSignature
 } from '@/core/cryptography';
@@ -48,7 +48,8 @@ export function RegistrationStep3() {
     useState(false);
   const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
     useState(false);
-  const { bitcoinAddress, setBitcoinAddress } = useRegistrationSessionContext();
+  const { bitcoinAddress, seedPhrase, setBitcoinAddress, setPqAddress } =
+    useRegistrationSessionContext();
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -86,11 +87,22 @@ export function RegistrationStep3() {
 
   const completeRegistration = useCallback(() => {
     if (isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)) {
+      const signedMessages = generateSignedMessages(seedPhrase, signingMessage);
+
+      setPqAddress(signedMessages.ML_DSA_44.address);
+
       router.push('/registration-complete');
     } else {
       setShowInvalidSignatureAlert(true);
     }
-  }, [router, signature, bitcoinAddress, signingMessage]);
+  }, [
+    router,
+    signature,
+    bitcoinAddress,
+    signingMessage,
+    seedPhrase,
+    setPqAddress
+  ]);
 
   const tryAgain = useCallback(() => {
     resetSignature();
@@ -248,10 +260,6 @@ const useSensitiveState = () => {
   }, []);
 
   useEffect(() => {
-    if (!registrationData.getPqAddress()) {
-      registrationData.generatePqAddress();
-    }
-
     return function cleanup() {
       clearSensitiveState();
     };
