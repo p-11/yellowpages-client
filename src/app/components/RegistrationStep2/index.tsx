@@ -10,7 +10,6 @@ import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { ToolbarButton } from '../ToolbarButton';
 import { RefreshIcon } from '@/app/icons/RefreshIcon';
-import { registrationData } from '@/core/registrationData';
 import { RegistrationFooterActions } from '../RegistrationFooterActions';
 import { Alert } from '@/app/components/Alert';
 import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
@@ -169,6 +168,7 @@ export const RegistrationStep2 = () => {
 const useSensitiveState = () => {
   const [selectedSeedWords, setSelectedSeedWords] = useState<Array<string>>([]);
   const [shuffledSeedWords, setShuffledSeedWords] = useState<Array<string>>([]);
+  const { seedPhrase } = useRegistrationSessionContext();
 
   const clearSensitiveState = useCallback(() => {
     setSelectedSeedWords([]);
@@ -176,13 +176,13 @@ const useSensitiveState = () => {
   }, []);
 
   useEffect(() => {
-    const seedWords = registrationData.getSeedPhrase().split(' ');
+    const seedWords = seedPhrase.split(' ');
     setShuffledSeedWords(shuffleSeedWords(seedWords));
 
     return function cleanup() {
       clearSensitiveState();
     };
-  }, [clearSensitiveState]);
+  }, [seedPhrase, clearSensitiveState]);
 
   const addSelectedSeedWord = useCallback(
     (selectedSeedWord: string) =>
@@ -197,8 +197,8 @@ const useSensitiveState = () => {
 
   const verifySelectedSeedWords = useCallback(() => {
     const selectedSeedPhrase = selectedSeedWords.join(' ');
-    return selectedSeedPhrase === registrationData.getSeedPhrase();
-  }, [selectedSeedWords]);
+    return selectedSeedPhrase === seedPhrase;
+  }, [selectedSeedWords, seedPhrase]);
 
   return {
     selectedSeedWords,

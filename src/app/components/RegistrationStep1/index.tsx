@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
@@ -13,7 +13,6 @@ import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { EyeIcon } from '@/app/icons/EyeIcon';
 import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
-import { registrationData } from '@/core/registrationData';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
@@ -28,8 +27,7 @@ import styles from './styles.module.css';
 export function RegistrationStep1() {
   const [isSeedPhraseVisible, setIsSeedPhraseVisible] = useState(false);
   const router = useRouter();
-  const { seedPhrase } = useSensitiveState();
-  const { showNewSessionAlert, setShowNewSessionAlert } =
+  const { seedPhrase, showNewSessionAlert, setShowNewSessionAlert } =
     useRegistrationSessionContext();
 
   const copySeedPhrase = useCallback(() => {
@@ -120,24 +118,3 @@ export function RegistrationStep1() {
     </main>
   );
 }
-
-const useSensitiveState = () => {
-  const [seedPhrase, setSeedPhrase] = useState('');
-
-  const clearSensitiveState = useCallback(() => {
-    setSeedPhrase('');
-  }, []);
-
-  useEffect(() => {
-    setSeedPhrase(registrationData.generateSeedPhrase());
-
-    return function cleanup() {
-      clearSensitiveState();
-    };
-  }, [clearSensitiveState]);
-
-  return {
-    seedPhrase,
-    clearSensitiveState
-  };
-};
