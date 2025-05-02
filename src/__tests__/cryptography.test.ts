@@ -60,6 +60,19 @@ describe('crypto module', () => {
     );
   });
 
+  test('message generation', () => {
+    const bitcoinAddress = 'btc';
+    const mldsa44Address = 'mldsa44';
+    const { message, messageBytes } = generateMessage({
+      bitcoinAddress: bitcoinAddress,
+      mldsa44Address: mldsa44Address
+    });
+    expect(message).toEqual(
+      'I want to permanently link my Bitcoin address btc with my post-quantum address mldsa44'
+    );
+    expect(messageBytes.length).toEqual(86);
+  });
+
   test('ML_DSA_44 signed message is valid', () => {
     const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
     const signedMessages = generateSignedMessages(mnemonic, bitcoinAddress);
