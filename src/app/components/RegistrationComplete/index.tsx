@@ -9,10 +9,12 @@ import { Toolbar } from '@/app/components/Toolbar';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
+import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
-  const { bitcoinAddress, pqAddress } = useSensitiveState();
+  const { pqAddress } = useSensitiveState();
+  const { bitcoinAddress } = useRegistrationSessionContext();
   const router = useRouter();
 
   const copyPqAddress = useCallback(() => {
@@ -84,16 +86,13 @@ export function RegistrationComplete() {
 }
 
 const useSensitiveState = () => {
-  const [bitcoinAddress, setBitcoinAddress] = useState('');
   const [pqAddress, setPqAddress] = useState('');
 
   const clearSensitiveState = useCallback(() => {
-    setBitcoinAddress('');
     setPqAddress('');
   }, []);
 
   useEffect(() => {
-    setBitcoinAddress(registrationData.getBitcoinAddress());
     setPqAddress(registrationData.getPqAddress());
 
     return function cleanup() {
@@ -102,7 +101,6 @@ const useSensitiveState = () => {
   }, [clearSensitiveState]);
 
   return {
-    bitcoinAddress,
     pqAddress,
     clearSensitiveState
   };

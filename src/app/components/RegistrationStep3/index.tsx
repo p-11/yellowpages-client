@@ -23,15 +23,15 @@ import {
   DialogFooter,
   DialogTitle
 } from '../Dialog';
+import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
+import { isValidBitcoinAddress } from '@/core/cryptography';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
   const router = useRouter();
   const {
     signingMessage,
-    bitcoinAddress,
     signature,
-    changeBitcoinAddress,
     changeSignature,
     resetSignature,
     generateSigningMessage
@@ -45,6 +45,7 @@ export function RegistrationStep3() {
     useState(false);
   const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
     useState(false);
+  const { bitcoinAddress, setBitcoinAddress } = useRegistrationSessionContext();
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -62,9 +63,7 @@ export function RegistrationStep3() {
   }, []);
 
   const confirmBitcoinAddress = useCallback(() => {
-    const isValid = registrationData.validateBitcoinAddress(bitcoinAddress);
-
-    if (isValid) {
+    if (isValidBitcoinAddress(bitcoinAddress)) {
       setIsBitcoinAddressConfirmed(true);
       generateSigningMessage();
     } else {
@@ -96,6 +95,13 @@ export function RegistrationStep3() {
     resetSignature();
     setIsFailedAttempt(false);
   }, [resetSignature]);
+
+  const changeBitcoinAddress = useCallback(
+    (value: string) => {
+      setBitcoinAddress(value);
+    },
+    [setBitcoinAddress]
+  );
 
   return (
     <main
@@ -232,12 +238,10 @@ export function RegistrationStep3() {
 }
 
 const useSensitiveState = () => {
-  const [bitcoinAddress, setBitcoinAddress] = useState('');
   const [signingMessage, setSigningMessage] = useState('');
   const [signature, setSignature] = useState('');
 
   const clearSensitiveState = useCallback(() => {
-    setBitcoinAddress('');
     setSigningMessage('');
     setSignature('');
   }, []);
@@ -256,11 +260,6 @@ const useSensitiveState = () => {
     setSigningMessage(registrationData.generateSigningMessage());
   }, []);
 
-  const changeBitcoinAddress = useCallback((value: string) => {
-    registrationData.setBitcoinAddress(value);
-    setBitcoinAddress(value);
-  }, []);
-
   const changeSignature = useCallback((value: string) => {
     setSignature(value);
   }, []);
@@ -270,10 +269,8 @@ const useSensitiveState = () => {
   }, []);
 
   return {
-    bitcoinAddress,
     signingMessage,
     signature,
-    changeBitcoinAddress,
     generateSigningMessage,
     changeSignature,
     resetSignature,

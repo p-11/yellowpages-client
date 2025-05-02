@@ -2,11 +2,9 @@ import { mockPqAddress, mockSigningMessage } from '@/mock-data';
 
 class RegistrationData {
   private pqAddress: string;
-  private bitcoinAddress: string;
 
   constructor() {
     this.pqAddress = '';
-    this.bitcoinAddress = '';
   }
 
   generateSigningMessage() {
@@ -26,23 +24,6 @@ class RegistrationData {
 
   clearPqAddress() {
     this.pqAddress = '';
-  }
-
-  setBitcoinAddress(bitcoinAddress: string) {
-    this.bitcoinAddress = bitcoinAddress;
-  }
-
-  getBitcoinAddress() {
-    return this.bitcoinAddress;
-  }
-
-  clearBitcoinAddress() {
-    this.bitcoinAddress = '';
-  }
-
-  validateBitcoinAddress(bitcoinAddress: string) {
-    // TODO: validateBitcoinAddress logic
-    return bitcoinAddress.length > 3;
   }
 
   validateSignature(signature: string) {

@@ -16,6 +16,8 @@ type RegistrationSessionContextType = {
   setShowNewSessionAlert: (_value: boolean) => void;
   hasConfirmedSeedPhrase: boolean;
   seedPhrase: string;
+  bitcoinAddress: string;
+  setBitcoinAddress: (_value: string) => void;
 };
 
 const RegistrationSessionContext = createContext<
@@ -35,8 +37,14 @@ export const RegistrationSessionProvider = ({
 
   const [showNewSessionAlert, setShowNewSessionAlert] = useState(false);
   const [hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase] = useState(false);
-  const { seedPhrase, clearSensitiveState, setSeedPhrase } =
-    useSensitiveState();
+  const {
+    seedPhrase,
+    bitcoinAddress,
+    clearSensitiveState,
+    setSeedPhrase,
+    setBitcoinAddress,
+    clearSeedPhrase
+  } = useSensitiveState();
 
   const startRegistrationSession = useCallback(() => {
     activeSession.current = setTimeout(
@@ -98,8 +106,8 @@ export const RegistrationSessionProvider = ({
   const onLoadCompletionRoute = useCallback(() => {
     handleSessionRedirects();
     endRegistrationSession();
-    clearSensitiveState();
-  }, [handleSessionRedirects, endRegistrationSession, clearSensitiveState]);
+    clearSeedPhrase();
+  }, [handleSessionRedirects, endRegistrationSession, clearSeedPhrase]);
 
   const onLoadNonRegistrationRoute = useCallback(() => {
     endRegistrationSession();
@@ -156,6 +164,8 @@ export const RegistrationSessionProvider = ({
   return (
     <RegistrationSessionContext.Provider
       value={{
+        bitcoinAddress,
+        setBitcoinAddress,
         seedPhrase,
         showNewSessionAlert,
         hasConfirmedSeedPhrase,
@@ -179,9 +189,15 @@ export const useRegistrationSessionContext = () => {
 
 const useSensitiveState = () => {
   const [seedPhrase, setSeedPhrase] = useState('');
+  const [bitcoinAddress, setBitcoinAddress] = useState('');
+
+  const clearSeedPhrase = useCallback(() => {
+    setSeedPhrase('');
+  }, []);
 
   const clearSensitiveState = useCallback(() => {
     setSeedPhrase('');
+    setBitcoinAddress('');
   }, []);
 
   useEffect(() => {
@@ -192,7 +208,10 @@ const useSensitiveState = () => {
 
   return {
     seedPhrase,
+    bitcoinAddress,
     clearSensitiveState,
-    setSeedPhrase
+    clearSeedPhrase,
+    setSeedPhrase,
+    setBitcoinAddress
   };
 };
