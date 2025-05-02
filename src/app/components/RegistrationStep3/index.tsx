@@ -24,7 +24,10 @@ import {
   DialogTitle
 } from '../Dialog';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
-import { isValidBitcoinAddress } from '@/core/cryptography';
+import {
+  isValidBitcoinAddress,
+  isValidBitcoinSignature
+} from '@/core/cryptography';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -82,14 +85,12 @@ export function RegistrationStep3() {
   }, [router]);
 
   const completeRegistration = useCallback(() => {
-    const isValid = registrationData.validateSignature(signature);
-
-    if (isValid) {
+    if (isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)) {
       router.push('/registration-complete');
     } else {
       setShowInvalidSignatureAlert(true);
     }
-  }, [router, signature]);
+  }, [router, signature, bitcoinAddress, signingMessage]);
 
   const tryAgain = useCallback(() => {
     resetSignature();
@@ -257,7 +258,7 @@ const useSensitiveState = () => {
   }, [clearSensitiveState]);
 
   const generateSigningMessage = useCallback(() => {
-    setSigningMessage(registrationData.generateSigningMessage());
+    setSigningMessage('hello world'); // TODO: integrate with new core module function
   }, []);
 
   const changeSignature = useCallback((value: string) => {

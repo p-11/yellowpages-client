@@ -25,11 +25,6 @@ class RegistrationData {
   clearPqAddress() {
     this.pqAddress = '';
   }
-
-  validateSignature(signature: string) {
-    // TODO: validateSignature logic
-    return signature.length > 3;
-  }
 }
 
 export const registrationData = new RegistrationData();
