@@ -21,7 +21,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTitle
-} from '../Dialog';
+} from '@/app/components/Dialog';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import {
   generateMessage,
