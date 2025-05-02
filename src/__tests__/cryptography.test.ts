@@ -1,13 +1,13 @@
 import {
   bytesToBase64,
   generateSeedPhrase,
+  generateMessage,
   generateSignedMessages,
   generateKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature
 } from './../core/cryptography';
-import { utf8ToBytes } from '@noble/post-quantum/utils';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 
 // Helper function to convert base64 to bytes
@@ -49,19 +49,25 @@ describe('crypto module', () => {
   });
 
   test('ML_DSA_44 key pair signing is deterministic', () => {
-    const msg = 'hello world';
-    const signedMessagesOne = generateSignedMessages(mnemonic, msg);
-    const signedMessagesTwo = generateSignedMessages(mnemonic, msg);
+    const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
+    const signedMessagesOne = generateSignedMessages(mnemonic, bitcoinAddress);
+    const signedMessagesTwo = generateSignedMessages(mnemonic, bitcoinAddress);
     expect(signedMessagesOne.ML_DSA_44.publicKey).toEqual(
       signedMessagesTwo.ML_DSA_44.publicKey
+    );
+    expect(signedMessagesOne.ML_DSA_44.signedMessage).toEqual(
+      signedMessagesTwo.ML_DSA_44.signedMessage
     );
   });
 
   test('ML_DSA_44 signed message is valid', () => {
-    const msg = 'hello world';
-    const signedMessages = generateSignedMessages(mnemonic, msg);
+    const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
+    const signedMessages = generateSignedMessages(mnemonic, bitcoinAddress);
     // Convert base64 strings to byte arrays
-    const messageBytes = utf8ToBytes(msg);
+    const { messageBytes } = generateMessage({
+      bitcoinAddress: bitcoinAddress,
+      mldsa44Address: signedMessages.ML_DSA_44.address
+    });
     const publicKeyBytes = base64ToBytes(signedMessages.ML_DSA_44.publicKey);
     const signedMessageBytes = base64ToBytes(
       signedMessages.ML_DSA_44.signedMessage

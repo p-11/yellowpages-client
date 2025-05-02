@@ -24,6 +24,7 @@ import {
 } from '../Dialog';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import {
+  generateMessage,
   generateSignedMessages,
   isValidBitcoinAddress,
   isValidBitcoinSignature
@@ -48,8 +49,13 @@ export function RegistrationStep3() {
     useState(false);
   const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
     useState(false);
-  const { bitcoinAddress, seedPhrase, setBitcoinAddress, setPqAddress } =
-    useRegistrationSessionContext();
+  const {
+    bitcoinAddress,
+    seedPhrase,
+    setBitcoinAddress,
+    setPqAddress,
+    pqAddress
+  } = useRegistrationSessionContext();
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -69,11 +75,14 @@ export function RegistrationStep3() {
   const confirmBitcoinAddress = useCallback(() => {
     if (isValidBitcoinAddress(bitcoinAddress)) {
       setIsBitcoinAddressConfirmed(true);
-      generateSigningMessage();
+      generateSigningMessage({
+        bitcoinAddress: bitcoinAddress,
+        mldsa44Address: pqAddress
+      });
     } else {
       setShowInvalidBitcoinAddressAlert(true);
     }
-  }, [generateSigningMessage, bitcoinAddress]);
+  }, [generateSigningMessage, bitcoinAddress, pqAddress]);
 
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
@@ -265,9 +274,19 @@ const useSensitiveState = () => {
     };
   }, [clearSensitiveState]);
 
-  const generateSigningMessage = useCallback(() => {
-    setSigningMessage('hello world'); // TODO: integrate with new core module function
-  }, []);
+  const generateSigningMessage = useCallback(
+    ({
+      bitcoinAddress,
+      mldsa44Address
+    }: {
+      bitcoinAddress: string;
+      mldsa44Address: string;
+    }) => {
+      const { message } = generateMessage({ bitcoinAddress, mldsa44Address });
+      setSigningMessage(message);
+    },
+    []
+  );
 
   const changeSignature = useCallback((value: string) => {
     setSignature(value);

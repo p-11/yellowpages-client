@@ -47,7 +47,7 @@ const isValidBitcoinSignature = (
   // bitcoin-js-message has a note on electrum support
   // https://www.npmjs.com/package/bitcoinjs-message#about-electrum-segwit-signature-support
   // as a result we must attempt to verify the signature with both methods
-  // First try the “classic” verify (SegWit-aware flag = false) and short circuit if it succeeds
+  // First try the "classic" verify (SegWit-aware flag = false) and short circuit if it succeeds
   try {
     if (verifyBitcoinSignedMessage(message, address, signedMessage)) {
       return true;
@@ -205,7 +205,7 @@ const deriveEntropyFromMnemonic = ({
   const masterNode = HDKey.fromMasterSeed(seed);
   // Get bytes length for PQ_SIGNATURE_ALGORITHM
   const length = PQ_ALGORITHM_BYTE_LENGTH(algorithm);
-  // Use the algorithm’s numeric value as the derive-index
+  // Use the algorithm's numeric value as the derive-index
   return deriveBip85Entropy({
     root: masterNode,
     derIndex: algorithm,
@@ -262,6 +262,27 @@ type SignedMessages = {
 };
 
 /**
+ * Generate message to sign
+ *
+ * @param bitcoinAddress Bitcoin address
+ * @param mldsa44Address MLDSA 44 address
+ * @returns message to sign as string and bytes
+ */
+const generateMessage = ({
+  bitcoinAddress,
+  mldsa44Address
+}: {
+  bitcoinAddress: string;
+  mldsa44Address: string;
+}) => {
+  const message = `I want to permanently link my Bitcoin address ${bitcoinAddress} with my post-quantum address ${mldsa44Address}`;
+  return {
+    message: message,
+    messageBytes: new TextEncoder().encode(message)
+  };
+};
+
+/**
  * Sign a UTF-8 string with every supported PQ_SIGNATURE_ALGORITHM,
  * returning an object keyed by algorithm name.
  *
@@ -272,16 +293,22 @@ type SignedMessages = {
  */
 const generateSignedMessages = (
   mnemonic24: string,
-  message: string
+  bitcoinAddress: string
 ): SignedMessages => {
   try {
-    const messageBytes = new TextEncoder().encode(message);
-
-    // ML-DSA-44
+    // Key pair generation
     const mldsa44KeyPair = generateKeypair(
       mnemonic24,
       PQ_SIGNATURE_ALGORITHM.ML_DSA_44
     );
+
+    // Create message
+    const { messageBytes } = generateMessage({
+      bitcoinAddress,
+      mldsa44Address: mldsa44KeyPair.address
+    });
+
+    // Signing
     const mldsa44SignedMessage = ml_dsa44.sign(
       mldsa44KeyPair.privateKey,
       messageBytes
@@ -308,6 +335,7 @@ export {
   generateAddress,
   generateSeedPhrase,
   generateSignedMessages,
+  generateMessage,
   generateKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
