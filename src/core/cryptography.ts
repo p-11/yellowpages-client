@@ -13,9 +13,68 @@ import {
 import { verify as verifyBitcoinSignedMessage } from 'bitcoinjs-message';
 
 /*
- * Supported Bitcoin Address Types
+ * Types
  */
-const SUPPORTED_BITCOIN_ADDRESS_TYPES = [AddressType.p2pkh, AddressType.p2wpkh];
+
+/**
+ * Generic branding utility
+ * **/
+type Brand<T, B> = T & { readonly __brand: B };
+
+/** Strongly-typed aliases **/
+export type Mnemonic24 = Brand<string, 'Mnemonic24'>;
+export type BitcoinAddress = Brand<string, 'BitcoinAddress'>;
+export type SignedMessage = Brand<string, 'SignedMessage'>;
+export type Message = Brand<string, 'Message'>;
+export type PQPublicKey = Brand<Uint8Array, 'PQPublicKey'>;
+export type PQPublicKeyString = Brand<string, 'PQPublicKeyString'>;
+export type PQPrivateKey = Brand<Uint8Array, 'PQPrivateKey'>;
+export type PQAddress = Brand<string, 'PQAddress'>;
+
+const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
+  AddressType.p2pkh,
+  AddressType.p2wpkh
+];
+
+/*
+ * Supported Algorithms
+ */
+enum PQ_SIGNATURE_ALGORITHM {
+  /** ML-DSA-44 */
+  // eslint-disable-next-line no-unused-vars
+  ML_DSA_44 = 0,
+  /**
+   * TEST_ALGO
+   * This is used as this index is needed for BIP-85 test vectors
+   * Once we support a second algorithm, we can swap it here
+   */
+  // eslint-disable-next-line no-unused-vars
+  TEST_ALGO = 1
+}
+
+/*
+ * Supported Algorithms Seed length
+ */
+enum PQ_ALGORITHM_ENTROPY_LENGTHS {
+  /** ML-DSA-44 */
+  // eslint-disable-next-line no-unused-vars
+  ML_DSA_44_SEED_LENGTH = 32,
+  /**
+   * TEST_ALGO
+   * This is used as this length is needed for BIP-85 test vectors
+   * Once we support an algorithm which requires 64 bytes of entropy, we can swap it here
+   */
+  // eslint-disable-next-line no-unused-vars
+  TEST_ALGO = 64
+}
+
+/*
+ * BIP-85 Constants
+ */
+const BIP85_PURPOSE = 83696968; // "BIPS" on phone keypad
+const BIP85_HMAC_KEY = 'bip-entropy-from-k'; // from standard
+// Set as an env var to pass BIP-85 test vectors
+const DEFAULT_APP_NO = parseInt(process.env.BIP85_APP_NO ?? '503131', 10); // 503131 = P11 -> UTF-8
 
 /*
  * Checks if a Bitcoin address is valid and supported
@@ -40,9 +99,9 @@ const isValidBitcoinAddress = (address: string): boolean => {
  * @returns {boolean} True if the signature is valid, false otherwise
  */
 const isValidBitcoinSignature = (
-  message: string,
-  signedMessage: string,
-  address: string
+  message: Message,
+  signedMessage: SignedMessage,
+  address: BitcoinAddress
 ): boolean => {
   // bitcoin-js-message has a note on electrum support
   // https://www.npmjs.com/package/bitcoinjs-message#about-electrum-segwit-signature-support
@@ -76,36 +135,26 @@ const isValidBitcoinSignature = (
 /*
  * Generate PQ address from public key bytes
  */
-const generateAddress = (publicKey: Uint8Array): string => {
+const generateAddress = (publicKey: PQPublicKey): PQAddress => {
   const hash = sha256(publicKey);
-  return bytesToBase64(hash);
+  return bytesToBase64(hash) as PQAddress;
 };
 
 /*
- * Supported Algorithms
+ * Get bytes of entropy needed for algorithm
  */
-enum PQ_SIGNATURE_ALGORITHM {
-  /** ML-DSA-44 */
-  // eslint-disable-next-line no-unused-vars
-  ML_DSA_44 = 0
-}
-
-const PQ_ALGORITHM_BYTE_LENGTH = (algorithm: PQ_SIGNATURE_ALGORITHM) => {
+const PQ_ALGORITHM_ENTROPY_LENGTH = (
+  algorithm: PQ_SIGNATURE_ALGORITHM
+): PQ_ALGORITHM_ENTROPY_LENGTHS => {
   switch (algorithm) {
     case PQ_SIGNATURE_ALGORITHM.ML_DSA_44:
-      return 32;
+      return PQ_ALGORITHM_ENTROPY_LENGTHS.ML_DSA_44_SEED_LENGTH;
+    case PQ_SIGNATURE_ALGORITHM.TEST_ALGO:
+      return PQ_ALGORITHM_ENTROPY_LENGTHS.TEST_ALGO;
     default:
       throw new Error('Unsupported algorithm');
   }
 };
-
-/*
- * BIP-85 Constants
- */
-const BIP85_PURPOSE = 83696968; // "BIPS" on phone keypad
-const BIP85_HMAC_KEY = 'bip-entropy-from-k'; // from standard
-// Set as an env var to pass BIP-85 test vectors
-const DEFAULT_APP_NO = parseInt(process.env.BIP85_APP_NO ?? '503131', 10); // 503131 = P11 -> UTF-8
 
 /*
  * Helper Function to convert bytes to base64
@@ -116,26 +165,11 @@ function bytesToBase64(bytes: Uint8Array): string {
 
 /**
  * Generate a seed phrase using the BIP-39 algorithm.
- * @returns {string} The generated seed phrase.
+ * @returns {Mnemonic24} The generated seed phrase.
  */
-const generateSeedPhrase = (): string => {
-  return generateMnemonic(wordlist, 256);
-};
-
-/**
- * Ensure that the provided root is an HDKey instance.
- *
- * @param root HDKey or extended private key (xprv)
- * @returns HDKey instance
- */
-const ensureXPrv = (root: HDKey | string) => {
-  if (typeof root === 'string') {
-    if (!root.startsWith('xprv')) {
-      throw new Error('Expected an xprv extended key');
-    }
-    return HDKey.fromExtendedKey(root);
-  }
-  return root;
+const generateSeedPhrase = (): Mnemonic24 => {
+  const mnemonic = generateMnemonic(wordlist, 256);
+  return mnemonic as Mnemonic24;
 };
 
 /**
@@ -144,7 +178,7 @@ const ensureXPrv = (root: HDKey | string) => {
  * @param mnemonic The mnemonic to validate
  * @returns The validated mnemonic
  */
-function ensure24WordMnemonic(mnemonic: string): string {
+function ensure24WordMnemonic(mnemonic: Mnemonic24): Mnemonic24 {
   const words = mnemonic.trim().split(/\s+/);
   if (words.length !== 24) {
     throw new Error(`Expected 24 words, got ${words.length}`);
@@ -163,25 +197,24 @@ function ensure24WordMnemonic(mnemonic: string): string {
 const deriveBip85Entropy = ({
   root,
   derIndex,
-  length
+  entropyLength
 }: {
-  root: HDKey | string;
-  derIndex: number;
-  length: number;
+  root: HDKey;
+  derIndex: PQ_SIGNATURE_ALGORITHM;
+  entropyLength: PQ_ALGORITHM_ENTROPY_LENGTHS;
 }): Uint8Array => {
   // Length cannot be longer than 64 bytes (hmac 512 limit)
-  if (length > 64) throw new Error('Length cannot be longer than 64 bytes');
-  // Convert string xprv to HDKey if needed
-  const master = ensureXPrv(root);
+  if (entropyLength > 64)
+    throw new Error('Entropy length cannot be longer than 64 bytes');
   // Derivation path for BIP-85
   const path = `m/${BIP85_PURPOSE}'/${DEFAULT_APP_NO}'/${derIndex}'`;
-  const node = master.derive(path);
+  const node = root.derive(path);
   const privKey = node.privateKey;
   if (!privKey) throw new Error('No private key at this path');
   // Apply BIP-85 HMAC-SHA512
   const full = hmac(sha512, BIP85_HMAC_KEY, privKey);
   // Return specified number of bytes
-  return full.slice(0, length);
+  return full.slice(0, entropyLength);
 };
 
 /**
@@ -195,7 +228,7 @@ const deriveEntropyFromMnemonic = ({
   mnemonic24,
   algorithm
 }: {
-  mnemonic24: string;
+  mnemonic24: Mnemonic24;
   algorithm: PQ_SIGNATURE_ALGORITHM;
 }): Uint8Array => {
   // BIP-39 seed (64 bytes)
@@ -204,12 +237,12 @@ const deriveEntropyFromMnemonic = ({
   // Master HDKey from that seed
   const masterNode = HDKey.fromMasterSeed(seed);
   // Get bytes length for PQ_SIGNATURE_ALGORITHM
-  const length = PQ_ALGORITHM_BYTE_LENGTH(algorithm);
+  const length = PQ_ALGORITHM_ENTROPY_LENGTH(algorithm);
   // Use the algorithm’s numeric value as the derive-index
   return deriveBip85Entropy({
     root: masterNode,
     derIndex: algorithm,
-    length: length
+    entropyLength: length
   });
 };
 
@@ -223,7 +256,7 @@ const deriveEntropyFromMnemonic = ({
  * @param algorithm  which PQ_SIGNATURE_ALGORITHM enum to use
  */
 const generateKeypair = (
-  mnemonic24: string,
+  mnemonic24: Mnemonic24,
   algorithm: PQ_SIGNATURE_ALGORITHM
 ) => {
   try {
@@ -231,10 +264,13 @@ const generateKeypair = (
       case PQ_SIGNATURE_ALGORITHM.ML_DSA_44: {
         const entropy = deriveEntropyFromMnemonic({ mnemonic24, algorithm });
         const keypair = ml_dsa44.keygen(entropy);
+        const publicKey = keypair.publicKey as PQPublicKey;
+        const privateKey = keypair.secretKey as PQPrivateKey;
+        const address = generateAddress(publicKey);
         return {
-          publicKey: keypair.publicKey,
-          privateKey: keypair.secretKey,
-          address: generateAddress(keypair.publicKey)
+          publicKey: publicKey,
+          privateKey: privateKey,
+          address: address
         };
       }
       default:
@@ -251,14 +287,16 @@ const generateKeypair = (
 /**
  * Signed Message types
  */
-interface SignedMessage {
-  publicKey: string;
-  signedMessage: string;
-  address: string;
-}
-
+type SupportedSigningAlgos = Exclude<
+  keyof typeof PQ_SIGNATURE_ALGORITHM,
+  'TEST_ALGO'
+>;
 type SignedMessages = {
-  [_key in keyof typeof PQ_SIGNATURE_ALGORITHM]: SignedMessage;
+  [_key in SupportedSigningAlgos]: {
+    publicKey: PQPublicKeyString;
+    signedMessage: SignedMessage;
+    address: PQAddress;
+  };
 };
 
 /**
@@ -271,8 +309,8 @@ type SignedMessages = {
  * @throws if any step fails for any algorithm
  */
 const generateSignedMessages = (
-  mnemonic24: string,
-  message: string
+  mnemonic24: Mnemonic24,
+  message: Message
 ): SignedMessages => {
   try {
     const messageBytes = new TextEncoder().encode(message);
@@ -292,8 +330,8 @@ const generateSignedMessages = (
     // Response
     return {
       ML_DSA_44: {
-        publicKey: bytesToBase64(mldsa44KeyPair.publicKey),
-        signedMessage: bytesToBase64(mldsa44SignedMessage),
+        publicKey: bytesToBase64(mldsa44KeyPair.publicKey) as PQPublicKeyString,
+        signedMessage: bytesToBase64(mldsa44SignedMessage) as SignedMessage,
         address: mldsa44KeyPair.address
       }
     };
