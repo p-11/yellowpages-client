@@ -131,7 +131,7 @@ const isValidBitcoinSignature = (
 /*
  * Generate PQ address from public key bytes
  */
-const generateAddress = (publicKey: PQPublicKey): PQAddress => {
+const generatePQAddress = (publicKey: PQPublicKey): PQAddress => {
   const hash = sha256(publicKey);
   return bytesToBase64(hash) as PQAddress;
 };
@@ -259,7 +259,7 @@ const generateKeypair = (
         const keypair = ml_dsa44.keygen(entropy);
         const publicKey = keypair.publicKey as PQPublicKey;
         const privateKey = keypair.secretKey as PQPrivateKey;
-        const address = generateAddress(publicKey);
+        const address = generatePQAddress(publicKey);
         return {
           publicKey: publicKey,
           privateKey: privateKey,
@@ -336,7 +336,7 @@ const generateSignedMessages = (
 
 export {
   bytesToBase64,
-  generateAddress,
+  generatePQAddress,
   generateSeedPhrase,
   generateSignedMessages,
   generateKeypair,
