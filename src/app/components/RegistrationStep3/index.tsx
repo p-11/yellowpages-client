@@ -29,7 +29,7 @@ import {
   isValidBitcoinAddress,
   isValidBitcoinSignature
 } from '@/core/cryptography';
-import { createProof } from '@/core/api';
+import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -115,6 +115,9 @@ export function RegistrationStep3() {
           mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
           mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage
         });
+
+        // ensure registration exists before continuing
+        await searchYellowpagesByBtcAddress(bitcoinAddress);
 
         router.push('/registration-complete');
       } catch {
