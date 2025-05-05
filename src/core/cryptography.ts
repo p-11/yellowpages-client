@@ -162,7 +162,7 @@ function bytesToBase64(bytes: Uint8Array): string {
  */
 const generateSeedPhrase = (): Mnemonic24 => {
   const mnemonic = generateMnemonic(wordlist, 256);
-  return mnemonic as Mnemonic24;
+  return ensure24WordMnemonic(mnemonic as Mnemonic24);
 };
 
 /**
