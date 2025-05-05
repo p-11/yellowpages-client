@@ -55,7 +55,6 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
     response = await fetch(url, {
       // set default headers here
       headers: {
-        'Content-Type': 'application/json',
         ...(options.headers ?? {})
       },
       ...options
@@ -117,6 +116,10 @@ export async function createProof(body: {
   const url = `${domains.proofService}/prove`;
   return await request(url, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
     body: JSON.stringify({
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
