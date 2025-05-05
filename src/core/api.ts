@@ -52,14 +52,7 @@ const domains = {
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(url, {
-      // set default headers here
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers ?? {})
-      },
-      ...options
-    });
+    response = await fetch(url, options);
   } catch (e) {
     // networkError is e.g. DNS failure, offline, CORS issues, etc.
     throw new Error(`Network error while fetching ${url}: ${e}`);
@@ -117,6 +110,10 @@ export async function createProof(body: {
   const url = `${domains.proofService}/prove`;
   return await request(url, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
     body: JSON.stringify({
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
