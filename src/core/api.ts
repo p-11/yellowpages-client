@@ -117,6 +117,7 @@ export async function createProof(body: {
   return await request(url, {
     method: 'POST',
     headers: {
+      ...options.headers,
       'Content-Type': 'application/json',
       Accept: 'application/json'
     },
