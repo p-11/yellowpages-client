@@ -46,7 +46,6 @@ enum PQ_SIGNATURE_ALGORITHM {
   /**
    * TEST_ALGO
    * This is used as this index is needed for BIP-85 test vectors
-   * Once we support a second algorithm, we can swap it here
    */
   // eslint-disable-next-line no-unused-vars
   TEST_ALGO = 1
@@ -55,18 +54,15 @@ enum PQ_SIGNATURE_ALGORITHM {
 /*
  * Supported Algorithms Seed length
  */
-enum PQ_ALGORITHM_ENTROPY_LENGTHS {
+const PQ_ENTROPY_LENGTHS = {
   /** ML-DSA-44 */
-  // eslint-disable-next-line no-unused-vars
-  ML_DSA_44_SEED_LENGTH = 32,
+  [PQ_SIGNATURE_ALGORITHM.ML_DSA_44]: 32,
   /**
    * TEST_ALGO
    * This is used as this length is needed for BIP-85 test vectors
-   * Once we support an algorithm which requires 64 bytes of entropy, we can swap it here
    */
-  // eslint-disable-next-line no-unused-vars
-  TEST_ALGO = 64
-}
+  [PQ_SIGNATURE_ALGORITHM.TEST_ALGO]: 64
+} as const;
 
 /*
  * BIP-85 Constants
@@ -143,18 +139,15 @@ const generateAddress = (publicKey: PQPublicKey): PQAddress => {
 /*
  * Get bytes of entropy needed for algorithm
  */
-const PQ_ALGORITHM_ENTROPY_LENGTH = (
-  algorithm: PQ_SIGNATURE_ALGORITHM
-): PQ_ALGORITHM_ENTROPY_LENGTHS => {
-  switch (algorithm) {
-    case PQ_SIGNATURE_ALGORITHM.ML_DSA_44:
-      return PQ_ALGORITHM_ENTROPY_LENGTHS.ML_DSA_44_SEED_LENGTH;
-    case PQ_SIGNATURE_ALGORITHM.TEST_ALGO:
-      return PQ_ALGORITHM_ENTROPY_LENGTHS.TEST_ALGO;
-    default:
-      throw new Error('Unsupported algorithm');
+function derivePQEntropyLength(
+  algo: PQ_SIGNATURE_ALGORITHM
+): (typeof PQ_ENTROPY_LENGTHS)[PQ_SIGNATURE_ALGORITHM] {
+  const length = PQ_ENTROPY_LENGTHS[algo];
+  if (length === undefined) {
+    throw new Error(`Unsupported algorithm: ${algo}`);
   }
-};
+  return length;
+}
 
 /*
  * Helper Function to convert bytes to base64
@@ -201,7 +194,7 @@ const deriveBip85Entropy = ({
 }: {
   root: HDKey;
   derIndex: PQ_SIGNATURE_ALGORITHM;
-  entropyLength: PQ_ALGORITHM_ENTROPY_LENGTHS;
+  entropyLength: (typeof PQ_ENTROPY_LENGTHS)[PQ_SIGNATURE_ALGORITHM];
 }): Uint8Array => {
   // Length cannot be longer than 64 bytes (hmac 512 limit)
   if (entropyLength > 64)
@@ -237,7 +230,7 @@ const deriveEntropyFromMnemonic = ({
   // Master HDKey from that seed
   const masterNode = HDKey.fromMasterSeed(seed);
   // Get bytes length for PQ_SIGNATURE_ALGORITHM
-  const length = PQ_ALGORITHM_ENTROPY_LENGTH(algorithm);
+  const length = derivePQEntropyLength(algorithm);
   // Use the algorithm’s numeric value as the derive-index
   return deriveBip85Entropy({
     root: masterNode,
