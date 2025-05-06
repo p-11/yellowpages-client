@@ -112,9 +112,9 @@ export function RegistrationStep3() {
       signedMessages &&
       isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
     ) {
-      setIsSubmitting(true);
-
       try {
+        setIsSubmitting(true);
+
         await createProof({
           btcAddress: bitcoinAddress,
           btcSignedMessage: signature,
@@ -129,9 +129,8 @@ export function RegistrationStep3() {
         router.push('/registration-complete');
       } catch {
         setShowFailedRequestAlert(true);
+        setIsSubmitting(false);
       }
-
-      setIsSubmitting(false);
     } else {
       setShowInvalidSignatureAlert(true);
     }
