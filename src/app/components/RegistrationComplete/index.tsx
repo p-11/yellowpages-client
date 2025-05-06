@@ -15,7 +15,7 @@ export function RegistrationComplete() {
   const { signedMessages, bitcoinAddress } = useRegistrationSessionContext();
   const router = useRouter();
 
-  const copyPqAddress = useCallback(() => {
+  const copyMldsa44Address = useCallback(() => {
     if (signedMessages) {
       navigator.clipboard.writeText(signedMessages.ML_DSA_44.address);
     }
@@ -51,7 +51,7 @@ export function RegistrationComplete() {
               </span>
             </HighlightedBox>
             <Toolbar>
-              <CopyTextToolbarButton onClick={copyPqAddress} />
+              <CopyTextToolbarButton onClick={copyMldsa44Address} />
             </Toolbar>
           </div>
         </div>
