@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/app/components/Button';
 import { useVerificationContext } from '@/app/providers/VerificationProvider';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
+import { Alert } from '@/app/components/Alert';
 import styles from './styles.module.css';
 
 export function VerificationResult() {
@@ -32,33 +33,45 @@ export function VerificationResult() {
 
   return (
     <main>
-      <h1 className={styles.title}>
-        {result ? 'Registered' : 'Not registered'}
-      </h1>
+      <h1 className={styles.title}>Result:</h1>
       {result ? (
-        <div className={styles.registration}>
-          <div className={styles.registrationCardRow}>
-            <p className={styles.registrationDetailsLabel}>BTC address:</p>
-            <span className={styles.registrationDetailsValue}>
-              {bitcoinAddress}
-            </span>
+        <>
+          <div className={styles.alertSection}>
+            <Alert type='success'>
+              Registered and cryptographically linked to a post-quantum address
+            </Alert>
           </div>
-          <div className={styles.registrationCardRow}>
-            <p className={styles.registrationDetailsLabel}>PQC address:</p>
-            <span className={styles.registrationDetailsValue}>
-              {result.ml_dsa_44_address}
-            </span>
+          <div className={styles.pqAddressSection}>
+            <div className={styles.connectingBlocks}>
+              <div className={styles.connectingBlock} />
+              <div className={styles.connectingLine} />
+              <div className={styles.connectingBlock} />
+            </div>
+            <div className={styles.pqAddress}>
+              <span className={styles.pqAddressLabel}>PQC address:</span>
+              <span className={styles.pqAddressText}>
+                {result.ml_dsa_44_address}
+              </span>
+            </div>
           </div>
-        </div>
+          <div className={styles.bitcoinAddress}>
+            <span className={styles.bitcoinAddressLabel}>BTC address</span>
+            <div>
+              <span className={styles.bitcoinAddressText}>
+                {bitcoinAddress}
+              </span>
+            </div>
+          </div>
+        </>
       ) : (
-        <div className={styles.emptyResult}>
+        <div className={styles.noResult}>
           <p>
-            Bitcoin address{' '}
-            <span className={styles.bitcoinAddress}>{bitcoinAddress}</span> is
-            not on the registry.
+            Bitcoin address &quot;
+            <span className={styles.bitcoinAddressText}>{bitcoinAddress}</span>
+            &quot; is not on the registry.
           </p>
-          <p>
-            Do you own this Bitcoin address?{' '}
+          <p className={styles.registerText}>
+            Do you own this address?{' '}
             <Link href='/register/step-1'>Register now</Link>.
           </p>
         </div>

@@ -82,12 +82,93 @@
     overflow-wrap: anywhere;
 }
 
-.emptyResult {
+.noResult {
     margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+.highlightedText {
+    overflow-wrap: anywhere;
+    color: #fafafa;
+}
+
+.alertSection {
+    margin-top: 30px;
+}
+
+.pqAddress {
+    width: 100%;
+}
+
+.pqAddressLabel {
+    color: #fafafa;
+    margin-bottom: 10px;
+    display: block
+}
+
+.pqAddressSection {
+    margin-top: 42px;
+    position: relative;
+    width: 100%;
+    display: flex;
+    gap: 24px;
+    padding-left: 42px;
+    box-sizing: border-box;
+    padding-bottom: 12px;
+}
+
+.connectingBlocks {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: -55px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.connectingBlock {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background-color: #222;
+}
+
+.connectingBlock:first-of-type {
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.connectingBlock:last-of-type {
+    margin-bottom: 8px;
+}
+
+.connectingLine {
+    width: 2px;
+    background-color: #222;
+    flex: 1;
+    background: linear-gradient(0deg,rgba(34, 34, 34, 1) 0%, rgba(255, 255, 255, 0.8) 100%);
 }
 
 .bitcoinAddress {
-    overflow-wrap: anywhere;
+    margin-left: 42px;
+    margin-top: 30px;
+}
+
+.bitcoinAddressText, .pqAddressText {
+    word-break: break-all;
+}
+
+.bitcoinAddressText {
+    color: #888;
+}
+
+.bitcoinAddressLabel {
+    color: #888;
+    margin-bottom: 10px;
+    display: block
+}
+
+.registerText {
     color: #fafafa;
 }
 
