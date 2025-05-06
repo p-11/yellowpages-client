@@ -43,13 +43,13 @@ export function VerificationResult() {
           <div className={styles.registrationCardRow}>
             <p className={styles.registrationDetailsLabel}>PQC address:</p>
             <span className={styles.registrationDetailsValue}>
-              {result.pqAddress}
+              {result.ml_dsa_44_address}
             </span>
           </div>
           <div className={styles.registrationCardRow}>
             <p className={styles.registrationDetailsLabel}>Date registered:</p>
             <span className={styles.registrationDetailsValue}>
-              {new Date(result.createdAt).toDateString()}
+              {new Date(result.creation_date).toDateString()}
             </span>
           </div>
         </div>

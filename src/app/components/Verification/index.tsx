@@ -1,20 +1,30 @@
 'use client';
 
-import { FormEventHandler, useCallback } from 'react';
+import { FormEventHandler, useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
-import { useRouter } from 'next/navigation';
 import { useVerificationContext } from '@/app/providers/VerificationProvider';
+import { searchYellowpagesByBtcAddress } from '@/core/api';
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle
+} from '@/app/components/Dialog';
+import { isValidBitcoinAddress } from '@/core/cryptography';
 import styles from './styles.module.css';
 
 export function Verification() {
   const router = useRouter();
   const { setResult, bitcoinAddress, setBitcoinAddress } =
     useVerificationContext();
+  const [showInvalidBitcoinAddressAlert, setShowInvalidBitcoinAddressAlert] =
+    useState(false);
 
   const changeBitcoinAddress = useCallback(
     (value: string) => {
-      setBitcoinAddress(value);
+      setBitcoinAddress(value.trim());
     },
     [setBitcoinAddress]
   );
@@ -24,21 +34,33 @@ export function Verification() {
   }, [router]);
 
   const onSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
-    e => {
+    async e => {
       e.preventDefault();
 
-      // TODO: fetch result
-      setResult(null);
+      if (isValidBitcoinAddress(bitcoinAddress)) {
+        try {
+          const result = await searchYellowpagesByBtcAddress(bitcoinAddress);
+          setResult(result);
+        } catch {
+          setResult(null);
+        }
 
-      router.push('/verification/result');
+        router.push('/verification/result');
+      } else {
+        setShowInvalidBitcoinAddressAlert(true);
+      }
     },
-    [router, setResult]
+    [router, bitcoinAddress, setResult]
   );
+
+  const acknowledgeInvalidBitcoinAddressAlert = useCallback(() => {
+    setShowInvalidBitcoinAddressAlert(false);
+  }, []);
 
   return (
     <main>
-      <h1 className={styles.title}>Check the registry</h1>
-      <p>Enter a Bitcoin address to check it&apos;s post-quantum status.</p>
+      <h1 className={styles.title}>Search the yellowpages</h1>
+      <p>Enter a Bitcoin address to check its post-quantum status.</p>
       <form className={styles.searchArea} onSubmit={onSubmit}>
         <div className={styles.inputBox}>
           <label htmlFor='publicBitcoinAddress' className={styles.inputLabel}>
@@ -63,6 +85,22 @@ export function Verification() {
           </Button>
         </div>
       </form>
+      {showInvalidBitcoinAddressAlert && (
+        <Dialog>
+          <DialogTitle>Invalid Bitcoin address</DialogTitle>
+          <DialogDescription>
+            Please check the Bitcoin address entered and try again.
+          </DialogDescription>
+          <DialogFooter>
+            <Button
+              variant='primary'
+              onClick={acknowledgeInvalidBitcoinAddressAlert}
+            >
+              Continue
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
     </main>
   );
 }

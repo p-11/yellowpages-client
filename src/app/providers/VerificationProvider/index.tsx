@@ -1,14 +1,21 @@
 'use client';
 
+import { searchYellowpagesByBtcAddress } from '@/core/api';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type VerificationContextType = {
-  result: { pqAddress: string; createdAt: string } | null | undefined;
+  result:
+    | Awaited<ReturnType<typeof searchYellowpagesByBtcAddress>>
+    | null
+    | undefined;
   bitcoinAddress: string;
   setResult: (
-    value: { pqAddress: string; createdAt: string } | null | undefined
+    _value:
+      | Awaited<ReturnType<typeof searchYellowpagesByBtcAddress>>
+      | null
+      | undefined
   ) => void;
-  setBitcoinAddress: (value: string) => void;
+  setBitcoinAddress: (_value: string) => void;
 };
 
 const VerificationContext = createContext<VerificationContextType | undefined>(
