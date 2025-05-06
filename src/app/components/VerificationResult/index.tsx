@@ -10,7 +10,8 @@ import styles from './styles.module.css';
 
 export function VerificationResult() {
   const router = useRouter();
-  const { result, bitcoinAddress } = useVerificationContext();
+  const { result, bitcoinAddress, setBitcoinAddress } =
+    useVerificationContext();
 
   useEffect(() => {
     if (result === undefined) {
@@ -23,8 +24,9 @@ export function VerificationResult() {
   }, [router]);
 
   const searchAgain = useCallback(() => {
+    setBitcoinAddress('');
     router.push('/verification');
-  }, [router]);
+  }, [router, setBitcoinAddress]);
 
   if (result === undefined) return null;
 
