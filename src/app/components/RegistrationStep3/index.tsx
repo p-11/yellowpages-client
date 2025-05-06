@@ -30,6 +30,7 @@ import {
   isValidBitcoinSignature
 } from '@/core/cryptography';
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
+import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -58,6 +59,7 @@ export function RegistrationStep3() {
     setBitcoinAddress,
     setSignedMessages
   } = useRegistrationSessionContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
   const isSignaturePopulated = signature.length > 0;
@@ -110,6 +112,8 @@ export function RegistrationStep3() {
       signedMessages &&
       isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
     ) {
+      setIsSubmitting(true);
+
       try {
         await createProof({
           btcAddress: bitcoinAddress,
@@ -126,6 +130,8 @@ export function RegistrationStep3() {
       } catch {
         setShowFailedRequestAlert(true);
       }
+
+      setIsSubmitting(false);
     } else {
       setShowInvalidSignatureAlert(true);
     }
@@ -239,9 +245,10 @@ export function RegistrationStep3() {
             <Button
               variant='primary'
               onClick={completeRegistration}
-              disabled={!isSignaturePopulated}
+              disabled={!isSignaturePopulated || isSubmitting}
             >
-              Complete <ArrowRightIcon />
+              Complete{' '}
+              {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}
             </Button>
           )}
         </RegistrationFooterActions>
