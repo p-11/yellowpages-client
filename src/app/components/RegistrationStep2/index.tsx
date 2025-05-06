@@ -189,9 +189,13 @@ const useSensitiveState = () => {
   }, [seedPhrase, clearSensitiveState]);
 
   const addSelectedSeedWordIndex = useCallback(
-    (index: number) =>
-      setSelectedSeedWordIndices(current => [...current, index]),
-    []
+    (index: number) => {
+      // guard against adding duplicate indices
+      if (!selectedSeedWordIndices.includes(index)) {
+        setSelectedSeedWordIndices(current => [...current, index]);
+      }
+    },
+    [selectedSeedWordIndices]
   );
 
   const clearSelectedSeedWordIndices = useCallback(
