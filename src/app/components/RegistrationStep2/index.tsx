@@ -21,11 +21,11 @@ export const RegistrationStep2 = () => {
   const router = useRouter();
   const [isFailedAttempt, setIsFailedAttempt] = useState(false);
   const {
-    selectedSeedWords,
     shuffledSeedWords,
-    addSelectedSeedWord,
+    selectedSeedWordIndices,
+    addSelectedSeedWordIndex,
     verifySelectedSeedWords,
-    clearSelectedSeedWords,
+    clearSelectedSeedWordIndices,
     clearSensitiveState
   } = useSensitiveState();
   const { hasConfirmedSeedPhrase } = useRegistrationSessionContext();
@@ -33,8 +33,8 @@ export const RegistrationStep2 = () => {
 
   const selectionCompleted =
     shuffledSeedWords.length > 0 &&
-    selectedSeedWords.length === shuffledSeedWords.length;
-  const selectionStarted = selectedSeedWords.length > 0;
+    selectedSeedWordIndices.length === shuffledSeedWords.length;
+  const selectionStarted = selectedSeedWordIndices.length > 0;
 
   const confirmSelection = useCallback(() => {
     const isCorrect = verifySelectedSeedWords();
@@ -42,10 +42,10 @@ export const RegistrationStep2 = () => {
     if (isCorrect) {
       router.push('/register/step-3');
     } else {
-      clearSelectedSeedWords();
+      clearSelectedSeedWordIndices();
       setIsFailedAttempt(true);
     }
-  }, [verifySelectedSeedWords, clearSelectedSeedWords, router]);
+  }, [verifySelectedSeedWords, clearSelectedSeedWordIndices, router]);
 
   const tryAgain = useCallback(() => {
     window.scrollTo(0, 0);
@@ -54,8 +54,8 @@ export const RegistrationStep2 = () => {
 
   const restart = useCallback(() => {
     window.scrollTo(0, 0);
-    clearSelectedSeedWords();
-  }, [clearSelectedSeedWords]);
+    clearSelectedSeedWordIndices();
+  }, [clearSelectedSeedWordIndices]);
 
   const goBack = useCallback(() => {
     clearSensitiveState();
@@ -103,17 +103,19 @@ export const RegistrationStep2 = () => {
           </ToolbarButton>
           <div className={styles.grid}>
             {shuffledSeedWords.map((seedWord, index) => {
-              const isSelected = selectedSeedWords.includes(seedWord);
+              const isSelected = selectedSeedWordIndices.includes(index);
 
               return (
                 <button
                   key={index}
-                  onClick={() => addSelectedSeedWord(seedWord)}
+                  onClick={() => addSelectedSeedWordIndex(index)}
                   disabled={isSelected}
                   className={styles.gridButton}
                 >
                   <span className={styles.gridButtonIndicator}>
-                    {isSelected ? selectedSeedWords.indexOf(seedWord) + 1 : ''}
+                    {isSelected
+                      ? selectedSeedWordIndices.indexOf(index) + 1
+                      : ''}
                   </span>
                   {seedWord}
                 </button>
@@ -166,12 +168,14 @@ export const RegistrationStep2 = () => {
 };
 
 const useSensitiveState = () => {
-  const [selectedSeedWords, setSelectedSeedWords] = useState<Array<string>>([]);
   const [shuffledSeedWords, setShuffledSeedWords] = useState<Array<string>>([]);
+  const [selectedSeedWordIndices, setSelectedSeedWordIndices] = useState<
+    Array<number>
+  >([]);
   const { seedPhrase } = useRegistrationSessionContext();
 
   const clearSensitiveState = useCallback(() => {
-    setSelectedSeedWords([]);
+    setSelectedSeedWordIndices([]);
     setShuffledSeedWords([]);
   }, []);
 
@@ -184,28 +188,36 @@ const useSensitiveState = () => {
     };
   }, [seedPhrase, clearSensitiveState]);
 
-  const addSelectedSeedWord = useCallback(
-    (selectedSeedWord: string) =>
-      setSelectedSeedWords(current => [...current, selectedSeedWord]),
-    []
+  const addSelectedSeedWordIndex = useCallback(
+    (index: number) => {
+      // guard against adding duplicate indices
+      if (!selectedSeedWordIndices.includes(index)) {
+        setSelectedSeedWordIndices(current => [...current, index]);
+      }
+    },
+    [selectedSeedWordIndices]
   );
 
-  const clearSelectedSeedWords = useCallback(
-    () => setSelectedSeedWords([]),
+  const clearSelectedSeedWordIndices = useCallback(
+    () => setSelectedSeedWordIndices([]),
     []
   );
 
   const verifySelectedSeedWords = useCallback(() => {
+    const selectedSeedWords = selectedSeedWordIndices.map(
+      index => shuffledSeedWords[index]
+    );
     const selectedSeedPhrase = selectedSeedWords.join(' ');
+
     return selectedSeedPhrase === seedPhrase;
-  }, [selectedSeedWords, seedPhrase]);
+  }, [selectedSeedWordIndices, shuffledSeedWords, seedPhrase]);
 
   return {
-    selectedSeedWords,
     shuffledSeedWords,
-    addSelectedSeedWord,
-    clearSelectedSeedWords,
+    selectedSeedWordIndices,
+    addSelectedSeedWordIndex,
     clearSensitiveState,
+    clearSelectedSeedWordIndices,
     verifySelectedSeedWords
   };
 };
