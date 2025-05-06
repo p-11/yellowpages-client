@@ -65,7 +65,7 @@ export function Verification() {
   return (
     <main>
       <h1 className={styles.title}>Search the yellowpages</h1>
-      <p>Enter a Bitcoin address to check its post-quantum status.</p>
+      <p>Enter a Bitcoin address to check if it&apos;s post-quantum secure.</p>
       <form className={styles.searchArea} onSubmit={onSubmit}>
         <div className={styles.inputBox}>
           <label htmlFor='publicBitcoinAddress' className={styles.inputLabel}>
