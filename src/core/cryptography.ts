@@ -306,7 +306,8 @@ const generateMessage = ({
   bitcoinAddress: string;
   mldsa44Address: string;
 }) => {
-  const message = `I want to permanently link my Bitcoin address ${bitcoinAddress} with my post-quantum address ${mldsa44Address}`;
+  const message =
+    `I want to permanently link my Bitcoin address ${bitcoinAddress} with my post-quantum address ${mldsa44Address}` as Message;
   return {
     message: message,
     messageBytes: new TextEncoder().encode(message)

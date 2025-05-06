@@ -31,7 +31,9 @@ export function RegistrationStep1() {
     useRegistrationSessionContext();
 
   const copySeedPhrase = useCallback(() => {
-    navigator.clipboard.writeText(seedPhrase);
+    if (seedPhrase) {
+      navigator.clipboard.writeText(seedPhrase);
+    }
   }, [seedPhrase]);
 
   const toggleSeedPhraseVisibility = useCallback(

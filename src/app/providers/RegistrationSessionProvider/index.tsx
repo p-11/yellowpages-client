@@ -10,18 +10,20 @@ import React, {
   useState
 } from 'react';
 import {
+  BitcoinAddress,
   generateSeedPhrase,
-  generateSignedMessages
+  generateSignedMessages,
+  Mnemonic24
 } from '@/core/cryptography';
 
 type RegistrationSessionContextType = {
   showNewSessionAlert: boolean;
-  setShowNewSessionAlert: (_value: boolean) => void;
   hasConfirmedSeedPhrase: boolean;
-  seedPhrase: string;
-  bitcoinAddress: string;
-  setBitcoinAddress: (_value: string) => void;
-  signedMessages: ReturnType<typeof generateSignedMessages> | undefined;
+  seedPhrase?: Mnemonic24;
+  bitcoinAddress?: BitcoinAddress;
+  signedMessages?: ReturnType<typeof generateSignedMessages>;
+  setShowNewSessionAlert: (_value: boolean) => void;
+  setBitcoinAddress: (_value: BitcoinAddress) => void;
   setSignedMessages: (
     _value: ReturnType<typeof generateSignedMessages>
   ) => void;
@@ -199,18 +201,20 @@ export const useRegistrationSessionContext = () => {
 };
 
 const useSensitiveState = () => {
-  const [seedPhrase, setSeedPhrase] = useState('');
-  const [bitcoinAddress, setBitcoinAddress] = useState('');
+  const [seedPhrase, setSeedPhrase] =
+    useState<RegistrationSessionContextType['seedPhrase']>();
+  const [bitcoinAddress, setBitcoinAddress] =
+    useState<RegistrationSessionContextType['bitcoinAddress']>();
   const [signedMessages, setSignedMessages] =
-    useState<ReturnType<typeof generateSignedMessages>>();
+    useState<RegistrationSessionContextType['signedMessages']>();
 
   const clearSeedPhrase = useCallback(() => {
-    setSeedPhrase('');
+    setSeedPhrase(undefined);
   }, []);
 
   const clearSensitiveState = useCallback(() => {
-    setSeedPhrase('');
-    setBitcoinAddress('');
+    setSeedPhrase(undefined);
+    setBitcoinAddress(undefined);
     setSignedMessages(undefined);
   }, []);
 

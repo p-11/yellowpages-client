@@ -24,10 +24,13 @@ import {
 } from '@/app/components/Dialog';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import {
+  BitcoinAddress,
   generateMessage,
   generateSignedMessages,
   isValidBitcoinAddress,
-  isValidBitcoinSignature
+  isValidBitcoinSignature,
+  Message,
+  SignedMessage
 } from '@/core/cryptography';
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
@@ -61,11 +64,13 @@ export function RegistrationStep3() {
   } = useRegistrationSessionContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isBitcoinAddressPopulated = bitcoinAddress.length > 0;
-  const isSignaturePopulated = signature.length > 0;
+  const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
+  const isSignaturePopulated = signature && signature.length > 0;
 
   const copySigningMessage = useCallback(() => {
-    navigator.clipboard.writeText(signingMessage);
+    if (signingMessage) {
+      navigator.clipboard.writeText(signingMessage);
+    }
   }, [signingMessage]);
 
   const acknowledgeBitcoinAddressAlert = useCallback(() => {
@@ -81,7 +86,7 @@ export function RegistrationStep3() {
   }, []);
 
   const confirmBitcoinAddress = useCallback(() => {
-    if (isValidBitcoinAddress(bitcoinAddress)) {
+    if (bitcoinAddress && seedPhrase && isValidBitcoinAddress(bitcoinAddress)) {
       const signedMessages = generateSignedMessages(seedPhrase, bitcoinAddress);
       setSignedMessages(signedMessages);
 
@@ -110,6 +115,9 @@ export function RegistrationStep3() {
   const completeRegistration = useCallback(async () => {
     if (
       signedMessages &&
+      signingMessage &&
+      signature &&
+      bitcoinAddress &&
       isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
     ) {
       try {
@@ -143,7 +151,7 @@ export function RegistrationStep3() {
 
   const changeBitcoinAddress = useCallback(
     (value: string) => {
-      setBitcoinAddress(value);
+      setBitcoinAddress(value as BitcoinAddress);
     },
     [setBitcoinAddress]
   );
@@ -170,7 +178,7 @@ export function RegistrationStep3() {
               id='publicBitcoinAddress'
               hidden={isBitcoinAddressConfirmed}
               disabled={isBitcoinAddressConfirmed}
-              value={bitcoinAddress}
+              value={bitcoinAddress ?? ''}
               autoFocus={autoFocusBitcoinAddressField}
               autoComplete='off'
               autoCorrect='off'
@@ -203,7 +211,9 @@ export function RegistrationStep3() {
             2. Sign this message with your wallet
           </span>
           <HighlightedBox>
-            <span className={styles.signingMessage}>{signingMessage}</span>
+            <span className={styles.signingMessage}>
+              {signingMessage ?? ''}
+            </span>
           </HighlightedBox>
           <Toolbar>
             <CopyTextToolbarButton onClick={copySigningMessage} />
@@ -216,7 +226,7 @@ export function RegistrationStep3() {
             </label>
             <textarea
               id='signature'
-              value={signature}
+              value={signature ?? ''}
               autoComplete='off'
               autoCorrect='off'
               autoCapitalize='off'
@@ -307,12 +317,12 @@ export function RegistrationStep3() {
 }
 
 const useSensitiveState = () => {
-  const [signingMessage, setSigningMessage] = useState('');
-  const [signature, setSignature] = useState('');
+  const [signingMessage, setSigningMessage] = useState<Message>();
+  const [signature, setSignature] = useState<SignedMessage>();
 
   const clearSensitiveState = useCallback(() => {
-    setSigningMessage('');
-    setSignature('');
+    setSigningMessage(undefined);
+    setSignature(undefined);
   }, []);
 
   useEffect(() => {
@@ -322,11 +332,11 @@ const useSensitiveState = () => {
   }, [clearSensitiveState]);
 
   const changeSignature = useCallback((value: string) => {
-    setSignature(value);
+    setSignature(value as SignedMessage);
   }, []);
 
   const resetSignature = useCallback(() => {
-    setSignature('');
+    setSignature(undefined);
   }, []);
 
   return {

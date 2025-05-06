@@ -180,8 +180,10 @@ const useSensitiveState = () => {
   }, []);
 
   useEffect(() => {
-    const seedWords = seedPhrase.split(' ');
-    setShuffledSeedWords(shuffleSeedWords(seedWords));
+    if (seedPhrase) {
+      const seedWords = seedPhrase.split(' ');
+      setShuffledSeedWords(shuffleSeedWords(seedWords));
+    }
 
     return function cleanup() {
       clearSensitiveState();
