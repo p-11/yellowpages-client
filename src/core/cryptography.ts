@@ -80,9 +80,15 @@ const DEFAULT_APP_NO = parseInt(process.env.BIP85_APP_NO ?? '503131', 10); // 50
  */
 const isValidBitcoinAddress = (address: string): boolean => {
   const isValid = validate(address, Network.mainnet);
+
+  if (!isValid) {
+    return false;
+  }
+
   const info = getAddressInfo(address);
   const isSupported = SUPPORTED_BITCOIN_ADDRESS_TYPES.includes(info.type);
-  return isValid && isSupported;
+
+  return isSupported;
 };
 
 /*
