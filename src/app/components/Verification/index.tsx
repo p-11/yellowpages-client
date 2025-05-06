@@ -6,6 +6,7 @@ import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
 import { useVerificationContext } from '@/app/providers/VerificationProvider';
 import { searchYellowpagesByBtcAddress } from '@/core/api';
+import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
 import {
   Dialog,
   DialogDescription,
@@ -21,6 +22,7 @@ export function Verification() {
     useVerificationContext();
   const [showInvalidBitcoinAddressAlert, setShowInvalidBitcoinAddressAlert] =
     useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const changeBitcoinAddress = useCallback(
     (value: string) => {
@@ -38,6 +40,8 @@ export function Verification() {
       e.preventDefault();
 
       if (isValidBitcoinAddress(bitcoinAddress)) {
+        setIsSubmitting(true);
+
         try {
           const result = await searchYellowpagesByBtcAddress(bitcoinAddress);
           setResult(result);
@@ -45,6 +49,7 @@ export function Verification() {
           setResult(null);
         }
 
+        setIsSubmitting(false);
         router.push('/verification/result');
       } else {
         setShowInvalidBitcoinAddressAlert(true);
@@ -79,9 +84,9 @@ export function Verification() {
           <Button type='button' variant='secondary' onClick={cancel}>
             Cancel
           </Button>
-          <Button variant='primary' type='submit'>
+          <Button variant='primary' type='submit' disabled={isSubmitting}>
             Search
-            <ArrowRightIcon />
+            {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}
           </Button>
         </div>
       </form>
