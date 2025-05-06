@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/app/components/Button';
 import { useVerificationContext } from '@/app/providers/VerificationProvider';
+import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import styles from './styles.module.css';
-import Link from 'next/link';
 
 export function VerificationResult() {
   const router = useRouter();
@@ -46,32 +47,26 @@ export function VerificationResult() {
               {result.ml_dsa_44_address}
             </span>
           </div>
-          <div className={styles.registrationCardRow}>
-            <p className={styles.registrationDetailsLabel}>Date registered:</p>
-            <span className={styles.registrationDetailsValue}>
-              {new Date(result.creation_date).toDateString()}
-            </span>
-          </div>
         </div>
       ) : (
         <div className={styles.emptyResult}>
           <p>
-            BTC address{' '}
+            Bitcoin address{' '}
             <span className={styles.bitcoinAddress}>{bitcoinAddress}</span> is
             not on the registry.
           </p>
           <p>
-            Do you own this address?{' '}
+            Do you own this Bitcoin address?{' '}
             <Link href='/register/step-1'>Register now</Link>.
           </p>
         </div>
       )}
       <div className={styles.footer}>
-        <Button variant='primary' onClick={searchAgain}>
-          Search again
+        <Button variant='secondary' onClick={searchAgain}>
+          <ArrowLeftIcon /> Search
         </Button>
-        <Button variant='secondary' onClick={navigateToHomepage}>
-          Registry home
+        <Button variant='primary' onClick={navigateToHomepage}>
+          Homepage
         </Button>
       </div>
     </main>

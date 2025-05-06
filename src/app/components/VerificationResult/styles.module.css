@@ -51,9 +51,11 @@
 }
 
 .footer {
+    width: 100%;
     display: flex;
     gap: 18px;
     margin-top: 40px;
+    justify-content: flex-end;
 }
 
 .registration {
