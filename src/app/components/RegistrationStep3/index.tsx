@@ -116,7 +116,7 @@ export function RegistrationStep3() {
           mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage
         });
 
-        // ensure registration exists before continuing
+        // ensure registration exists before continuing (throws on failure)
         await searchYellowpagesByBtcAddress(bitcoinAddress);
 
         router.push('/registration-complete');
