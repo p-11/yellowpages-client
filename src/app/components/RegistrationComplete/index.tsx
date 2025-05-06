@@ -68,8 +68,8 @@ export function RegistrationComplete() {
           <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
           <p>
             Check your registration by{' '}
-            <Link href='/search'>searching the registry</Link> or visit our{' '}
-            <Link href='/faqs'>FAQs page</Link> to learn more.
+            <Link href='/verification'>searching the registry</Link> or visit
+            our <Link href='/faqs'>FAQs page</Link> to learn more.
           </p>
           <p>
             Own multiple wallets? You can register more than one address. Please
