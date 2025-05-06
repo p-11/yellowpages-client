@@ -1,6 +1,7 @@
 import {
   bytesToBase64,
   generateSeedPhrase,
+  generateMessage,
   generateSignedMessages,
   generateKeypair,
   deriveBip85Entropy,
@@ -11,7 +12,6 @@ import {
   BitcoinAddress,
   Mnemonic24
 } from './../core/cryptography';
-import { utf8ToBytes } from '@noble/post-quantum/utils';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { HDKey } from '@scure/bip32';
 
@@ -54,19 +54,38 @@ describe('crypto module', () => {
   });
 
   test('ML_DSA_44 key pair signing is deterministic', () => {
-    const msg = 'hello world' as Message;
-    const signedMessagesOne = generateSignedMessages(mnemonic, msg);
-    const signedMessagesTwo = generateSignedMessages(mnemonic, msg);
+    const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
+    const signedMessagesOne = generateSignedMessages(mnemonic, bitcoinAddress);
+    const signedMessagesTwo = generateSignedMessages(mnemonic, bitcoinAddress);
     expect(signedMessagesOne.ML_DSA_44.publicKey).toEqual(
       signedMessagesTwo.ML_DSA_44.publicKey
     );
+    expect(signedMessagesOne.ML_DSA_44.signedMessage).toEqual(
+      signedMessagesTwo.ML_DSA_44.signedMessage
+    );
+  });
+
+  test('message generation', () => {
+    const bitcoinAddress = 'btc';
+    const mldsa44Address = 'mldsa44';
+    const { message, messageBytes } = generateMessage({
+      bitcoinAddress: bitcoinAddress,
+      mldsa44Address: mldsa44Address
+    });
+    expect(message).toEqual(
+      'I want to permanently link my Bitcoin address btc with my post-quantum address mldsa44'
+    );
+    expect(messageBytes.length).toEqual(86);
   });
 
   test('ML_DSA_44 signed message is valid', () => {
-    const msg = 'hello world' as Message;
-    const signedMessages = generateSignedMessages(mnemonic, msg);
+    const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
+    const signedMessages = generateSignedMessages(mnemonic, bitcoinAddress);
     // Convert base64 strings to byte arrays
-    const messageBytes = utf8ToBytes(msg);
+    const { messageBytes } = generateMessage({
+      bitcoinAddress: bitcoinAddress,
+      mldsa44Address: signedMessages.ML_DSA_44.address
+    });
     const publicKeyBytes = base64ToBytes(signedMessages.ML_DSA_44.publicKey);
     const signedMessageBytes = base64ToBytes(
       signedMessages.ML_DSA_44.signedMessage

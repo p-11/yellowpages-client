@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { ToolbarButton } from '../ToolbarButton';
+import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CheckIcon } from '@/app/icons/CheckIcon';
 import { CopyIcon } from '@/app/icons/CopyIcon';
 

@@ -21,7 +21,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTitle
-} from '../Dialog';
+} from '@/app/components/Dialog';
 import styles from './styles.module.css';
 
 export function RegistrationStep1() {
@@ -31,7 +31,9 @@ export function RegistrationStep1() {
     useRegistrationSessionContext();
 
   const copySeedPhrase = useCallback(() => {
-    navigator.clipboard.writeText(seedPhrase);
+    if (seedPhrase) {
+      navigator.clipboard.writeText(seedPhrase);
+    }
   }, [seedPhrase]);
 
   const toggleSeedPhraseVisibility = useCallback(

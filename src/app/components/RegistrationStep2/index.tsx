@@ -8,9 +8,9 @@ import { RegistrationHeader } from '@/app/components/RegistrationHeader';
 import { Button } from '@/app/components/Button';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
-import { ToolbarButton } from '../ToolbarButton';
+import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { RefreshIcon } from '@/app/icons/RefreshIcon';
-import { RegistrationFooterActions } from '../RegistrationFooterActions';
+import { RegistrationFooterActions } from '@/app/components/RegistrationFooterActions';
 import { Alert } from '@/app/components/Alert';
 import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { EyeIcon } from '@/app/icons/EyeIcon';
@@ -180,8 +180,10 @@ const useSensitiveState = () => {
   }, []);
 
   useEffect(() => {
-    const seedWords = seedPhrase.split(' ');
-    setShuffledSeedWords(shuffleSeedWords(seedWords));
+    if (seedPhrase) {
+      const seedWords = seedPhrase.split(' ');
+      setShuffledSeedWords(shuffleSeedWords(seedWords));
+    }
 
     return function cleanup() {
       clearSensitiveState();

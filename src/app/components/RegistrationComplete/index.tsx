@@ -1,29 +1,31 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { HighlightedBox } from '@/app/components/HighlightedBox';
-import { registrationData } from '@/core/registrationData';
 import { Toolbar } from '@/app/components/Toolbar';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
+import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
-  const { bitcoinAddress, pqAddress } = useSensitiveState();
+  const { signedMessages, bitcoinAddress } = useRegistrationSessionContext();
   const router = useRouter();
 
-  const copyPqAddress = useCallback(() => {
-    navigator.clipboard.writeText(pqAddress);
-  }, [pqAddress]);
+  const copyMldsa44Address = useCallback(() => {
+    if (signedMessages) {
+      navigator.clipboard.writeText(signedMessages.ML_DSA_44.address);
+    }
+  }, [signedMessages]);
 
   const navigateToHomepage = useCallback(() => {
     router.push('/');
   }, [router]);
 
-  if (!bitcoinAddress || !pqAddress) return null;
+  if (!bitcoinAddress || !signedMessages) return null;
 
   return (
     <main>
@@ -44,10 +46,12 @@ export function RegistrationComplete() {
               className={styles.pqAddressBox}
               label='Post-Quantum address'
             >
-              <span className={styles.pqAddressText}>{pqAddress}</span>
+              <span className={styles.pqAddressText}>
+                {signedMessages.ML_DSA_44.address}
+              </span>
             </HighlightedBox>
             <Toolbar>
-              <CopyTextToolbarButton onClick={copyPqAddress} />
+              <CopyTextToolbarButton onClick={copyMldsa44Address} />
             </Toolbar>
           </div>
         </div>
@@ -82,28 +86,3 @@ export function RegistrationComplete() {
     </main>
   );
 }
-
-const useSensitiveState = () => {
-  const [bitcoinAddress, setBitcoinAddress] = useState('');
-  const [pqAddress, setPqAddress] = useState('');
-
-  const clearSensitiveState = useCallback(() => {
-    setBitcoinAddress('');
-    setPqAddress('');
-  }, []);
-
-  useEffect(() => {
-    setBitcoinAddress(registrationData.getBitcoinAddress());
-    setPqAddress(registrationData.getPqAddress());
-
-    return function cleanup() {
-      clearSensitiveState();
-    };
-  }, [clearSensitiveState]);
-
-  return {
-    bitcoinAddress,
-    pqAddress,
-    clearSensitiveState
-  };
-};
