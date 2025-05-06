@@ -1,53 +1,9 @@
-.button {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    color: #0a0a0a;
-    background-color: #fafafa;
-    padding-left: 24px;
-    padding-right: 24px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: 500;
-    height: 42px;
-    justify-content: center;
-}
-
-.button:hover {
-    color: #0a0a0a;
-}
-
-.inputBox {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-}
-
-.inputLabel {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 1.6rem;
-}
-
-.inputBox input, .inputBox textarea {
-    margin-top: 12px;
-    letter-spacing: 1px;
-}
-
 .title {
     font-size: 1.4rem;
     letter-spacing: -1px;
     font-weight: 400;
     line-height: 2.2rem;
     margin-bottom: 0;
-}
-
-.searchArea {
-    margin-top: 12px;
-    width: 100%;
-    margin-bottom: 20px;
 }
 
 .footer {
@@ -58,38 +14,9 @@
     justify-content: flex-end;
 }
 
-.registration {
-    margin-top: 40px;
-    margin-bottom: 40px;
-}
-
-.registrationCardRow {
-    padding-top: 18px;
-    padding-bottom: 18px;
-    border-bottom: 1px solid #222;
-}
-
-.registrationCardRow:last-of-type {
-    border-bottom: none;
-}
-
-.registrationDetailsLabel {
-    margin-top: 0;
-    margin-bottom: 8px;
-}
-
-.registrationDetailsValue {
-    overflow-wrap: anywhere;
-}
-
 .noResult {
     margin-top: 20px;
     margin-bottom: 40px;
-}
-
-.highlightedText {
-    overflow-wrap: anywhere;
-    color: #fafafa;
 }
 
 .alertSection {
@@ -171,15 +98,3 @@
 .registerText {
     color: #fafafa;
 }
-
-@media only screen and (min-width: 768px) {
-    .searchArea {
-        margin-top: 24px;
-    }
-
-    .button {
-        padding-left: 30px;
-        padding-right: 30px;
-        height: 48px;
-    }
-  }
