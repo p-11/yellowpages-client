@@ -39,7 +39,7 @@ export function RegistrationStep3() {
     signature,
     changeSignature,
     resetSignature,
-    generateSigningMessage
+    setSigningMessage
   } = useSensitiveState();
   const [isBitcoinAddressConfirmed, setIsBitcoinAddressConfirmed] =
     useState(false);
@@ -81,16 +81,19 @@ export function RegistrationStep3() {
   const confirmBitcoinAddress = useCallback(() => {
     if (isValidBitcoinAddress(bitcoinAddress)) {
       const signedMessages = generateSignedMessages(seedPhrase, bitcoinAddress);
-      generateSigningMessage({
-        bitcoinAddress: bitcoinAddress,
+      setSignedMessages(signedMessages);
+
+      const { message } = generateMessage({
+        bitcoinAddress,
         mldsa44Address: signedMessages.ML_DSA_44.address
       });
-      setSignedMessages(signedMessages);
+      setSigningMessage(message);
+
       setIsBitcoinAddressConfirmed(true);
     } else {
       setShowInvalidBitcoinAddressAlert(true);
     }
-  }, [generateSigningMessage, bitcoinAddress, seedPhrase, setSignedMessages]);
+  }, [bitcoinAddress, seedPhrase, setSigningMessage, setSignedMessages]);
 
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
@@ -312,20 +315,6 @@ const useSensitiveState = () => {
     };
   }, [clearSensitiveState]);
 
-  const generateSigningMessage = useCallback(
-    ({
-      bitcoinAddress,
-      mldsa44Address
-    }: {
-      bitcoinAddress: string;
-      mldsa44Address: string;
-    }) => {
-      const { message } = generateMessage({ bitcoinAddress, mldsa44Address });
-      setSigningMessage(message);
-    },
-    []
-  );
-
   const changeSignature = useCallback((value: string) => {
     setSignature(value);
   }, []);
@@ -337,9 +326,9 @@ const useSensitiveState = () => {
   return {
     signingMessage,
     signature,
-    generateSigningMessage,
     changeSignature,
     resetSignature,
-    clearSensitiveState
+    clearSensitiveState,
+    setSigningMessage
   };
 };
