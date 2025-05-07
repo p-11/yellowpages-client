@@ -4,7 +4,7 @@ import { FormEventHandler, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/app/components/Button';
 import { ArrowRightIcon } from '@/app/icons/ArrowRightIcon';
-import { useVerificationContext } from '@/app/providers/VerificationProvider';
+import { useSearchContext } from '@/app/providers/SearchProvider';
 import { searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
 import {
@@ -16,10 +16,9 @@ import {
 import { isValidBitcoinAddress } from '@/core/cryptography';
 import styles from './styles.module.css';
 
-export function Verification() {
+export function Search() {
   const router = useRouter();
-  const { setResult, bitcoinAddress, setBitcoinAddress } =
-    useVerificationContext();
+  const { setResult, bitcoinAddress, setBitcoinAddress } = useSearchContext();
   const [showInvalidBitcoinAddressAlert, setShowInvalidBitcoinAddressAlert] =
     useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,7 +49,7 @@ export function Verification() {
         }
 
         setIsSubmitting(false);
-        router.push('/verification/result');
+        router.push('/search/result');
       } else {
         setShowInvalidBitcoinAddressAlert(true);
       }

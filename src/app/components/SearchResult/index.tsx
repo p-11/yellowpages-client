@@ -4,15 +4,14 @@ import { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/app/components/Button';
-import { useVerificationContext } from '@/app/providers/VerificationProvider';
+import { useSearchContext } from '@/app/providers/SearchProvider';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { Alert } from '@/app/components/Alert';
 import styles from './styles.module.css';
 
-export function VerificationResult() {
+export function SearchResult() {
   const router = useRouter();
-  const { result, bitcoinAddress, setBitcoinAddress } =
-    useVerificationContext();
+  const { result, bitcoinAddress, setBitcoinAddress } = useSearchContext();
 
   useEffect(() => {
     if (result === undefined) {
@@ -26,7 +25,7 @@ export function VerificationResult() {
 
   const searchAgain = useCallback(() => {
     setBitcoinAddress('');
-    router.push('/verification');
+    router.push('/search');
   }, [router, setBitcoinAddress]);
 
   if (result === undefined) return null;

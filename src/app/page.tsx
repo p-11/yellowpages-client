@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <main className={styles.homepage}>
       <Link href='/register/step-1'>Register</Link>
-      <Link href='/verification'>Check the registry</Link>
+      <Link href='/search'>Check the registry</Link>
     </main>
   );
 }
