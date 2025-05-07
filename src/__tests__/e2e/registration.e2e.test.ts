@@ -79,18 +79,20 @@ test('successful registration and search result', async ({ page }) => {
   await page.getByRole('button', { name: 'Continue' }).click();
 
   // Step 2 page
-  await expect(page.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
 
   await page.getByRole('button', { name: 'Reveal words' }).click();
 
   for (const seedWord of seedWords) {
     await page
-      .getByRole('button', { name: seedWord, exact: true })
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
       .first()
       .click();
   }
 
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
 
   // Step 3 page
   await page
@@ -138,18 +140,20 @@ test('unsuccessful registration attempt when an invalid Bitcoin address is enter
   await page.getByRole('button', { name: 'Continue' }).click();
 
   // Step 2 page
-  await expect(page.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
 
   await page.getByRole('button', { name: 'Reveal words' }).click();
 
   for (const seedWord of seedWords) {
     await page
-      .getByRole('button', { name: seedWord, exact: true })
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
       .first()
       .click();
   }
 
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
 
   // Step 3
   await page
@@ -219,18 +223,20 @@ test('unsuccessful registration attempt when the session expires on step 3', asy
   await page.getByRole('button', { name: 'Continue' }).click();
 
   // Step 2 page
-  await expect(page.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
 
   await page.getByRole('button', { name: 'Reveal words' }).click();
 
   for (const seedWord of seedWords) {
     await page
-      .getByRole('button', { name: seedWord, exact: true })
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
       .first()
       .click();
   }
 
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
 
   // Step 3 page
   await expect(page.getByText('Register: Step 3')).toBeVisible();
@@ -291,18 +297,20 @@ test('unsuccessful registration attempt when the session is refreshed on step 3'
   await page.getByRole('button', { name: 'Continue' }).click();
 
   // Step 2 page
-  await expect(page.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
 
   await page.getByRole('button', { name: 'Reveal words' }).click();
 
   for (const seedWord of seedWords) {
     await page
-      .getByRole('button', { name: seedWord, exact: true })
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
       .first()
       .click();
   }
 
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
 
   // Step 3 page
   await expect(page.getByText('Register: Step 3')).toBeVisible();
