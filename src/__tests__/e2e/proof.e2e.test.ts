@@ -1,29 +1,143 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+import { generateMnemonic, mnemonicToSeedSync } from '@scure/bip39';
+import { sign as signBitcoinMessage } from 'bitcoinjs-message';
+import * as bitcoin from 'bitcoinjs-lib';
+import { HDKey } from '@scure/bip32';
+import { wordlist } from '@scure/bip39/wordlists/english';
 
-test('register flow', async ({ page }) => {
-  // Homepage
-  await page.goto('/');
+const generateBtcWallet = () => {
+  const mnemonic = generateMnemonic(wordlist, 256);
+  const seed = mnemonicToSeedSync(mnemonic);
+  const masterNode = HDKey.fromMasterSeed(seed);
+  const path = "m/44'/0'/0'/0/0";
+  const child = masterNode.derive(path);
+  if (!child.privateKey) {
+    throw new Error('Could not derive private key');
+  }
+  if (!child.publicKey) {
+    throw new Error('Could not derive public key');
+  }
+  const { address } = bitcoin.payments.p2wpkh({
+    pubkey: Buffer.from(child.publicKey),
+    network: bitcoin.networks.bitcoin
+  });
+  if (!address) {
+    throw new Error('Address generation failed');
+  }
+  return {
+    address,
+    mnemonic
+  };
+};
 
-  await page.getByRole('link', { name: 'Register' }).click();
+const signMessage = (mnemonic: string, message: string): string => {
+  // Re-create seed + root
+  const seed = mnemonicToSeedSync(mnemonic);
+  const masterNode = HDKey.fromMasterSeed(seed);
+  const path = "m/44'/0'/0'/0/0";
+  const child = masterNode.derive(path);
+  if (!child.privateKey) {
+    throw new Error('Could not derive private key');
+  }
+  if (!child.publicKey) {
+    throw new Error('Could not derive public key');
+  }
+  // Sign the message (Bitcoin signed message format)
+  const signature = signBitcoinMessage(
+    message,
+    Buffer.from(child.privateKey),
+    true
+  );
 
-  // Step 1
-  await expect(page.getByText('Register: Step 1')).toBeVisible();
+  // Return base64
+  return signature.toString('base64');
+};
 
-  await page.getByRole('button', { name: 'Copy' }).click();
-
+const getTextFromClipboard = async (page: Page) => {
   const handle = await page.evaluateHandle(() =>
     navigator.clipboard.readText()
   );
-  const clipboardContent = await handle.jsonValue();
 
-  const seedWords = clipboardContent.split(' ');
+  return await handle.jsonValue();
+};
+
+test('successful registration and search result', async ({ page }) => {
+  const btcWallet = generateBtcWallet();
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Copy' }).click();
+
+  const seedPhrase = await getTextFromClipboard(page);
+  const seedWords = seedPhrase.split(' ');
 
   expect(seedWords).toHaveLength(24);
 
   await page.getByRole('button', { name: 'Continue' }).click();
 
-  // Step 2
-  await expect(page.getByText('Register: Step 2')).toBeVisible();
+  // Step 2 page
+  await expect(page.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  // Step 3 page
+  await page
+    .getByLabel('1. Enter your public Bitcoin address')
+    .fill(btcWallet.address);
+  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Copy' }).click();
+
+  const signingMessage = await getTextFromClipboard(page);
+  const signature = signMessage(btcWallet.mnemonic, signingMessage);
+
+  await page.getByLabel('3. Enter the generated signature').fill(signature);
+  await page.getByRole('button', { name: 'Complete' }).click();
+
+  // Registration complete page
+  await page.getByRole('link', { name: 'searching the registry' }).click();
+
+  // Search page
+  await page.getByLabel('Bitcoin address:').fill(btcWallet.address);
+  await page.getByRole('button', { name: 'Search' }).click();
+
+  // Search result page
+  await expect(
+    page.getByText(
+      'Registered and cryptographically linked to a post-quantum address'
+    )
+  ).toBeVisible();
+});
+
+test('unsuccessful registration attempt when an invalid Bitcoin address is entered', async ({
+  page
+}) => {
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Copy' }).click();
+
+  const clipboardText = await getTextFromClipboard(page);
+  const seedWords = clipboardText.split(' ');
+
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
   await expect(page.getByRole('button', { name: 'Confirm' })).toBeDisabled();
 
   await page.getByRole('button', { name: 'Reveal words' }).click();
@@ -38,5 +152,45 @@ test('register flow', async ({ page }) => {
   await page.getByRole('button', { name: 'Confirm' }).click();
 
   // Step 3
-  await expect(page.getByText('Register: Step 3')).toBeVisible();
+  await page
+    .getByLabel('1. Enter your public Bitcoin address')
+    .fill('invalid-bitcoin-address');
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  await expect(page.getByText('Invalid Bitcoin address')).toBeVisible();
+});
+
+test('unsuccessful search attempt when an invalid Bitcoin address is entered', async ({
+  page
+}) => {
+  // Home page
+  await page.goto('/');
+
+  // Search page
+  await page.getByRole('link', { name: 'Check the registry' }).click();
+  await page.getByLabel('Bitcoin address:').fill('invalid-bitcoin-address');
+  await page.getByRole('button', { name: 'Search' }).click();
+
+  await expect(page.getByText('Invalid Bitcoin address')).toBeVisible();
+});
+
+test('search result when the Bitcoin address is not registered', async ({
+  page
+}) => {
+  const btcWallet = generateBtcWallet();
+
+  // Home page
+  await page.goto('/');
+
+  // Search page
+  await page.getByRole('link', { name: 'Check the registry' }).click();
+  await page.getByLabel('Bitcoin address:').fill(btcWallet.address);
+  await page.getByRole('button', { name: 'Search' }).click();
+
+  // Search result page
+  await expect(
+    page.getByText(
+      `Bitcoin address "${btcWallet.address}" is not on the registry.`
+    )
+  ).toBeVisible();
 });
