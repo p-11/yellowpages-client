@@ -32,6 +32,8 @@ export default defineConfig({
     trace: 'on-first-retry'
   },
 
+  globalSetup: require.resolve('./playwright-global.setup'),
+
   /* Configure projects for major browsers */
   projects: [
     {
@@ -68,7 +70,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI
   }
