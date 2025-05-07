@@ -174,7 +174,7 @@ test('unsuccessful search attempt when an invalid Bitcoin address is entered', a
   await expect(page.getByText('Invalid Bitcoin address')).toBeVisible();
 });
 
-test('search result when the Bitcoin address is not registered', async ({
+test('search result when the Bitcoin address entered is not registered', async ({
   page
 }) => {
   const btcWallet = generateBtcWallet();
