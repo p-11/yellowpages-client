@@ -1,0 +1,44 @@
+.inputBox {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+}
+
+.inputLabel {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6rem;
+}
+
+.inputBox input, .inputBox textarea {
+    margin-top: 12px;
+    letter-spacing: 1px;
+}
+
+.title {
+    font-size: 1.4rem;
+    letter-spacing: -1px;
+    font-weight: 400;
+    line-height: 2.2rem;
+    margin-bottom: 0;
+}
+
+.searchArea {
+    margin-top: 12px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.footer {
+    display: flex;
+    gap: 18px;
+    margin-top: 40px;
+    margin-bottom: 60px;
+    justify-content: flex-end;
+}
+
+@media only screen and (min-width: 768px) {
+    .searchArea {
+        margin-top: 24px;
+    }
+  }
