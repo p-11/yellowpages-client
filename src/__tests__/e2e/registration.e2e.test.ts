@@ -160,6 +160,76 @@ test('unsuccessful registration attempt when an invalid Bitcoin address is enter
   await expect(page.getByText('Invalid Bitcoin address')).toBeVisible();
 });
 
+test('unsuccessful registration attempt when the session is refreshed on step 1', async ({
+  page
+}) => {
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await expect(page.getByText('Register: Step 1')).toBeVisible();
+
+  await page.reload();
+
+  await expect(page.getByText('Your session has refreshed')).toBeVisible();
+});
+
+test('unsuccessful registration attempt when the session is refreshed on step 2', async ({
+  page
+}) => {
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Register: Step 2')).toBeVisible();
+
+  await page.reload();
+
+  await expect(page.getByText('Your session has refreshed')).toBeVisible();
+});
+
+test('unsuccessful registration attempt when the session is refreshed on step 3', async ({
+  page
+}) => {
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Copy' }).click();
+
+  const clipboardText = await getTextFromClipboard(page);
+  const seedWords = clipboardText.split(' ');
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(page.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  // Step 3 page
+  await expect(page.getByText('Register: Step 3')).toBeVisible();
+
+  await page.reload();
+
+  await expect(page.getByText('Your session has refreshed')).toBeVisible();
+});
+
 test('unsuccessful search attempt when an invalid Bitcoin address is entered', async ({
   page
 }) => {
