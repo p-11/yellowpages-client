@@ -39,8 +39,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: {
-        ...devices['Desktop Chrome'],
-        permissions: ['clipboard-read', 'clipboard-write']
+        ...devices['Desktop Chrome']
       }
     },
 
@@ -51,20 +50,19 @@ export default defineConfig({
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'], permissions: ['clipboard-read'] }
+      use: { ...devices['Desktop Safari'] }
     },
 
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
       use: {
-        ...devices['Pixel 5'],
-        permissions: ['clipboard-read', 'clipboard-write']
+        ...devices['Pixel 5']
       }
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'], permissions: ['clipboard-read'] }
+      use: { ...devices['iPhone 12'] }
     }
   ],
 

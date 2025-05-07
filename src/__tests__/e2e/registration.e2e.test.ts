@@ -53,12 +53,11 @@ const signMessage = (mnemonic: string, message: string): string => {
   return signature.toString('base64');
 };
 
-const getTextFromClipboard = async (page: Page) => {
-  const handle = await page.evaluateHandle(() =>
-    navigator.clipboard.readText()
-  );
-
-  return await handle.jsonValue();
+const getSeedWords = async (page: Page) => {
+  const seedPhrase =
+    (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
+    ''; // find nearest text above the 'Copy' button
+  return seedPhrase.split(' ');
 };
 
 test('successful registration and search result', async ({ page }) => {
@@ -71,9 +70,7 @@ test('successful registration and search result', async ({ page }) => {
   // Step 1 page
   await page.getByRole('button', { name: 'Copy' }).click();
 
-  const seedPhrase = await getTextFromClipboard(page);
-  const seedWords = seedPhrase.split(' ');
-
+  const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
   await page.getByRole('button', { name: 'Continue' }).click();
@@ -101,7 +98,9 @@ test('successful registration and search result', async ({ page }) => {
   await page.getByRole('button', { name: 'Confirm' }).click();
   await page.getByRole('button', { name: 'Copy' }).click();
 
-  const signingMessage = await getTextFromClipboard(page);
+  const signingMessage =
+    (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
+    ''; // find nearest text above the 'Copy' button
   const signature = signMessage(btcWallet.mnemonic, signingMessage);
 
   await page.getByLabel('3. Enter the generated signature').fill(signature);
@@ -132,9 +131,7 @@ test('unsuccessful registration attempt when an invalid Bitcoin address is enter
   // Step 1 page
   await page.getByRole('button', { name: 'Copy' }).click();
 
-  const clipboardText = await getTextFromClipboard(page);
-  const seedWords = clipboardText.split(' ');
-
+  const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
   await page.getByRole('button', { name: 'Continue' }).click();
@@ -217,8 +214,8 @@ test('unsuccessful registration attempt when the session expires on step 3', asy
   // Step 1 page
   await page.getByRole('button', { name: 'Copy' }).click();
 
-  const clipboardText = await getTextFromClipboard(page);
-  const seedWords = clipboardText.split(' ');
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
 
   await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -291,8 +288,8 @@ test('unsuccessful registration attempt when the session is refreshed on step 3'
   // Step 1 page
   await page.getByRole('button', { name: 'Copy' }).click();
 
-  const clipboardText = await getTextFromClipboard(page);
-  const seedWords = clipboardText.split(' ');
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
 
   await page.getByRole('button', { name: 'Continue' }).click();
 
