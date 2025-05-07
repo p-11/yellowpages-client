@@ -63,14 +63,20 @@ enum PQ_SIGNATURE_ALGORITHM {
 /*
  * Supported Algorithms Seed length
  */
-const PQ_ENTROPY_LENGTHS = {
+const PQ_ALGO_CONFIG = {
   /** ML-DSA-44 */
-  [PQ_SIGNATURE_ALGORITHM.ML_DSA_44]: 32,
+  [PQ_SIGNATURE_ALGORITHM.ML_DSA_44]: {
+    entropyLength: 32,
+    pubkeyType: PubKeyType.MlDsa44
+  },
   /**
    * TEST_ALGO
    * This is used as this length is needed for BIP-85 test vectors
    */
-  [PQ_SIGNATURE_ALGORITHM.TEST_ALGO]: 64
+  [PQ_SIGNATURE_ALGORITHM.TEST_ALGO]: {
+    entropyLength: 64,
+    pubkeyType: PubKeyType.MlDsa44 // this can be anything
+  }
 } as const;
 
 /*
@@ -146,11 +152,21 @@ const isValidBitcoinSignature = (
 /*
  * Generate PQ address from public key bytes
  */
-const generatePQAddress = (publicKey: PQPublicKey): PQAddress => {
+const generatePQAddress = ({
+  publicKey,
+  algorithm
+}: {
+  publicKey: PQPublicKey;
+  algorithm: PQ_SIGNATURE_ALGORITHM;
+}): PQAddress => {
+  const config = PQ_ALGO_CONFIG[algorithm];
+  if (config === undefined) {
+    throw new Error(`Unsupported algorithm ${algorithm}`);
+  }
   const params = {
     network: IS_PROD ? PQAddressNetwork.Mainnet : PQAddressNetwork.Testnet,
     version: Version.V1,
-    pubkeyType: PubKeyType.MlDsa44,
+    pubkeyType: config.pubkeyType,
     pubkeyBytes: publicKey
   };
   return encodeAddress(params) as PQAddress;
@@ -161,12 +177,12 @@ const generatePQAddress = (publicKey: PQPublicKey): PQAddress => {
  */
 function derivePQEntropyLength(
   algo: PQ_SIGNATURE_ALGORITHM
-): (typeof PQ_ENTROPY_LENGTHS)[PQ_SIGNATURE_ALGORITHM] {
-  const length = PQ_ENTROPY_LENGTHS[algo];
-  if (length === undefined) {
+): (typeof PQ_ALGO_CONFIG)[PQ_SIGNATURE_ALGORITHM]['entropyLength'] {
+  const config = PQ_ALGO_CONFIG[algo];
+  if (config === undefined) {
     throw new Error(`Unsupported algorithm: ${algo}`);
   }
-  return length;
+  return config.entropyLength;
 }
 
 /*
@@ -214,7 +230,7 @@ const deriveBip85Entropy = ({
 }: {
   root: HDKey;
   derIndex: PQ_SIGNATURE_ALGORITHM;
-  entropyLength: (typeof PQ_ENTROPY_LENGTHS)[PQ_SIGNATURE_ALGORITHM];
+  entropyLength: (typeof PQ_ALGO_CONFIG)[PQ_SIGNATURE_ALGORITHM]['entropyLength'];
 }): Uint8Array => {
   // Length cannot be longer than 64 bytes (hmac 512 limit)
   if (entropyLength > 64)
@@ -279,7 +295,10 @@ const generateKeypair = (
         const keypair = ml_dsa44.keygen(entropy);
         const publicKey = keypair.publicKey as PQPublicKey;
         const privateKey = keypair.secretKey as PQPrivateKey;
-        const address = generatePQAddress(publicKey);
+        const address = generatePQAddress({
+          publicKey,
+          algorithm
+        });
         return {
           publicKey: publicKey,
           privateKey: privateKey,
