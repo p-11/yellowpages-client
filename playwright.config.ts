@@ -49,7 +49,7 @@ export default defineConfig({
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
+      use: { ...devices['Desktop Safari'], permissions: ['clipboard-read'] }
     },
 
     /* Test against mobile viewports. */
@@ -62,7 +62,7 @@ export default defineConfig({
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] }
+      use: { ...devices['iPhone 12'], permissions: ['clipboard-read'] }
     }
   ],
 
