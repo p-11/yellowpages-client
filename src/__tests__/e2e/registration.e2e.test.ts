@@ -121,6 +121,56 @@ test('successful registration and search result', async ({ page }) => {
   ).toBeVisible();
 });
 
+test('unsuccessful registration attempt when the order of the seed phrase selected is incorrect', async ({
+  page
+}) => {
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Copy' }).click();
+
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  // reverse seed words to cause an incorrect selection
+  seedWords.reverse();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  await expect(
+    page.getByText('Incorrect order, please try again.')
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'Try again', exact: true }).click();
+
+  // ensure the seed words can be selected
+  await expect(
+    page.getByRole('button', {
+      name: seedWords[0],
+      exact: true,
+      disabled: false
+    })
+  ).toBeVisible();
+});
+
 test('unsuccessful registration attempt when an invalid Bitcoin address is entered', async ({
   page
 }) => {
