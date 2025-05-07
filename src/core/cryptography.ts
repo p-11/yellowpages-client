@@ -2,7 +2,7 @@ import { mnemonicToSeedSync, generateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { HDKey } from '@scure/bip32';
 import { hmac } from '@noble/hashes/hmac';
-import { sha512, sha256 } from '@noble/hashes/sha2';
+import { sha512 } from '@noble/hashes/sha2';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import {
   validate,
@@ -11,6 +11,15 @@ import {
   AddressType
 } from 'bitcoin-address-validation';
 import { verify as verifyBitcoinSignedMessage } from 'bitcoinjs-message';
+import {
+  encodeAddress,
+  Network as PQAddressNetwork,
+  Version,
+  PubKeyType
+} from '@project-eleven/pq-address';
+
+// Get Environment
+const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 
 /*
  * Types
@@ -138,8 +147,13 @@ const isValidBitcoinSignature = (
  * Generate PQ address from public key bytes
  */
 const generatePQAddress = (publicKey: PQPublicKey): PQAddress => {
-  const hash = sha256(publicKey);
-  return bytesToBase64(hash) as PQAddress;
+  const params = {
+    network: IS_PROD ? PQAddressNetwork.Mainnet : PQAddressNetwork.Testnet,
+    version: Version.V1,
+    pubkeyType: PubKeyType.MlDsa44,
+    pubkeyBytes: publicKey
+  };
+  return encodeAddress(params) as PQAddress;
 };
 
 /*
