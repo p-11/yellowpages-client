@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "next lint",
     "test": "BIP85_APP_NO=0  jest",
-    "test:e2e": "npx playright test",
     "l:c": "eslint \"./**/*.tsx\"",
     "l:f": "eslint \"./**/*.tsx\" --fix",
     "p:c": "prettier --config .prettierrc \"./**/*.+(js|mjs|json|ts|tsx)\" --check --ignore-unknown",
