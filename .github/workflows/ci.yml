@@ -29,13 +29,10 @@ jobs:
       - name: Check formatting (Prettier)
         run: npm run p:c
 
-      - name: Build TypeScript
-        run: npm run build
-
       - name: Run Tests
         run: npm run test
 
-      - name: Create build for Playwright tests
+      - name: Create build for Playwright tests and typechecking
         run: npm run build:test
 
       - name: Install Playwright Browsers
