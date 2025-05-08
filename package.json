@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:test": "NEXT_PUBLIC_VERCEL_ENV=test next build",
     "start": "next start",
     "lint": "next lint",
     "test": "BIP85_APP_NO=0  jest",
@@ -28,10 +29,12 @@
   "devDependencies": {
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.24.0",
+    "@playwright/test": "1.52.0",
     "@types/jest": "^29.5.14",
     "@types/node": "22.14.0",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.2",
+    "bitcoinjs-lib": "6.1.7",
     "eslint": "9.24.0",
     "eslint-config-next": "15.2.5",
     "eslint-config-prettier": "10.1.1",
