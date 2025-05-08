@@ -3,7 +3,6 @@ body {
   background-color: #E8D674;
   color: #1E0B00;
   font-family: 'Geist Mono', Courier, monospace;
-  font-weight: 300;
 }
 
 p {
@@ -31,7 +30,6 @@ button {
   font-size: 15px;
   padding: 0;
   line-height: 1rem;
-  font-weight: 300;
 }
 
 button:hover {
@@ -49,7 +47,6 @@ input, textarea {
   padding-right: 16px;
   border-radius: 10px;
   font-size: 16px;
-  font-weight: 300;
   line-height: 1.4rem;
 }
 

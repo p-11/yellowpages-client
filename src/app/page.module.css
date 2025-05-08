@@ -21,6 +21,10 @@
     gap: 24px;
 }
 
+.primaryLink, .secondaryLink {
+    font-size: 14px;
+}
+
 .primaryLink {
     padding-top: 10px;
     padding-bottom: 10px;
