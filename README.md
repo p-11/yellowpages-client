@@ -8,3 +8,8 @@
 ## Local Development
 
 - Run `npm run dev` to launch the development build.
+
+## Running E2E tests
+
+- Run `npx playwright install --with-deps` to install Playwright browsers.
+- Run `npx playwright test` to run the tests.

@@ -71,6 +71,7 @@ export function Search() {
             Bitcoin address:
           </label>
           <input
+            id='publicBitcoinAddress'
             required
             value={bitcoinAddress}
             autoComplete='off'

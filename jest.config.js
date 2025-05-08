@@ -16,5 +16,8 @@ module.exports = {
   // If you use path-aliases (e.g. @/…), map them:
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
-  }
+  },
+
+  // ignore e2e test files
+  testPathIgnorePatterns: ['\\.e2e\\.']
 };
