@@ -55,8 +55,8 @@ const signMessage = (mnemonic: string, message: string): string => {
 
 const getSeedWords = async (page: Page) => {
   const seedPhrase =
-    (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
-    ''; // find nearest text above the 'Copy' button
+    (await page.locator('span:near(:text("Copy"))').first().textContent()) ??
+    ''; // find text nearest to the 'Copy' button
   return seedPhrase.split(' ');
 };
 
