@@ -1,13 +1,13 @@
 body {
   margin: 0;
-  background-color: #0a0a0a;
-  color: #fafafa;
+  background-color: #E8D674;
+  color: #1E0B00;
   font-family: 'Geist Mono', Courier, monospace;
   font-weight: 300;
 }
 
 p {
-  color: #888;
+  color: #1E0B00;
   line-height: 1.75rem;
   font-size: 15px;
 }
@@ -24,17 +24,8 @@ main {
   align-items: flex-start;
 }
 
-a {
-  color: #888;
-}
-
-a:hover {
-  color: #fafafa;
-}
-
 button {
   font-family: inherit;
-  color: #888;
   background: none;
   border: none;
   font-size: 15px;
@@ -44,7 +35,6 @@ button {
 }
 
 button:hover {
-  color: #fafafa;
   cursor: pointer;
 }
 
