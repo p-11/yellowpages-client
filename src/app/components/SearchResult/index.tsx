@@ -47,14 +47,16 @@ export function SearchResult() {
               <div className={styles.connectingBlock} />
             </div>
             <div className={styles.pqAddress}>
-              <span className={styles.pqAddressLabel}>PQC address:</span>
+              <span className={styles.pqAddressLabel}>
+                Post-Quantum address
+              </span>
               <span className={styles.pqAddressText}>
                 {result.ml_dsa_44_address}
               </span>
             </div>
           </div>
           <div className={styles.bitcoinAddress}>
-            <span className={styles.bitcoinAddressLabel}>BTC address</span>
+            <span className={styles.bitcoinAddressLabel}>Bitcoin address</span>
             <div>
               <span className={styles.bitcoinAddressText}>
                 {bitcoinAddress}
