@@ -40,14 +40,14 @@ button:hover {
 
 input, textarea {
   font-family: inherit;
-  color: #fafafa;
-  background: #111;
-  border: 1px solid #191919;
+  background-color: #d8cb7e;
+  color: #1E0B00;
+  border: 1px solid #1E0B00;
   padding-top: 12px;
   padding-bottom: 12px;
   padding-left: 16px;
   padding-right: 16px;
-  border-radius: 6px;
+  border-radius: 10px;
   font-size: 16px;
   font-weight: 300;
   line-height: 1.4rem;

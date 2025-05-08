@@ -19,7 +19,7 @@ export default function HomePage() {
           Register <ArrowRightIcon />
         </Link>
         <Link className={styles.secondaryLink} href='/search'>
-          Search the registry
+          Check the registry
         </Link>
       </div>
     </main>
