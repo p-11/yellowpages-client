@@ -26,7 +26,7 @@ export function CopyTextToolbarButton({ onClick }: { onClick: () => void }) {
     <ToolbarButton onClick={clickHandler}>
       {isIndicatorVisible ? (
         <>
-          <CheckIcon stroke='#7fd17f' />
+          <CheckIcon />
           Copied
         </>
       ) : (

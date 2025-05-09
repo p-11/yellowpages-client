@@ -3,19 +3,17 @@
     padding-bottom: 12px;
     padding-left: 16px;
     padding-right: 16px;
-    border-radius: 6px;
+    border-radius: 10px;
     display: flex;
     gap: 16px;
 }
 
 .alert.warning {
-    background-color: #190D06;
-    color: #ea8958;
+    background-color: #cfbf67;
 }
 
 .alert.success {
-    background-color: #071906;
-    color: #73cf88;
+    background-color: #cfbf67;
 }
 
 .alertText {

@@ -68,6 +68,7 @@
     }
 
     .primaryLink, .secondaryLink {
+        font-size: 15px;
         flex: 1
     }
 }
