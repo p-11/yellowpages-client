@@ -38,6 +38,7 @@ button {
   font-size: 15px;
   padding: 0;
   line-height: 1rem;
+  color: #1E0B00;
 }
 
 button:hover {
