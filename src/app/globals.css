@@ -11,6 +11,14 @@ p {
   font-size: 15px;
 }
 
+a {
+  color: #635b34;
+}
+
+a:hover {
+  color: #1E0B00;
+}
+
 main {
   margin-top: 36px;
   max-width: 920px;
