@@ -12,7 +12,7 @@ export default function HomePage() {
     <main className={styles.homepage}>
       <h1 className={styles.title}>yellowpages.xyz</h1>
       <p className={styles.message}>
-        Prepare your Bitcoin for a post-quantum world.
+        Find yourself in the post quantum world - join the yellowpages.
       </p>
       <div className={styles.links}>
         <Link className={styles.primaryLink} href='/register/step-1'>
