@@ -111,7 +111,10 @@ export const RegistrationSessionProvider = ({
 
   const onLoadStep3Route = useCallback(() => {
     handleSessionRedirects();
-    setHasConfirmedSeedPhrase(true);
+
+    if (activeSession.current) {
+      setHasConfirmedSeedPhrase(true);
+    }
   }, [handleSessionRedirects]);
 
   const onLoadCompletionRoute = useCallback(() => {
