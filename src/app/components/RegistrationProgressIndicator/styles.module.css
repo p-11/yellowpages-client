@@ -16,17 +16,16 @@
 }
 
 .activeProgressIndicator {
-    background-color: #aea157;
+    background-color: #8b8250;
 }
 
 .activeStep {
     font-size: 15px;
-    color: #796f38;
 }
 
 @media only screen and (min-width: 768px) {
     .activeStep {
-        font-size: 18px;
+        font-size: 16px;
     }
 
     .progressIndicators {
