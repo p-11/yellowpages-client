@@ -29,7 +29,6 @@
 }
 
 .pqAddressLabel {
-    color: #fafafa;
     margin-bottom: 10px;
     display: block
 }
@@ -79,18 +78,14 @@
 .bitcoinAddress {
     margin-left: 42px;
     margin-top: 30px;
+    opacity: 0.6;
 }
 
 .bitcoinAddressText, .pqAddressText {
     word-break: break-all;
 }
 
-.bitcoinAddressText {
-    color: #888;
-}
-
 .bitcoinAddressLabel {
-    color: #888;
     margin-bottom: 10px;
     display: block
 }
