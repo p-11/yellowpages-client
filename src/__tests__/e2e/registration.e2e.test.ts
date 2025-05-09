@@ -68,8 +68,6 @@ test('successful registration and search result', async ({ page }) => {
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
@@ -96,7 +94,6 @@ test('successful registration and search result', async ({ page }) => {
     .getByLabel('1. Enter your public Bitcoin address')
     .fill(btcWallet.address);
   await page.getByRole('button', { name: 'Confirm' }).click();
-  await page.getByRole('button', { name: 'Copy' }).click();
 
   const signingMessage =
     (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
@@ -129,8 +126,6 @@ test('unsuccessful registration attempt when the order of the seed phrase select
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
@@ -179,8 +174,6 @@ test('unsuccessful registration attempt when an invalid Bitcoin address is enter
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
@@ -262,8 +255,6 @@ test('unsuccessful registration attempt when the session expires on step 3', asy
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
@@ -336,8 +327,6 @@ test('unsuccessful registration attempt when the session is refreshed on step 3'
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
