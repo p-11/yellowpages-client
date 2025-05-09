@@ -57,7 +57,6 @@
 
 .connectingLine {
     width: 2px;
-    background-color: #222;
     flex: 1;
     background: linear-gradient(0deg,rgba(207, 191, 103, 1) 0%, rgba(30, 11, 0, 0.8) 100%);
 }

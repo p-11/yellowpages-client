@@ -59,11 +59,11 @@
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    background-color: #222;
+    background-color: #cfbf67;
 }
 
 .connectingBlock:first-of-type {
-    border: 2px solid rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(30, 11, 0, 0.8);
 }
 
 .connectingBlock:last-of-type {
@@ -72,9 +72,8 @@
 
 .connectingLine {
     width: 2px;
-    background-color: #222;
     flex: 1;
-    background: linear-gradient(0deg,rgba(34, 34, 34, 1) 0%, rgba(255, 255, 255, 0.8) 100%);
+    background: linear-gradient(0deg,rgba(207, 191, 103, 1) 0%, rgba(30, 11, 0, 0.8) 100%);
 }
 
 .bitcoinAddress {

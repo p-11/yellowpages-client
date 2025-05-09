@@ -107,7 +107,7 @@ test('successful registration and search result', async ({ page }) => {
   await page.getByRole('button', { name: 'Complete' }).click();
 
   // Registration complete page
-  await page.getByRole('link', { name: 'searching the registry' }).click();
+  await page.getByRole('link', { name: 'searching the directory' }).click();
 
   // Search page
   await page.getByLabel('Bitcoin address:').fill(btcWallet.address);
@@ -374,7 +374,7 @@ test('unsuccessful search attempt when an invalid Bitcoin address is entered', a
   await page.goto('/');
 
   // Search page
-  await page.getByRole('link', { name: 'Check the registry' }).click();
+  await page.getByRole('link', { name: 'Check the directory' }).click();
   await page.getByLabel('Bitcoin address:').fill('invalid-bitcoin-address');
   await page.getByRole('button', { name: 'Search' }).click();
 
@@ -390,7 +390,7 @@ test('search result when the Bitcoin address entered is not registered', async (
   await page.goto('/');
 
   // Search page
-  await page.getByRole('link', { name: 'Check the registry' }).click();
+  await page.getByRole('link', { name: 'Check the directory' }).click();
   await page.getByLabel('Bitcoin address:').fill(btcWallet.address);
   await page.getByRole('button', { name: 'Search' }).click();
 
