@@ -12,7 +12,7 @@ export function Alert({
   className?: string;
 }) {
   return (
-    <div className={`${styles.alert} ${styles[type] ?? ''} ${className ?? ''}`}>
+    <div className={`${styles.alert} ${className ?? ''}`}>
       {type === 'warning' ? <CircleAlertIcon /> : <CircleCheckIcon />}
       <span className={styles.alertText}>{children}</span>
     </div>

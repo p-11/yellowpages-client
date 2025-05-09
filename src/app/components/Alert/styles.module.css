@@ -6,13 +6,6 @@
     border-radius: 10px;
     display: flex;
     gap: 16px;
-}
-
-.alert.warning {
-    background-color: #cfbf67;
-}
-
-.alert.success {
     background-color: #cfbf67;
 }
 
