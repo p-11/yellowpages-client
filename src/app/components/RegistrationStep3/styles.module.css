@@ -35,13 +35,13 @@
 
 .confirmedInput {
     margin-top: 12px;
-    background-color: #191919;
-    border-radius: 6px;
+    background-color: #E8D674;
+    border-radius: 10px;
     padding-top: 12px;
     padding-bottom: 12px;
     padding-right: 16px;
     padding-left: 16px;
-    border: 1px solid #191919;
+    border: 1px solid #cfbf67;
     word-wrap: break-word;
     letter-spacing: 1px;
     font-size: 16px;
@@ -52,11 +52,12 @@
     display: flex;
     gap: 6px;
     align-items: center;
-    color: #0a0a0a;
-    background-color: #fafafa;
+    background-color: #cfbf67;
+    border: 1px solid #1E0B00;
+    color: #1E0B00;
     padding-left: 18px;
     padding-right: 14px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: 500;
     font-size: 14px;
     height: 32px;
@@ -65,7 +66,7 @@
 }
 
 .confirmButton:hover {
-    color: #0a0a0a;
+    color: #1E0B00;
 }
 
 .confirmButton:disabled {
@@ -108,7 +109,7 @@
 .footer {
     width: 100%;
     position: sticky;
-    background-color: #0a0a0a;
+    background-color: #E8D674;
     bottom: 0;
     padding-top: 40px;
     padding-bottom: 60px;
@@ -122,7 +123,7 @@
 
 .failedAttemptFooterOverlay {
     position: absolute;
-    background-color: #0a0a0a;
+    background-color: #E8D674;
     padding-top: 24px;
     bottom: 24px;
     width: 100%;
@@ -130,7 +131,7 @@
     justify-content: flex-end;
     opacity: 0;
     pointer-events: none;
-    border-top: 1px solid #191919;
+    border-top: 1px solid #cfbf67;
     transition: opacity 0.25s ease;
 }
 
