@@ -118,6 +118,134 @@ test('successful registration and search result', async ({ page }) => {
   ).toBeVisible();
 });
 
+test('step 2 should show a confirmed state when completed', async ({
+  page
+}) => {
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await page.getByRole('button', { name: 'Back' }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Seed phrase confirmed')).toBeVisible();
+});
+
+test('step 2 should not show a confirmed state when the session has refreshed', async ({
+  page
+}) => {
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await expect(page.getByText('Register: Step 3')).toBeVisible();
+  await page.reload();
+
+  // Step 1 page
+  await expect(page.getByText('Your session has refreshed')).toBeVisible();
+  await page
+    .locator('button:below(:text("Your session has refreshed"))')
+    .first()
+    .click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Register: Step 2')).toBeVisible();
+  await expect(page.getByText('Seed phrase confirmed')).not.toBeVisible();
+});
+
+test('step 2 should not show a confirmed state when the previous session has expired', async ({
+  page
+}) => {
+  await page.clock.install({ time: new Date() });
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await expect(page.getByText('Register: Step 3')).toBeVisible();
+  await page.clock.fastForward('30:00');
+
+  // Session expired page
+  await page.getByRole('button', { name: 'Start again' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Register: Step 2')).toBeVisible();
+  await expect(page.getByText('Seed phrase confirmed')).not.toBeVisible();
+});
+
 test('unsuccessful registration attempt when the order of the seed phrase selected is incorrect', async ({
   page
 }) => {
