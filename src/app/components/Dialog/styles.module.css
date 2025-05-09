@@ -4,7 +4,7 @@
     bottom: 0;
     right: 0;
     left: 0;
-    background-color: rgba(0,0,0,0.9);
+    background-color: rgb(238 225 154 / 68%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -15,14 +15,13 @@
     margin-right: 24px;
     width: 100%;
     max-width: 420px;
-    background-color: #0a0a0a;
-    border: 1px solid #191919;
+    background-color: #e8d674;
+    border: 1px solid #8b8250;
     padding: 24px;
-    border-radius: 6px;
+    border-radius: 10px;
 }
 
 .dialogTitle {
-    color: #fafafa;
     margin-top: 0px;
     margin-bottom: 12px;
     font-weight: 400;

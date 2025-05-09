@@ -2,35 +2,37 @@
     display: flex;
     gap: 6px;
     align-items: center;
-    color: #0a0a0a;
-    background-color: #fafafa;
+    color: #E8D674;
+    background-color: #1E0B00;  
     padding-left: 18px;
     padding-right: 16px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    border-radius: 6px;
+    border-radius: 10px;
     font-weight: 500;
     font-size: 14px;
-    height: 36px;
+    height: 42px;
 }
 
 .primaryButton:hover {
-    color: #0a0a0a;
+    color: #E8D674;
+    opacity: 0.85;
 }
 
 .primaryButton:disabled {
-    background-color: #666;
+    opacity: 0.5;
     cursor: auto;
 }
 
 .secondaryButton {
     font-size: 14px;
-    padding-left: 16px;
-    padding-right: 16px;
     display: flex;
     gap: 6px;
     align-items: center;
-    height: 36px;
+    height: 42px;
+    font-weight: 400;
+}
+
+.secondaryButton:hover {
+    text-decoration: underline;
 }
 
 @media only screen and (min-width: 768px) {

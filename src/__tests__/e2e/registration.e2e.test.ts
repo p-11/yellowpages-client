@@ -68,8 +68,6 @@ test('successful registration and search result', async ({ page }) => {
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
@@ -96,7 +94,6 @@ test('successful registration and search result', async ({ page }) => {
     .getByLabel('1. Enter your public Bitcoin address')
     .fill(btcWallet.address);
   await page.getByRole('button', { name: 'Confirm' }).click();
-  await page.getByRole('button', { name: 'Copy' }).click();
 
   const signingMessage =
     (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
@@ -107,7 +104,7 @@ test('successful registration and search result', async ({ page }) => {
   await page.getByRole('button', { name: 'Complete' }).click();
 
   // Registration complete page
-  await page.getByRole('link', { name: 'searching the registry' }).click();
+  await page.getByRole('link', { name: 'searching the directory' }).click();
 
   // Search page
   await page.getByLabel('Bitcoin address:').fill(btcWallet.address);
@@ -129,8 +126,6 @@ test('unsuccessful registration attempt when the order of the seed phrase select
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
@@ -179,8 +174,6 @@ test('unsuccessful registration attempt when an invalid Bitcoin address is enter
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
@@ -262,8 +255,6 @@ test('unsuccessful registration attempt when the session expires on step 3', asy
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
@@ -336,8 +327,6 @@ test('unsuccessful registration attempt when the session is refreshed on step 3'
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Copy' }).click();
-
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
@@ -374,7 +363,7 @@ test('unsuccessful search attempt when an invalid Bitcoin address is entered', a
   await page.goto('/');
 
   // Search page
-  await page.getByRole('link', { name: 'Check the registry' }).click();
+  await page.getByRole('link', { name: 'Check the directory' }).click();
   await page.getByLabel('Bitcoin address:').fill('invalid-bitcoin-address');
   await page.getByRole('button', { name: 'Search' }).click();
 
@@ -390,7 +379,7 @@ test('search result when the Bitcoin address entered is not registered', async (
   await page.goto('/');
 
   // Search page
-  await page.getByRole('link', { name: 'Check the registry' }).click();
+  await page.getByRole('link', { name: 'Check the directory' }).click();
   await page.getByLabel('Bitcoin address:').fill(btcWallet.address);
   await page.getByRole('button', { name: 'Search' }).click();
 
