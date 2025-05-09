@@ -1,7 +1,10 @@
 .homepage {
     display: flex;
     flex-direction: column;
-    padding-top: 40px;
+    height: 100svh;
+    margin-top: 0;
+    margin-bottom: 0;
+    justify-content: center;
 }
 
 .title {
@@ -10,7 +13,6 @@
 }
 
 .message {
-    margin-top: 20px;
     margin-bottom: 100px;
 }
 
@@ -37,7 +39,7 @@
     text-align: center;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: 8px;
 }
 
@@ -63,7 +65,6 @@
     font-weight: 400;
     display: flex;
     align-items: center;
-    justify-content: center;
 }
 
 @media only screen and (min-width: 768px) {
