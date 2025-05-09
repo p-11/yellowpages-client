@@ -15,7 +15,7 @@
     padding-bottom: 4px;
     background-color: #cfbf67;
     border: 1px solid #1E0B00;
-    border-radius: 6px;
+    border-radius: 8px;
     width: 100%;
     font-size: 14px;
     position: relative;
@@ -51,7 +51,7 @@
     width: 28px;
     height: 28px;
     border: 1px solid #191919;
-    border-radius: 4px;
+    border-radius: 6px;
     font-weight: 500;
     font-size: 14px;
     color: #1E0B00;
@@ -63,7 +63,7 @@
     line-height: 28px;
     color: #1E0B00;
     background-color: #E8D674;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 14px;
     border-color: #cfbf67;
 }
