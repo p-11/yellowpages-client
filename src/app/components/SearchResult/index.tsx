@@ -71,7 +71,7 @@ export function SearchResult() {
             <span className={styles.bitcoinAddressText}>{bitcoinAddress}</span>
             &quot; is not on the registry.
           </p>
-          <p className={styles.registerText}>
+          <p>
             Do you own this address?{' '}
             <Link href='/register/step-1'>Register now</Link>.
           </p>
