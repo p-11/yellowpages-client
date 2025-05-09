@@ -55,7 +55,6 @@ export const RegistrationStep2 = () => {
   const restart = useCallback(() => {
     window.scrollTo(0, 0);
     clearSelectedSeedWordIndices();
-    router.push('/register/step-3');
   }, [clearSelectedSeedWordIndices]);
 
   const goBack = useCallback(() => {
