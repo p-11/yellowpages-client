@@ -24,68 +24,8 @@
     margin-top: 30px;
 }
 
-.pqAddress {
+.entrySection {
     width: 100%;
-}
-
-.pqAddressLabel {
-    margin-bottom: 10px;
-    display: block
-}
-
-.pqAddressSection {
-    margin-top: 42px;
-    position: relative;
-    width: 100%;
-    display: flex;
-    gap: 24px;
-    padding-left: 42px;
-    box-sizing: border-box;
-    padding-bottom: 12px;
-}
-
-.connectingBlocks {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: -55px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.connectingBlock {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    background-color: #cfbf67;
-}
-
-.connectingBlock:first-of-type {
-    border: 2px solid rgba(30, 11, 0, 0.8);
-}
-
-.connectingBlock:last-of-type {
-    margin-bottom: 8px;
-}
-
-.connectingLine {
-    width: 2px;
-    flex: 1;
-    background: linear-gradient(0deg,rgba(207, 191, 103, 1) 0%, rgba(30, 11, 0, 0.8) 100%);
-}
-
-.bitcoinAddress {
-    margin-left: 42px;
-    margin-top: 30px;
-    opacity: 0.6;
-}
-
-.bitcoinAddressText, .pqAddressText {
-    word-break: break-all;
-}
-
-.bitcoinAddressLabel {
-    margin-bottom: 10px;
-    display: block
+    margin-top: 60px;
+    margin-bottom: 40px;
 }

@@ -3,23 +3,15 @@
 import { useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { HighlightedBox } from '@/app/components/HighlightedBox';
-import { Toolbar } from '@/app/components/Toolbar';
-import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
+import { DirectoryEntry } from '@/app/components/DirectoryEntry';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
   const { signedMessages, bitcoinAddress } = useRegistrationSessionContext();
   const router = useRouter();
-
-  const copyMldsa44Address = useCallback(() => {
-    if (signedMessages) {
-      navigator.clipboard.writeText(signedMessages.ML_DSA_44.address);
-    }
-  }, [signedMessages]);
 
   const navigateToHomepage = useCallback(() => {
     router.push('/');
@@ -35,34 +27,15 @@ export function RegistrationComplete() {
           Your post-quantum (PQ) address has been created and cryptographically
           linked to your Bitcoin address.
         </p>
-        <div className={styles.pqAddressSection}>
-          <div className={styles.connectingBlocks}>
-            <div className={styles.connectingBlock} />
-            <div className={styles.connectingLine} />
-            <div className={styles.connectingBlock} />
-          </div>
-          <div className={styles.pqAddress}>
-            <HighlightedBox
-              className={styles.pqAddressBox}
-              label='Post-Quantum address'
-            >
-              <span className={styles.pqAddressText}>
-                {signedMessages.ML_DSA_44.address}
-              </span>
-            </HighlightedBox>
-            <Toolbar>
-              <CopyTextToolbarButton onClick={copyMldsa44Address} />
-            </Toolbar>
-          </div>
-        </div>
-        <div className={styles.bitcoinAddress}>
-          <span className={styles.bitcoinAddressLabel}>Bitcoin address</span>
-          <div>
-            <span className={styles.bitcoinAddressText}>{bitcoinAddress}</span>
-          </div>
+        <div className={styles.entrySection}>
+          <DirectoryEntry
+            bitcoinAddress={bitcoinAddress}
+            mldsa44Address={signedMessages.ML_DSA_44.address}
+            showCopyButton
+          />
         </div>
         <div className={styles.warningSection}>
-          <Alert>Remember to save your new post-quantum address</Alert>
+          <Alert>Remember to save your new post-quantum addresses</Alert>
         </div>
         <div>
           <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
