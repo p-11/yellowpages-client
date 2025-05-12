@@ -52,7 +52,7 @@ export function RegistrationComplete() {
         </div>
         <div className={styles.footer}>
           <Button variant='primary' onClick={navigateToHomepage}>
-            Registry home
+            Directory home
           </Button>
         </div>
       </div>

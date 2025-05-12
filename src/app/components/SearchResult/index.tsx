@@ -53,7 +53,7 @@ export function SearchResult() {
           <p>
             Bitcoin address &quot;
             <span className={styles.bitcoinAddressText}>{bitcoinAddress}</span>
-            &quot; is not on the registry.
+            &quot; is not in the directory.
           </p>
           <p>
             Do you own this address?{' '}
