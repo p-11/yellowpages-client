@@ -7,6 +7,7 @@ import { Button } from '@/app/components/Button';
 import { useSearchContext } from '@/app/providers/SearchProvider';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { Alert } from '@/app/components/Alert';
+import { DirectoryEntry } from '@/app/components/DirectoryEntry';
 import styles from './styles.module.css';
 
 export function SearchResult() {
@@ -40,28 +41,11 @@ export function SearchResult() {
               Registered and cryptographically linked to a post-quantum address
             </Alert>
           </div>
-          <div className={styles.pqAddressSection}>
-            <div className={styles.connectingBlocks}>
-              <div className={styles.connectingBlock} />
-              <div className={styles.connectingLine} />
-              <div className={styles.connectingBlock} />
-            </div>
-            <div className={styles.pqAddress}>
-              <span className={styles.pqAddressLabel}>
-                Post-Quantum address
-              </span>
-              <span className={styles.pqAddressText}>
-                {result.ml_dsa_44_address}
-              </span>
-            </div>
-          </div>
-          <div className={styles.bitcoinAddress}>
-            <span className={styles.bitcoinAddressLabel}>Bitcoin address</span>
-            <div>
-              <span className={styles.bitcoinAddressText}>
-                {bitcoinAddress}
-              </span>
-            </div>
+          <div className={styles.entrySection}>
+            <DirectoryEntry
+              bitcoinAddress={bitcoinAddress}
+              mldsa44Address={result.ml_dsa_44_address}
+            />
           </div>
         </>
       ) : (
@@ -69,7 +53,7 @@ export function SearchResult() {
           <p>
             Bitcoin address &quot;
             <span className={styles.bitcoinAddressText}>{bitcoinAddress}</span>
-            &quot; is not on the registry.
+            &quot; is not in the directory.
           </p>
           <p>
             Do you own this address?{' '}

@@ -514,7 +514,7 @@ test('search result when the Bitcoin address entered is not registered', async (
   // Search result page
   await expect(
     page.getByText(
-      `Bitcoin address "${btcWallet.address}" is not on the registry.`
+      `Bitcoin address "${btcWallet.address}" is not in the directory.`
     )
   ).toBeVisible();
 });
