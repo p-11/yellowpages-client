@@ -7,6 +7,7 @@ import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import { DirectoryEntry } from '@/app/components/DirectoryEntry';
+import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
@@ -16,6 +17,10 @@ export function RegistrationComplete() {
   const navigateToHomepage = useCallback(() => {
     router.push('/');
   }, [router]);
+
+  const copySocialLink = useCallback(() => {
+    navigator.clipboard.writeText('https://yellowpages.xyz');
+  }, []);
 
   if (!bitcoinAddress || !signedMessages) return null;
 
@@ -39,6 +44,18 @@ export function RegistrationComplete() {
         </div>
         <div>
           <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
+          <p>Help others find the yellowpages:</p>
+          <div className={styles.socialSection}>
+            <div className={styles.socialSectionContent}>
+              <p>I found myself in the post-quantum world.</p>
+              <p>Get protected & join the yellowpages.</p>
+              <p>yellowpages.xyz</p>
+            </div>
+          </div>
+          <CopyTextToolbarButton
+            label='Copy social link'
+            onClick={copySocialLink}
+          />
           <p>
             Check your registration by{' '}
             <Link href='/search'>searching the directory</Link> or visit our{' '}
