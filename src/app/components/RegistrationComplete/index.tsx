@@ -44,7 +44,7 @@ export function RegistrationComplete() {
         </div>
         <div>
           <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
-          <p>Help others find the yellowpages:</p>
+          <p>Help others find themselves in the post quantum world.</p>
           <div className={styles.socialSection}>
             <div className={styles.socialSectionContent}>
               <p>I found myself in the post-quantum world.</p>
@@ -52,19 +52,16 @@ export function RegistrationComplete() {
               <p>yellowpages.xyz</p>
             </div>
           </div>
-          <CopyTextToolbarButton
-            label='Copy social link'
-            onClick={copySocialLink}
-          />
+          <CopyTextToolbarButton label='Copy link' onClick={copySocialLink} />
           <p>
             Check your registration by{' '}
             <Link href='/search'>searching the directory</Link> or visit our{' '}
             <Link href='/faqs'>FAQs page</Link> to learn more.
           </p>
           <p>
-            Own multiple wallets? You can register more than one address. Please
-            note that each address will be linked to a different post-quantum
-            address.
+            Own multiple addresses? You can register as many addresses as you
+            need to. Each address will be linked to a different post-quantum
+            address suite.
           </p>
         </div>
         <div className={styles.footer}>
