@@ -47,6 +47,10 @@ export function RegistrationComplete() {
     navigator.clipboard.writeText(proofData);
   }, [proofData]);
 
+  const copySocialLink = useCallback(() => {
+    navigator.clipboard.writeText('https://yellowpages.xyz');
+  }, []);
+
   if (!bitcoinAddress || !signedMessages) return null;
 
   return (
@@ -74,15 +78,24 @@ export function RegistrationComplete() {
         </div>
         <div>
           <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
+          <p>Help others find themselves in the post quantum world.</p>
+          <div className={styles.socialSection}>
+            <div className={styles.socialSectionContent}>
+              <p>I found myself in the post-quantum world.</p>
+              <p>Get protected & join the yellowpages.</p>
+              <p>yellowpages.xyz</p>
+            </div>
+          </div>
+          <CopyTextToolbarButton label='Copy link' onClick={copySocialLink} />
           <p>
             Check your registration by{' '}
             <Link href='/search'>searching the directory</Link> or visit our{' '}
             <Link href='/faqs'>FAQs page</Link> to learn more.
           </p>
           <p>
-            Own multiple wallets? You can register more than one address. Please
-            note that each address will be linked to a different post-quantum
-            address.
+            Own multiple addresses? You can register as many addresses as you
+            need to. Each address will be linked to a different post-quantum
+            address suite.
           </p>
         </div>
         <div className={styles.footer}>
