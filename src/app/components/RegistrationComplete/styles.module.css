@@ -28,6 +28,26 @@
     margin-bottom: 60px;
 }
 
+.socialSection {
+    display: flex;
+}
+
+.socialSectionContent {
+    border: 4px solid #cfbf67;
+    border-radius: 10px;
+    background-color: #E8D674;
+    padding: 20px;
+}
+
+.socialSectionContent p {
+    margin: 0;
+}
+
+.socialSectionContent p:last-of-type {
+    margin-top: 16px;
+    font-weight: 600;
+}
+
 @media only screen and (min-width: 768px) {
     .title {
         margin-top: 32px;

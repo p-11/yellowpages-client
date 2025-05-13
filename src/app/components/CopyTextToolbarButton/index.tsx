@@ -3,7 +3,13 @@ import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CheckIcon } from '@/app/icons/CheckIcon';
 import { CopyIcon } from '@/app/icons/CopyIcon';
 
-export function CopyTextToolbarButton({ onClick }: { onClick: () => void }) {
+export function CopyTextToolbarButton({
+  label = 'Copy',
+  onClick
+}: {
+  label?: string;
+  onClick: () => void;
+}) {
   const [isIndicatorVisible, setIsIndicatorVisible] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
@@ -32,7 +38,7 @@ export function CopyTextToolbarButton({ onClick }: { onClick: () => void }) {
       ) : (
         <>
           <CopyIcon />
-          Copy
+          {label}
         </>
       )}
     </ToolbarButton>
