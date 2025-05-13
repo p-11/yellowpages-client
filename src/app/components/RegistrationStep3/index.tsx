@@ -34,6 +34,7 @@ import {
 } from '@/core/cryptography';
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
+import { proofJsonData } from '@/data/mock';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -60,7 +61,8 @@ export function RegistrationStep3() {
     seedPhrase,
     signedMessages,
     setBitcoinAddress,
-    setSignedMessages
+    setSignedMessages,
+    setProofData
   } = useRegistrationSessionContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -134,6 +136,8 @@ export function RegistrationStep3() {
         // ensure registration exists before continuing (throws on failure)
         await searchYellowpagesByBtcAddress(bitcoinAddress);
 
+        setProofData(JSON.stringify(proofJsonData, null, 2));
+
         router.push('/registration-complete');
       } catch {
         setShowFailedRequestAlert(true);
@@ -142,7 +146,14 @@ export function RegistrationStep3() {
     } else {
       setShowInvalidSignatureAlert(true);
     }
-  }, [router, signature, bitcoinAddress, signingMessage, signedMessages]);
+  }, [
+    router,
+    signature,
+    bitcoinAddress,
+    signingMessage,
+    signedMessages,
+    setProofData
+  ]);
 
   const tryAgain = useCallback(() => {
     resetSignature();

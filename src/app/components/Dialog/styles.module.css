@@ -13,12 +13,17 @@
 .dialogContent {
     margin-left: 24px;
     margin-right: 24px;
-    width: 100%;
+    width: calc(100% - 24px);
     max-width: 420px;
     background-color: #e8d674;
     border: 1px solid #8b8250;
     padding: 24px;
     border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.dialogContent.large {
+    max-width: 760px;
 }
 
 .dialogTitle {

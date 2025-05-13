@@ -1,9 +1,17 @@
 import styles from './styles.module.css';
 
-export function Dialog({ children }: { children: React.ReactNode }) {
+export function Dialog({
+  children,
+  large = false
+}: {
+  children: React.ReactNode;
+  large?: boolean;
+}) {
   return (
     <div className={styles.dialog}>
-      <div className={styles.dialogContent}>{children}</div>
+      <div className={`${styles.dialogContent} ${large ? styles.large : ''}`}>
+        {children}
+      </div>
     </div>
   );
 }

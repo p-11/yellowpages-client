@@ -7,30 +7,15 @@ import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import { DirectoryEntry } from '@/app/components/DirectoryEntry';
+import { Dialog, DialogTitle } from '@/app/components/Dialog';
+import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
+import { ToolbarButton } from '@/app/components/ToolbarButton';
+import { DownloadIcon } from '@/app/icons/DownloadIcon';
 import styles from './styles.module.css';
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle
-} from '../Dialog';
-
-const jsonData = {
-  btc_address: '',
-  ml_dsa_address: '',
-  creation_date: '',
-  version: '',
-  proof: '',
-  aws_nitro_pcr_measurement_set: {
-    pcr_0: '',
-    pcr_1: '',
-    pcr_2: '',
-    pcr_8: ''
-  }
-};
 
 export function RegistrationComplete() {
-  const { signedMessages, bitcoinAddress } = useRegistrationSessionContext();
+  const { signedMessages, bitcoinAddress, proofData } =
+    useRegistrationSessionContext();
   const router = useRouter();
   const [showProofDialog, setShowProofDialog] = useState(true);
 
@@ -38,9 +23,29 @@ export function RegistrationComplete() {
     router.push('/');
   }, [router]);
 
-  const hideProofDialog = useCallback(() => {
-    setShowProofDialog(false);
-  }, []);
+  const toggleProofDialog = useCallback(() => {
+    setShowProofDialog(!showProofDialog);
+  }, [showProofDialog]);
+
+  const downloadProofData = useCallback(() => {
+    if (!proofData) return;
+
+    const blob = new Blob([proofData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'proof.json';
+    link.click();
+
+    URL.revokeObjectURL(url);
+  }, [proofData]);
+
+  const copyProofData = useCallback(() => {
+    if (!proofData) return;
+
+    navigator.clipboard.writeText(proofData);
+  }, [proofData]);
 
   if (!bitcoinAddress || !signedMessages) return null;
 
@@ -52,6 +57,9 @@ export function RegistrationComplete() {
           Your post-quantum (PQ) address has been created and cryptographically
           linked to your Bitcoin address.
         </p>
+        <div className={styles.warningSection}>
+          <Alert>Remember to save your new post-quantum addresses</Alert>
+        </div>
         <div className={styles.entrySection}>
           <DirectoryEntry
             bitcoinAddress={bitcoinAddress}
@@ -59,8 +67,10 @@ export function RegistrationComplete() {
             showCopyButton
           />
         </div>
-        <div className={styles.warningSection}>
-          <Alert>Remember to save your new post-quantum addresses</Alert>
+        <div className={styles.entryDetailsSection}>
+          <ToolbarButton onClick={toggleProofDialog}>
+            <DownloadIcon /> View and download your proof
+          </ToolbarButton>
         </div>
         <div>
           <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
@@ -82,17 +92,22 @@ export function RegistrationComplete() {
         </div>
       </div>
       {showProofDialog && (
-        <Dialog>
+        <Dialog large>
           <DialogTitle>Proof</DialogTitle>
-          <DialogDescription>Download this.</DialogDescription>
-          <pre className={styles.proofJson}>
-            {JSON.stringify(jsonData, null, 2)}
-          </pre>
-          <DialogFooter>
-            <Button variant='primary' onClick={hideProofDialog}>
+          <div className={styles.proofSection}>
+            <pre className={styles.proofData}>{proofData}</pre>
+            <div className={styles.proofDialogToolbar}>
+              <ToolbarButton onClick={downloadProofData}>
+                <DownloadIcon /> Download
+              </ToolbarButton>
+              <CopyTextToolbarButton onClick={copyProofData} />
+            </div>
+          </div>
+          <div className={styles.proofDialogFooter}>
+            <Button variant='primary' onClick={toggleProofDialog}>
               Continue
             </Button>
-          </DialogFooter>
+          </div>
         </Dialog>
       )}
     </main>

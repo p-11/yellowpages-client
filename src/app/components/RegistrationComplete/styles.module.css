@@ -11,7 +11,7 @@
 }
 
 .warningSection {
-    margin-top: 42px;
+    margin-top: 24px;
     margin-bottom: 42px;
     display: flex;
 }
@@ -23,14 +23,38 @@
     letter-spacing: -0.05rem;
 }
 
-.proofJson {
-    background-color: #f6e688;
+.entryDetailsSection {
+    margin-top: 8px;
+    margin-bottom: 24px;
+}
+
+.proofSection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.proofData {
+    background-color: #d8cb7e;
+    border: 1px solid #8b8250;
     padding: 16px;
     border-radius: 6px;
     white-space: pre-wrap;
     word-wrap: break-word;
     max-height: 45svh;
     overflow-y: auto;
+    margin: 0;
+}
+
+.proofDialogToolbar {
+    display: flex;
+    gap: 12px;
+}
+
+.proofDialogFooter {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
 }
 
 .footer {
