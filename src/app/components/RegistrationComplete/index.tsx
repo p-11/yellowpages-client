@@ -17,7 +17,7 @@ export function RegistrationComplete() {
   const { signedMessages, bitcoinAddress, proofData } =
     useRegistrationSessionContext();
   const router = useRouter();
-  const [showProofDialog, setShowProofDialog] = useState(true);
+  const [showProofDialog, setShowProofDialog] = useState(false);
 
   const navigateToHomepage = useCallback(() => {
     router.push('/');
