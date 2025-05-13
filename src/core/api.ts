@@ -108,7 +108,7 @@ export async function createProof(body: {
   mldsa44PublicKey: string;
 }): Promise<void> {
   try {
-    const wsUrl = `${domains.proofService.replace('http', 'ws')}/ws`;
+    const wsUrl = `${domains.proofService.replace('http', 'ws')}/prove`;
     console.log(`Opening WebSocket connection to: ${wsUrl}`);
 
     return await new Promise<void>((resolve, reject) => {
