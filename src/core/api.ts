@@ -174,37 +174,26 @@ export async function createProof(body: {
           }
         } else if (event.code === 1008) {
           console.error('Policy violation detected (code 1008)');
-          cleanupAndReject(
-            new Error(
-              `Policy violation: ${event.reason || 'Unknown policy violation'}`
-            )
-          );
-        } else if (event.code === 1006) {
-          console.error(
-            'Abnormal closure (code 1006) - server might have crashed or network failed'
-          );
-          cleanupAndReject(
-            new Error('Network error while connecting to proof service')
-          );
+          cleanupAndReject(new Error('Policy violation'));
         } else if (event.code === 1011) {
-          console.error('Server encountered an error (code 1011)');
+          console.error('Server encountered an internal error (code 1011)');
+          cleanupAndReject(new Error('Server error'));
+        } else if (event.code === 4000) {
+          console.error('Server timeout detected (code 4000)');
+          cleanupAndReject(new Error('Operation timed out on server'));
+        } else {
+          console.error(`Unexpected close code: ${event.code}`);
           cleanupAndReject(
-            new Error(`Server error: ${event.reason || 'Unknown server error'}`)
-          );
-        } else if (!event.wasClean && !isResolved) {
-          cleanupAndReject(
-            new Error(
-              `Connection closed unexpectedly: code ${event.code}, reason: "${event.reason}"`
-            )
+            new Error(`Connection closed unexpectedly: code ${event.code}`)
           );
         }
       };
 
       // Set a timeout for the entire operation
       const timeoutId = setTimeout(() => {
-        console.log('WebSocket operation timed out after 30 seconds');
+        console.log('WebSocket operation timed out after 60 seconds');
         cleanupAndReject(new Error('Operation timed out'));
-      }, 30000); // 30 second timeout
+      }, 60000); // 30 second timeout
 
       function cleanupAndReject(error: Error) {
         if (isResolved) return;
