@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { RegistrationStep1 } from '@/app/components/RegistrationStep1';
 
 export const metadata: Metadata = {
-  title: 'Step 1'
+  title: 'Register - Step 1'
 };
 
 export default function RegistrationStep1Page() {
