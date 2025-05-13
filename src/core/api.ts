@@ -1,7 +1,7 @@
 /**
  * Types
  */
-interface Proof {
+export interface Proof {
   id: string;
   btc_address: string;
   ml_dsa_44_address: string;
@@ -27,10 +27,10 @@ const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 const domains = {
   verificationService: IS_PROD
     ? 'https://verification-api.yellowpages.xyz'
-    : 'https://verification-api.yellowpages-development.xyz',
+    : 'http://localhost:8080',
   proofService: IS_PROD
     ? 'https://not.implemented.com'
-    : 'https://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
+    : 'http://localhost:8008'
 };
 
 /**
@@ -107,19 +107,136 @@ export async function createProof(body: {
   mldsa44SignedMessage: string;
   mldsa44PublicKey: string;
 }): Promise<void> {
-  const url = `${domains.proofService}/prove`;
-  return await request(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json'
-    },
-    body: JSON.stringify({
-      bitcoin_address: body.btcAddress,
-      bitcoin_signed_message: body.btcSignedMessage,
-      ml_dsa_address: body.mldsa44Address,
-      ml_dsa_signed_message: body.mldsa44SignedMessage,
-      ml_dsa_public_key: body.mldsa44PublicKey
-    })
-  });
+  try {
+    const wsUrl = `${domains.proofService.replace('http', 'ws')}/ws`;
+    console.log(`Opening WebSocket connection to: ${wsUrl}`);
+
+    return await new Promise<void>((resolve, reject) => {
+      let isResolved = false;
+      let proofSent = false;
+      const ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        console.log('WebSocket connection opened, sending handshake');
+        // Send handshake
+        ws.send(JSON.stringify({ message: 'hello' }));
+      };
+
+      ws.onmessage = event => {
+        console.log(`WebSocket message received:`, event.data);
+        let data;
+        try {
+          data = JSON.parse(event.data);
+        } catch (e) {
+          console.error('Failed to parse WebSocket message:', e);
+          cleanupAndReject(
+            new Error(`Failed to parse JSON from WebSocket: ${e}`)
+          );
+          return;
+        }
+
+        // After receiving handshake ack, send proof request
+        if (data.message === 'ack') {
+          console.log(
+            'Received handshake acknowledgment, sending proof request'
+          );
+          const proofRequest = {
+            bitcoin_address: body.btcAddress,
+            bitcoin_signed_message: body.btcSignedMessage,
+            ml_dsa_address: body.mldsa44Address,
+            ml_dsa_signed_message: body.mldsa44SignedMessage,
+            ml_dsa_public_key: body.mldsa44PublicKey
+          };
+          ws.send(JSON.stringify(proofRequest));
+          proofSent = true;
+          console.log('Proof request sent');
+        } else {
+          console.log('Unexpected message received:', data);
+        }
+      };
+
+      ws.onerror = (event: Event) => {
+        console.error('WebSocket error occurred:', event);
+        cleanupAndReject(
+          new Error('Network error while connecting to proof service')
+        );
+      };
+
+      ws.onclose = event => {
+        console.log(
+          `WebSocket closed: code=${event.code}, reason=${event.reason}, clean=${event.wasClean}`
+        );
+
+        // Process based on close code
+        if (event.code === 1000) {
+          if (proofSent && !isResolved) {
+            cleanupAndResolve();
+          }
+        } else if (event.code === 1008) {
+          console.error('Policy violation detected (code 1008)');
+          cleanupAndReject(
+            new Error(
+              `Policy violation: ${event.reason || 'Unknown policy violation'}`
+            )
+          );
+        } else if (event.code === 1006) {
+          console.error(
+            'Abnormal closure (code 1006) - server might have crashed or network failed'
+          );
+          cleanupAndReject(
+            new Error('Network error while connecting to proof service')
+          );
+        } else if (event.code === 1011) {
+          console.error('Server encountered an error (code 1011)');
+          cleanupAndReject(
+            new Error(`Server error: ${event.reason || 'Unknown server error'}`)
+          );
+        } else if (!event.wasClean && !isResolved) {
+          cleanupAndReject(
+            new Error(
+              `Connection closed unexpectedly: code ${event.code}, reason: "${event.reason}"`
+            )
+          );
+        }
+      };
+
+      // Set a timeout for the entire operation
+      const timeoutId = setTimeout(() => {
+        console.log('WebSocket operation timed out after 30 seconds');
+        cleanupAndReject(new Error('Operation timed out'));
+      }, 30000); // 30 second timeout
+
+      function cleanupAndReject(error: Error) {
+        if (isResolved) return;
+        isResolved = true;
+        clearTimeout(timeoutId);
+        if (
+          ws.readyState === WebSocket.OPEN ||
+          ws.readyState === WebSocket.CONNECTING
+        ) {
+          ws.close();
+        }
+        reject(error);
+      }
+
+      function cleanupAndResolve() {
+        if (isResolved) return;
+        isResolved = true;
+        clearTimeout(timeoutId);
+        if (
+          ws.readyState === WebSocket.OPEN ||
+          ws.readyState === WebSocket.CONNECTING
+        ) {
+          ws.close();
+        }
+        resolve();
+      }
+    });
+  } catch (e) {
+    if (e instanceof Error) {
+      throw e;
+    } else {
+      throw new Error(`Error during proof creation: ${e}`);
+    }
+  }
 }
