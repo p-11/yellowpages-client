@@ -23,6 +23,16 @@
     letter-spacing: -0.05rem;
 }
 
+.proofJson {
+    background-color: #f6e688;
+    padding: 16px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 45svh;
+    overflow-y: auto;
+}
+
 .footer {
     margin-top: 40px;
     margin-bottom: 60px;

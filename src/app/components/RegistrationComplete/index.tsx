@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/app/components/Button';
@@ -8,14 +8,39 @@ import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import { DirectoryEntry } from '@/app/components/DirectoryEntry';
 import styles from './styles.module.css';
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle
+} from '../Dialog';
+
+const jsonData = {
+  btc_address: '',
+  ml_dsa_address: '',
+  creation_date: '',
+  version: '',
+  proof: '',
+  aws_nitro_pcr_measurement_set: {
+    pcr_0: '',
+    pcr_1: '',
+    pcr_2: '',
+    pcr_8: ''
+  }
+};
 
 export function RegistrationComplete() {
   const { signedMessages, bitcoinAddress } = useRegistrationSessionContext();
   const router = useRouter();
+  const [showProofDialog, setShowProofDialog] = useState(true);
 
   const navigateToHomepage = useCallback(() => {
     router.push('/');
   }, [router]);
+
+  const hideProofDialog = useCallback(() => {
+    setShowProofDialog(false);
+  }, []);
 
   if (!bitcoinAddress || !signedMessages) return null;
 
@@ -56,6 +81,20 @@ export function RegistrationComplete() {
           </Button>
         </div>
       </div>
+      {showProofDialog && (
+        <Dialog>
+          <DialogTitle>Proof</DialogTitle>
+          <DialogDescription>Download this.</DialogDescription>
+          <pre className={styles.proofJson}>
+            {JSON.stringify(jsonData, null, 2)}
+          </pre>
+          <DialogFooter>
+            <Button variant='primary' onClick={hideProofDialog}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
     </main>
   );
 }
