@@ -119,44 +119,32 @@ export async function createProof(body: {
     waitForSocketOpen,
     onErrorEvent, 
     onSuccessClose, 
-    onErrorClose, 
-    createTimeout 
+    onErrorClose
   } = setupWebSocketHandlers(ws);
 
   try {
     // Step 1: Wait for WebSocket to connect
     console.log('Waiting for WebSocket connection to open');
-    const [connectionTimeout, clearConnectionTimeout] = createTimeout('Connection');
-    try {
-      await Promise.race([
-        waitForSocketOpen(),
-        onErrorEvent,
-        connectionTimeout
-      ]);
-    } finally {
-      clearConnectionTimeout();
-    }
+    await executeWithTimeout(
+      'Connection', 
+      waitForSocketOpen(), 
+      [onErrorEvent]
+    );
     
     console.log('WebSocket connection opened, sending handshake');
     
     // Step 2: Send handshake
     ws.send(JSON.stringify({ message: 'hello' }));
     
-    // Step 3: Wait for handshake acknowledgment with timeout
-    const [handshakeTimeout, clearHandshakeTimeout] = createTimeout('Handshake');
-    try {
-      const handshakeResponse = await Promise.race([
-        waitForMessage(),
-        onErrorEvent,
-        onErrorClose,
-        handshakeTimeout
-      ]);
-      
-      if (handshakeResponse.message !== 'ack') {
-        throw new Error(`Unexpected server response: ${JSON.stringify(handshakeResponse)}`);
-      }
-    } finally {
-      clearHandshakeTimeout();
+    // Step 3: Wait for handshake acknowledgment
+    const handshakeResponse = await executeWithTimeout(
+      'Handshake',
+      waitForMessage(),
+      [onErrorEvent, onErrorClose]
+    );
+    
+    if (handshakeResponse.message !== 'ack') {
+      throw new Error(`Unexpected server response: ${JSON.stringify(handshakeResponse)}`);
     }
     
     console.log('Received handshake acknowledgment, sending proof request');
@@ -172,22 +160,52 @@ export async function createProof(body: {
     ws.send(JSON.stringify(proofRequest));
     console.log('Proof request sent');
     
-    // Step 5: Wait for successful completion (normal close) with timeout
-    const [proofTimeout, clearProofTimeout] = createTimeout('Proof verification');
-    try {
-      await Promise.race([
-        onSuccessClose,
-        onErrorEvent,
-        onErrorClose,
-        proofTimeout
-      ]);
-    } finally {
-      clearProofTimeout();
-    }
+    // Step 5: Wait for successful completion (normal close)
+    await executeWithTimeout(
+      'Proof verification',
+      onSuccessClose,
+      [onErrorEvent, onErrorClose],
+      45000  // Allow more time for proof verification
+    );
   } finally {
     // Ensure connection is closed if still open
     if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
       ws.close();
+    }
+  }
+}
+
+/**
+ * Execute a promise with a timeout, cleaning up the timeout afterward
+ * @param operation Name of the operation for the timeout message
+ * @param mainPromise The main promise to execute
+ * @param errorPromises Promises that only reject on error conditions
+ * @param timeoutMs Timeout in milliseconds (default: 30000)
+ */
+async function executeWithTimeout<T>(
+  operation: string,
+  mainPromise: Promise<T>,
+  errorPromises: Promise<never>[] = [],
+  timeoutMs: number = 30000
+): Promise<T> {
+  let timeoutId: NodeJS.Timeout | undefined;
+  
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      console.log(`${operation} timed out after ${timeoutMs/1000} seconds`);
+      reject(new Error(`${operation} timed out`));
+    }, timeoutMs);
+  });
+  
+  try {
+    return await Promise.race([
+      mainPromise,
+      ...errorPromises,
+      timeoutPromise
+    ]);
+  } finally {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
     }
   }
 }
@@ -266,29 +284,11 @@ function setupWebSocketHandlers(ws: WebSocket) {
     });
   });
   
-  // Create a timeout promise with cleanup function
-  const createTimeout = (operation: string): [Promise<never>, () => void] => {
-    let timeoutId: NodeJS.Timeout;
-    
-    const promise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => {
-        console.log(`${operation} timed out after 30 seconds`);
-        reject(new Error(`${operation} timed out`));
-      }, 30000); // 30 second timeout
-    });
-    
-    // Return a cleanup function to clear this timeout
-    const cleanup = () => clearTimeout(timeoutId);
-    
-    return [promise, cleanup];
-  };
-  
   return { 
     waitForMessage, 
     waitForSocketOpen,
     onErrorEvent, 
     onSuccessClose, 
-    onErrorClose, 
-    createTimeout 
+    onErrorClose
   };
 }
