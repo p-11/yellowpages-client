@@ -47,7 +47,7 @@ export function ProofDialog({
       </div>
       <div className={styles.proofDialogFooter}>
         <Button variant='primary' onClick={onExit}>
-          Continue
+          Close
         </Button>
       </div>
     </Dialog>
