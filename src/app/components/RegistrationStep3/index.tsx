@@ -34,7 +34,6 @@ import {
 } from '@/core/cryptography';
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
-import { proofJsonData } from '@/data/mock';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -133,10 +132,9 @@ export function RegistrationStep3() {
           mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage
         });
 
-        // ensure registration exists before continuing (throws on failure)
-        await searchYellowpagesByBtcAddress(bitcoinAddress);
+        const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
 
-        setProofData(JSON.stringify(proofJsonData, null, 2));
+        setProofData(JSON.stringify(proof, null, 2));
 
         router.push('/registration-complete');
       } catch {
