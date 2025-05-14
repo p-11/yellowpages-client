@@ -7,10 +7,10 @@ import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import { DirectoryEntry } from '@/app/components/DirectoryEntry';
-import { Dialog, DialogTitle } from '@/app/components/Dialog';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { DownloadIcon } from '@/app/icons/DownloadIcon';
+import { ProofDialog } from '@/app/components/ProofDialog';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
@@ -26,26 +26,6 @@ export function RegistrationComplete() {
   const toggleProofDialog = useCallback(() => {
     setShowProofDialog(!showProofDialog);
   }, [showProofDialog]);
-
-  const downloadProofData = useCallback(() => {
-    if (!proofData) return;
-
-    const blob = new Blob([proofData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'proof.json';
-    link.click();
-
-    URL.revokeObjectURL(url);
-  }, [proofData]);
-
-  const copyProofData = useCallback(() => {
-    if (!proofData) return;
-
-    navigator.clipboard.writeText(proofData);
-  }, [proofData]);
 
   const copySocialLink = useCallback(() => {
     navigator.clipboard.writeText('https://yellowpages.xyz');
@@ -73,7 +53,7 @@ export function RegistrationComplete() {
         </div>
         <div className={styles.entryDetailsSection}>
           <ToolbarButton onClick={toggleProofDialog}>
-            <DownloadIcon /> View and download your proof
+            <DownloadIcon /> View and download proof
           </ToolbarButton>
         </div>
         <div>
@@ -104,24 +84,8 @@ export function RegistrationComplete() {
           </Button>
         </div>
       </div>
-      {showProofDialog && (
-        <Dialog large>
-          <DialogTitle>Proof</DialogTitle>
-          <div className={styles.proofSection}>
-            <pre className={styles.proofData}>{proofData}</pre>
-            <div className={styles.proofDialogToolbar}>
-              <ToolbarButton onClick={downloadProofData}>
-                <DownloadIcon /> Download
-              </ToolbarButton>
-              <CopyTextToolbarButton onClick={copyProofData} />
-            </div>
-          </div>
-          <div className={styles.proofDialogFooter}>
-            <Button variant='primary' onClick={toggleProofDialog}>
-              Continue
-            </Button>
-          </div>
-        </Dialog>
+      {showProofDialog && proofData && (
+        <ProofDialog proofData={proofData} onExit={toggleProofDialog} />
       )}
     </main>
   );
