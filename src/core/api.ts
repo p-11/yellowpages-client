@@ -107,128 +107,130 @@ export async function createProof(body: {
   mldsa44SignedMessage: string;
   mldsa44PublicKey: string;
 }): Promise<void> {
-  try {
-    const wsUrl = `${domains.proofService.replace('http', 'ws')}/prove`;
-    console.log(`Opening WebSocket connection to: ${wsUrl}`);
+  const wsUrl = `${domains.proofService.replace('http', 'ws')}/prove`;
+  console.log(`Opening WebSocket connection to: ${wsUrl}`);
 
-    return await new Promise<void>((resolve, reject) => {
-      let isResolved = false;
-      let proofSent = false;
-      const ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => {
-        console.log('WebSocket connection opened, sending handshake');
-        // Send handshake
-        ws.send(JSON.stringify({ message: 'hello' }));
-      };
-
-      ws.onmessage = event => {
+  // Create WebSocket connection
+  const ws = new WebSocket(wsUrl);
+  
+  // Set up promise-based message handler
+  async function waitForMessage(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const messageHandler = (event: MessageEvent) => {
         console.log(`WebSocket message received:`, event.data);
-        let data;
         try {
-          data = JSON.parse(event.data);
+          const data = JSON.parse(event.data);
+          ws.removeEventListener('message', messageHandler);
+          resolve(data);
         } catch (e) {
-          console.error('Failed to parse WebSocket message:', e);
-          cleanupAndReject(
-            new Error(`Failed to parse JSON from WebSocket: ${e}`)
-          );
-          return;
-        }
-
-        // After receiving handshake ack, send proof request
-        if (data.message === 'ack') {
-          console.log(
-            'Received handshake acknowledgment, sending proof request'
-          );
-          const proofRequest = {
-            bitcoin_address: body.btcAddress,
-            bitcoin_signed_message: body.btcSignedMessage,
-            ml_dsa_address: body.mldsa44Address,
-            ml_dsa_signed_message: body.mldsa44SignedMessage,
-            ml_dsa_public_key: body.mldsa44PublicKey
-          };
-          ws.send(JSON.stringify(proofRequest));
-          proofSent = true;
-          console.log('Proof request sent');
-        } else {
-          console.error('Unexpected message received:', data);
-          cleanupAndReject(
-            new Error(`Unexpected server response: ${JSON.stringify(data)}`)
-          );
+          ws.removeEventListener('message', messageHandler);
+          reject(new Error(`Failed to parse JSON from WebSocket: ${e}`));
         }
       };
+      
+      ws.addEventListener('message', messageHandler);
+    });
+  }
 
-      ws.onerror = (event: Event) => {
-        console.error('WebSocket error occurred:', event);
-        cleanupAndReject(
-          new Error('Network error while connecting to proof service')
-        );
-      };
+  // Set up error handler
+  const errorPromise = new Promise<never>((_, reject) => {
+    ws.addEventListener('error', (event) => {
+      console.error('WebSocket error occurred:', event);
+      reject(new Error('Network error while connecting to proof service'));
+    });
+  });
 
-      ws.onclose = event => {
-        console.log(
-          `WebSocket closed: code=${event.code}, reason=${event.reason}, clean=${event.wasClean}`
-        );
-
-        // Process based on close code
-        if (event.code === 1000) {
-          if (proofSent && !isResolved) {
-            cleanupAndResolve();
-          }
-        } else if (event.code === 1008) {
-          console.error('Policy violation detected (code 1008)');
-          cleanupAndReject(new Error('Policy violation'));
+  // Set up close handler with code interpretation
+  const closePromise = new Promise<never>((_, reject) => {
+    ws.addEventListener('close', (event) => {
+      console.log(`WebSocket closed: code=${event.code}, reason=${event.reason}, clean=${event.wasClean}`);
+      
+      // Only reject if it's not a normal closure
+      if (event.code !== 1000) {
+        let errorMessage = `Connection closed unexpectedly: code ${event.code}`;
+        
+        if (event.code === 1008) {
+          errorMessage = 'Policy violation';
         } else if (event.code === 1011) {
-          console.error('Server encountered an internal error (code 1011)');
-          cleanupAndReject(new Error('Server error'));
+          errorMessage = 'Server error';
         } else if (event.code === 4000) {
-          console.error('Server timeout detected (code 4000)');
-          cleanupAndReject(new Error('Operation timed out on server'));
-        } else {
-          console.error(`Unexpected close code: ${event.code}`);
-          cleanupAndReject(
-            new Error(`Connection closed unexpectedly: code ${event.code}`)
-          );
+          errorMessage = 'Operation timed out on server';
         }
-      };
-
-      // Set a timeout for the entire operation
-      const timeoutId = setTimeout(() => {
-        console.log('WebSocket operation timed out after 60 seconds');
-        cleanupAndReject(new Error('Operation timed out'));
-      }, 60000); // 60 second timeout
-
-      function cleanupAndReject(error: Error) {
-        if (isResolved) return;
-        isResolved = true;
-        clearTimeout(timeoutId);
-        if (
-          ws.readyState === WebSocket.OPEN ||
-          ws.readyState === WebSocket.CONNECTING
-        ) {
-          ws.close();
-        }
-        reject(error);
-      }
-
-      function cleanupAndResolve() {
-        if (isResolved) return;
-        isResolved = true;
-        clearTimeout(timeoutId);
-        if (
-          ws.readyState === WebSocket.OPEN ||
-          ws.readyState === WebSocket.CONNECTING
-        ) {
-          ws.close();
-        }
-        resolve();
+        
+        reject(new Error(errorMessage));
       }
     });
-  } catch (e) {
-    if (e instanceof Error) {
-      throw e;
-    } else {
-      throw new Error(`Error during proof creation: ${e}`);
+  });
+
+  // Set timeout for the entire operation
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    const timeoutId = setTimeout(() => {
+      console.log('WebSocket operation timed out after 60 seconds');
+      reject(new Error('Operation timed out'));
+      
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close();
+      }
+    }, 60000); // 60 second timeout
+    
+    // Clear timeout when connection closes
+    ws.addEventListener('close', () => clearTimeout(timeoutId));
+  });
+
+  // Wait for connection to open
+  await new Promise<void>((resolve, reject) => {
+    ws.addEventListener('open', () => resolve());
+    // The error and close handlers will trigger reject if needed
+  });
+
+  try {
+    console.log('WebSocket connection opened, sending handshake');
+    
+    // Step 1: Send handshake
+    ws.send(JSON.stringify({ message: 'hello' }));
+    
+    // Step 2: Wait for handshake acknowledgment
+    const handshakeResponse = await Promise.race([
+      waitForMessage(),
+      errorPromise,
+      closePromise,
+      timeoutPromise
+    ]);
+    
+    if (handshakeResponse.message !== 'ack') {
+      throw new Error(`Unexpected server response: ${JSON.stringify(handshakeResponse)}`);
+    }
+    
+    console.log('Received handshake acknowledgment, sending proof request');
+    
+    // Step 3: Send proof request
+    const proofRequest = {
+      bitcoin_address: body.btcAddress,
+      bitcoin_signed_message: body.btcSignedMessage,
+      ml_dsa_address: body.mldsa44Address,
+      ml_dsa_signed_message: body.mldsa44SignedMessage,
+      ml_dsa_public_key: body.mldsa44PublicKey
+    };
+    ws.send(JSON.stringify(proofRequest));
+    console.log('Proof request sent');
+    
+    // Step 4: Wait for successful completion (normal close)
+    await new Promise<void>((resolve, reject) => {
+      ws.addEventListener('close', (event) => {
+        if (event.code === 1000) {
+          resolve();
+        }
+      });
+      
+      // These promises will reject if anything goes wrong
+      Promise.race([errorPromise, closePromise, timeoutPromise])
+        .catch(error => reject(error));
+    });
+    
+  } finally {
+    // Ensure connection is closed if still open
+    if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+      ws.close();
     }
   }
 }
