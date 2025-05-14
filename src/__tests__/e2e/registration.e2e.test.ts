@@ -104,6 +104,8 @@ test('successful registration and search result', async ({ page }) => {
   await page.getByRole('button', { name: 'Complete' }).click();
 
   // Registration complete page
+  await page.getByRole('button', { name: 'View and download proof' }).click();
+  await page.getByRole('button', { name: 'Close' }).click();
   await page.getByRole('link', { name: 'searching the directory' }).click();
 
   // Search page
@@ -111,6 +113,8 @@ test('successful registration and search result', async ({ page }) => {
   await page.getByRole('button', { name: 'Search' }).click();
 
   // Search result page
+  await page.getByRole('button', { name: 'View and download proof' }).click();
+  await page.getByRole('button', { name: 'Close' }).click();
   await expect(
     page.getByText(
       'Registered and cryptographically linked to a post-quantum address'

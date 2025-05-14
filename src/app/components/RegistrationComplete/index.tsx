@@ -1,22 +1,31 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
 import { DirectoryEntry } from '@/app/components/DirectoryEntry';
-import { CopyTextToolbarButton } from '../CopyTextToolbarButton';
+import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
+import { ToolbarButton } from '@/app/components/ToolbarButton';
+import { DownloadIcon } from '@/app/icons/DownloadIcon';
+import { ProofDialog } from '@/app/components/ProofDialog';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
-  const { signedMessages, bitcoinAddress } = useRegistrationSessionContext();
+  const { signedMessages, bitcoinAddress, proofData } =
+    useRegistrationSessionContext();
   const router = useRouter();
+  const [showProofDialog, setShowProofDialog] = useState(false);
 
   const navigateToHomepage = useCallback(() => {
     router.push('/');
   }, [router]);
+
+  const toggleProofDialog = useCallback(() => {
+    setShowProofDialog(!showProofDialog);
+  }, [showProofDialog]);
 
   const copySocialLink = useCallback(() => {
     navigator.clipboard.writeText('https://yellowpages.xyz');
@@ -32,6 +41,9 @@ export function RegistrationComplete() {
           Your post-quantum (PQ) address has been created and cryptographically
           linked to your Bitcoin address.
         </p>
+        <div className={styles.warningSection}>
+          <Alert>Remember to save your new post-quantum addresses</Alert>
+        </div>
         <div className={styles.entrySection}>
           <DirectoryEntry
             bitcoinAddress={bitcoinAddress}
@@ -39,8 +51,10 @@ export function RegistrationComplete() {
             showCopyButton
           />
         </div>
-        <div className={styles.warningSection}>
-          <Alert>Remember to save your new post-quantum addresses</Alert>
+        <div className={styles.entryDetailsSection}>
+          <ToolbarButton onClick={toggleProofDialog}>
+            <DownloadIcon /> View and download proof
+          </ToolbarButton>
         </div>
         <div>
           <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
@@ -70,6 +84,9 @@ export function RegistrationComplete() {
           </Button>
         </div>
       </div>
+      {showProofDialog && proofData && (
+        <ProofDialog proofData={proofData} onExit={toggleProofDialog} />
+      )}
     </main>
   );
 }

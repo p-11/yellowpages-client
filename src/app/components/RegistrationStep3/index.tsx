@@ -60,7 +60,8 @@ export function RegistrationStep3() {
     seedPhrase,
     signedMessages,
     setBitcoinAddress,
-    setSignedMessages
+    setSignedMessages,
+    setProofData
   } = useRegistrationSessionContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -131,8 +132,9 @@ export function RegistrationStep3() {
           mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage
         });
 
-        // ensure registration exists before continuing (throws on failure)
-        await searchYellowpagesByBtcAddress(bitcoinAddress);
+        const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
+
+        setProofData(JSON.stringify(proof, null, 2));
 
         router.push('/registration-complete');
       } catch {
@@ -142,7 +144,14 @@ export function RegistrationStep3() {
     } else {
       setShowInvalidSignatureAlert(true);
     }
-  }, [router, signature, bitcoinAddress, signingMessage, signedMessages]);
+  }, [
+    router,
+    signature,
+    bitcoinAddress,
+    signingMessage,
+    signedMessages,
+    setProofData
+  ]);
 
   const tryAgain = useCallback(() => {
     resetSignature();

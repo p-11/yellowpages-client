@@ -11,7 +11,7 @@
 }
 
 .warningSection {
-    margin-top: 42px;
+    margin-top: 24px;
     margin-bottom: 42px;
     display: flex;
 }
@@ -21,6 +21,11 @@
     font-size: 1.2rem;
     margin-bottom: 0;
     letter-spacing: -0.05rem;
+}
+
+.entryDetailsSection {
+    margin-top: 8px;
+    margin-bottom: 24px;
 }
 
 .footer {

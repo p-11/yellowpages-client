@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/app/components/Button';
@@ -8,11 +8,15 @@ import { useSearchContext } from '@/app/providers/SearchProvider';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
 import { Alert } from '@/app/components/Alert';
 import { DirectoryEntry } from '@/app/components/DirectoryEntry';
+import { ToolbarButton } from '@/app/components/ToolbarButton';
+import { DownloadIcon } from '@/app/icons/DownloadIcon';
+import { ProofDialog } from '@/app/components/ProofDialog';
 import styles from './styles.module.css';
 
 export function SearchResult() {
   const router = useRouter();
   const { result, bitcoinAddress, setBitcoinAddress } = useSearchContext();
+  const [showProofDialog, setShowProofDialog] = useState(false);
 
   useEffect(() => {
     if (result === undefined) {
@@ -28,6 +32,10 @@ export function SearchResult() {
     setBitcoinAddress('');
     router.push('/search');
   }, [router, setBitcoinAddress]);
+
+  const toggleProofDialog = useCallback(() => {
+    setShowProofDialog(!showProofDialog);
+  }, [showProofDialog]);
 
   if (result === undefined) return null;
 
@@ -46,6 +54,11 @@ export function SearchResult() {
               bitcoinAddress={bitcoinAddress}
               mldsa44Address={result.ml_dsa_44_address}
             />
+          </div>
+          <div className={styles.entryDetailsSection}>
+            <ToolbarButton onClick={toggleProofDialog}>
+              <DownloadIcon /> View and download proof
+            </ToolbarButton>
           </div>
         </>
       ) : (
@@ -69,6 +82,12 @@ export function SearchResult() {
           Homepage
         </Button>
       </div>
+      {showProofDialog && result && (
+        <ProofDialog
+          proofData={JSON.stringify(result, null, 2)}
+          onExit={toggleProofDialog}
+        />
+      )}
     </main>
   );
 }

@@ -22,11 +22,13 @@ type RegistrationSessionContextType = {
   seedPhrase?: Mnemonic24;
   bitcoinAddress?: BitcoinAddress;
   signedMessages?: ReturnType<typeof generateSignedMessages>;
+  proofData?: string;
   setShowNewSessionAlert: (_value: boolean) => void;
   setBitcoinAddress: (_value: BitcoinAddress) => void;
   setSignedMessages: (
     _value: ReturnType<typeof generateSignedMessages>
   ) => void;
+  setProofData: (_value: string) => void;
 };
 
 const RegistrationSessionContext = createContext<
@@ -50,11 +52,13 @@ export const RegistrationSessionProvider = ({
     seedPhrase,
     bitcoinAddress,
     signedMessages,
+    proofData,
     setSignedMessages,
     clearSensitiveState,
     setSeedPhrase,
     setBitcoinAddress,
-    clearSeedPhrase
+    clearSeedPhrase,
+    setProofData
   } = useSensitiveState();
 
   const startRegistrationSession = useCallback(() => {
@@ -185,7 +189,9 @@ export const RegistrationSessionProvider = ({
         seedPhrase,
         showNewSessionAlert,
         hasConfirmedSeedPhrase,
-        setShowNewSessionAlert
+        setShowNewSessionAlert,
+        proofData,
+        setProofData
       }}
     >
       {children}
@@ -210,6 +216,7 @@ const useSensitiveState = () => {
     useState<RegistrationSessionContextType['bitcoinAddress']>();
   const [signedMessages, setSignedMessages] =
     useState<RegistrationSessionContextType['signedMessages']>();
+  const [proofData, setProofData] = useState<string>();
 
   const clearSeedPhrase = useCallback(() => {
     setSeedPhrase(undefined);
@@ -219,6 +226,7 @@ const useSensitiveState = () => {
     setSeedPhrase(undefined);
     setBitcoinAddress(undefined);
     setSignedMessages(undefined);
+    setProofData(undefined);
   }, []);
 
   useEffect(() => {
@@ -231,10 +239,12 @@ const useSensitiveState = () => {
     seedPhrase,
     bitcoinAddress,
     signedMessages,
+    proofData,
     clearSensitiveState,
     clearSeedPhrase,
     setSeedPhrase,
     setBitcoinAddress,
-    setSignedMessages
+    setSignedMessages,
+    setProofData
   };
 };
