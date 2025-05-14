@@ -151,7 +151,10 @@ export async function createProof(body: {
           proofSent = true;
           console.log('Proof request sent');
         } else {
-          console.log('Unexpected message received:', data);
+          console.error('Unexpected message received:', data);
+          cleanupAndReject(
+            new Error(`Unexpected server response: ${JSON.stringify(data)}`)
+          );
         }
       };
 
@@ -193,7 +196,7 @@ export async function createProof(body: {
       const timeoutId = setTimeout(() => {
         console.log('WebSocket operation timed out after 60 seconds');
         cleanupAndReject(new Error('Operation timed out'));
-      }, 60000); // 30 second timeout
+      }, 60000); // 60 second timeout
 
       function cleanupAndReject(error: Error) {
         if (isResolved) return;
