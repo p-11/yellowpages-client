@@ -21,6 +21,29 @@ interface Proof {
 }
 
 /**
+ * Expected WebSocket message response format
+ */
+interface HandshakeResponse {
+  message: string;
+}
+
+/**
+ * WebSocket close codes that we use in this application
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+ */
+enum WebSocketCloseCode {
+  // eslint-disable-next-line no-unused-vars
+  Normal = 1000,
+  // eslint-disable-next-line no-unused-vars
+  PolicyViolation = 1008,
+  // eslint-disable-next-line no-unused-vars
+  InternalError = 1011,
+  // Custom codes
+  // eslint-disable-next-line no-unused-vars
+  Timeout = 4000
+}
+
+/**
  * Base domains per service and environment.
  */
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
@@ -29,8 +52,8 @@ const domains = {
     ? 'https://verification-api.yellowpages.xyz'
     : 'https://verification-api.yellowpages-development.xyz',
   proofService: IS_PROD
-    ? 'https://not.implemented.com'
-    : 'https://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
+    ? 'wss://not.implemented.com'
+    : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
 };
 
 /**
@@ -107,19 +130,278 @@ export async function createProof(body: {
   mldsa44SignedMessage: string;
   mldsa44PublicKey: string;
 }): Promise<void> {
-  const url = `${domains.proofService}/prove`;
-  return await request(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json'
-    },
-    body: JSON.stringify({
+  // Create WebSocket connection
+  const ws = new WebSocket(`${domains.proofService}/prove`);
+
+  // Set up event handlers
+  const { onHandshakeResponse, onSocketOpen, onSuccessClose, cleanup } =
+    setupWebSocketHandlers(ws);
+
+  try {
+    // Step 1: Wait for WebSocket to connect
+    await raceWithTimeout('Connection', onSocketOpen);
+
+    // Step 2: Send handshake
+    ws.send(JSON.stringify({ message: 'hello' }));
+
+    // Step 3: Wait for handshake acknowledgment
+    const handshakeResponse = await raceWithTimeout<HandshakeResponse>(
+      'Handshake',
+      onHandshakeResponse
+    );
+
+    if (handshakeResponse.message !== 'ack') {
+      throw new Error(
+        `Unexpected server response: ${JSON.stringify(handshakeResponse)}`
+      );
+    }
+
+    // Step 4: Send proof request
+    const proofRequest = {
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
       ml_dsa_address: body.mldsa44Address,
       ml_dsa_signed_message: body.mldsa44SignedMessage,
       ml_dsa_public_key: body.mldsa44PublicKey
-    })
+    };
+    ws.send(JSON.stringify(proofRequest));
+
+    // Step 5: Wait for successful completion (normal close)
+    await raceWithTimeout('Proof verification', onSuccessClose);
+  } finally {
+    // Clean up all event listeners
+    cleanup();
+  }
+}
+
+/**
+ * Execute a promise race with a timeout, cleaning up the timeout afterward
+ * @param operation Name of the operation for the timeout message
+ * @param operationPromise The main promise that should resolve if successful
+ * @param timeoutMs Timeout in milliseconds (default: 30000)
+ */
+async function raceWithTimeout<T>(
+  operation: string,
+  operationPromise: Promise<T>,
+  timeoutMs = 30000
+): Promise<T> {
+  // Create a timeout promise with cleanup
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(
+        new Error(
+          `Operation "${operation}" timed out after ${timeoutMs / 1000} seconds`
+        )
+      );
+    }, timeoutMs);
   });
+
+  try {
+    // Simple race between the main promise and timeout
+    return await Promise.race([operationPromise, timeoutPromise]);
+  } finally {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
+/**
+ * Set up all WebSocket event handlers
+ */
+function setupWebSocketHandlers(ws: WebSocket) {
+  // First set up error handlers
+  const errorHandlers = setupWebSocketErrorHandlers(ws);
+
+  // Then set up success handlers
+  const successHandlers = setupWebSocketSuccessHandlers(
+    ws,
+    errorHandlers.registerAbortHandler
+  );
+
+  // Function to clean up all listeners
+  const cleanup = () => {
+    successHandlers.cleanupSuccessHandlers();
+    errorHandlers.cleanupErrorHandlers();
+  };
+
+  return {
+    onHandshakeResponse: successHandlers.onHandshakeResponse,
+    onSocketOpen: successHandlers.onSocketOpen,
+    onSuccessClose: successHandlers.onSuccessClose,
+    cleanup
+  };
+}
+
+/**
+ * Set up WebSocket error handlers
+ */
+function setupWebSocketErrorHandlers(ws: WebSocket) {
+  // Create abort controller for coordinating cancellation
+  const abortController = new AbortController();
+  const signal = abortController.signal;
+
+  // Store error listener references for cleanup
+  const errorListeners = {
+    error: null as ((_event: Event) => void) | null,
+    errorClose: null as ((_event: CloseEvent) => void) | null
+  };
+
+  // Helper function to register an abort handler
+  const registerAbortHandler = (
+    reject: (_reason: unknown) => void,
+    customMessage: string
+  ) => {
+    const abortHandler = () => {
+      reject(signal.reason || new Error(customMessage));
+    };
+    signal.addEventListener('abort', abortHandler, { once: true });
+    return () => signal.removeEventListener('abort', abortHandler);
+  };
+
+  // Handle WebSocket network error events
+  const networkErrorHandler = () => {
+    const error = new Error('Network error while connecting to proof service');
+    abortController.abort(error);
+  };
+
+  errorListeners.error = networkErrorHandler;
+  ws.addEventListener('error', networkErrorHandler);
+
+  // Handle WebSocket close error events
+  const closeErrorHandler = (event: CloseEvent) => {
+    if (event.code !== WebSocketCloseCode.Normal) {
+      let errorMessage = `Connection closed unexpectedly: code ${event.code}`;
+
+      if (event.code === WebSocketCloseCode.PolicyViolation) {
+        errorMessage = `Policy violation (code ${WebSocketCloseCode.PolicyViolation})`;
+      } else if (event.code === WebSocketCloseCode.InternalError) {
+        errorMessage = `Server encountered an internal error (code ${WebSocketCloseCode.InternalError})`;
+      } else if (event.code === WebSocketCloseCode.Timeout) {
+        errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
+      }
+
+      const error = new Error(errorMessage);
+      abortController.abort(error);
+    }
+  };
+
+  errorListeners.errorClose = closeErrorHandler;
+  ws.addEventListener('close', closeErrorHandler);
+
+  // Function to clean up error listeners
+  const cleanupErrorHandlers = () => {
+    if (errorListeners.error)
+      ws.removeEventListener('error', errorListeners.error);
+    if (errorListeners.errorClose)
+      ws.removeEventListener('close', errorListeners.errorClose);
+  };
+
+  return {
+    abortController,
+    signal,
+    registerAbortHandler,
+    cleanupErrorHandlers
+  };
+}
+
+/**
+ * Set up WebSocket success handlers
+ */
+function setupWebSocketSuccessHandlers(
+  ws: WebSocket,
+  registerAbortHandler: (
+    _reject: (_reason: unknown) => void,
+    _customMessage: string
+  ) => () => void
+) {
+  // Store success listener references for cleanup
+  const successListeners = {
+    open: null as (() => void) | null,
+    message: null as ((_event: MessageEvent) => void) | null,
+    successClose: null as ((_event: CloseEvent) => void) | null
+  };
+
+  // Store abort handlers for cleanup
+  const abortHandlers: Array<() => void> = [];
+
+  // Promise that resolves when the socket connects
+  const onSocketOpen = new Promise<void>((resolve, reject) => {
+    const openHandler = () => {
+      resolve();
+    };
+
+    // Handle abort
+    abortHandlers.push(registerAbortHandler(reject, 'Connection aborted'));
+
+    successListeners.open = openHandler;
+    ws.addEventListener('open', openHandler);
+  });
+
+  // Promise that resolves when a handshake response is received
+  const onHandshakeResponse = new Promise<HandshakeResponse>(
+    (resolve, reject) => {
+      const messageHandler = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          // Validate that this is a handshake response
+          if (typeof data.message !== 'string') {
+            reject(
+              new Error(
+                `Expected handshake response with message field, got: ${JSON.stringify(data)}`
+              )
+            );
+            return;
+          }
+
+          resolve(data as HandshakeResponse);
+        } catch (e) {
+          reject(new Error(`Failed to parse JSON from WebSocket: ${e}`));
+        }
+      };
+
+      // Handle abort
+      abortHandlers.push(registerAbortHandler(reject, 'Handshake aborted'));
+
+      successListeners.message = messageHandler;
+      ws.addEventListener('message', messageHandler);
+    }
+  );
+
+  // Promise that resolves when the socket closes successfully
+  const onSuccessClose = new Promise<void>((resolve, reject) => {
+    const successCloseHandler = (event: CloseEvent) => {
+      if (event.code === WebSocketCloseCode.Normal) {
+        resolve();
+      }
+    };
+
+    // Handle abort
+    abortHandlers.push(registerAbortHandler(reject, 'Connection aborted'));
+
+    successListeners.successClose = successCloseHandler;
+    ws.addEventListener('close', successCloseHandler);
+  });
+
+  // Function to clean up success listeners
+  const cleanupSuccessHandlers = () => {
+    if (successListeners.open)
+      ws.removeEventListener('open', successListeners.open);
+    if (successListeners.message)
+      ws.removeEventListener('message', successListeners.message);
+    if (successListeners.successClose)
+      ws.removeEventListener('close', successListeners.successClose);
+
+    // Clean up abort handlers
+    abortHandlers.forEach(removeHandler => removeHandler());
+  };
+
+  return {
+    onHandshakeResponse,
+    onSocketOpen,
+    onSuccessClose,
+    cleanupSuccessHandlers
+  };
 }
