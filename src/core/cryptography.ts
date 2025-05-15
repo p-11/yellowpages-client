@@ -4,6 +4,7 @@ import { HDKey } from '@scure/bip32';
 import { hmac } from '@noble/hashes/hmac';
 import { sha512 } from '@noble/hashes/sha2';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
+import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
 import {
   validate,
   getAddressInfo,
@@ -57,7 +58,10 @@ enum PQ_SIGNATURE_ALGORITHM {
    * This is used as this index is needed for BIP-85 test vectors
    */
   // eslint-disable-next-line no-unused-vars
-  TEST_ALGO = 1
+  TEST_ALGO = 1,
+  /** SLH-DSA-SHA2-S-128 */
+  // eslint-disable-next-line no-unused-vars
+  SLH_DSA_SHA2_S_128 = 2
 }
 
 /*
@@ -76,6 +80,11 @@ const PQ_ALGO_CONFIG = {
   [PQ_SIGNATURE_ALGORITHM.TEST_ALGO]: {
     entropyLength: 64,
     pubkeyType: PubKeyType.MlDsa44 // this can be anything
+  },
+  /** SLH-DSA-SHA2-S-128 */
+  [PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128]: {
+    entropyLength: 48,
+    pubkeyType: PubKeyType.SlhDsaSha2S128
   }
 } as const;
 
@@ -305,6 +314,21 @@ const generateKeypair = (
           address: address
         };
       }
+      case PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128: {
+        const entropy = deriveEntropyFromMnemonic({ mnemonic24, algorithm });
+        const keypair = slh_dsa_sha2_128s.keygen(entropy);
+        const publicKey = keypair.publicKey as PQPublicKey;
+        const privateKey = keypair.secretKey as PQPrivateKey;
+        const address = generatePQAddress({
+          publicKey,
+          algorithm
+        });
+        return {
+          publicKey: publicKey,
+          privateKey: privateKey,
+          address: address
+        };
+      }
       default:
         // unsupported algorithm enum
         throw new Error(`Unsupported algorithm: ${algorithm}`);
@@ -340,13 +364,15 @@ type SignedMessages = {
  */
 const generateMessage = ({
   bitcoinAddress,
-  mldsa44Address
+  mldsa44Address,
+  slhdsaSha2S128Address
 }: {
   bitcoinAddress: string;
   mldsa44Address: string;
+  slhdsaSha2S128Address: string;
 }) => {
   const message =
-    `I want to permanently link my Bitcoin address ${bitcoinAddress} with my post-quantum address ${mldsa44Address}` as Message;
+    `I want to permanently link my Bitcoin address ${bitcoinAddress} with my post-quantum addresses: ML-DSA-44 – ${mldsa44Address}, SLH-DSA-SHA2-128 – ${slhdsaSha2S128Address}` as Message;
   return {
     message: message,
     messageBytes: new TextEncoder().encode(message)
@@ -372,20 +398,30 @@ const generateSignedMessages = (
       mnemonic24,
       PQ_SIGNATURE_ALGORITHM.ML_DSA_44
     );
+    const slhdsaSha2S128KeyPair = generateKeypair(
+      mnemonic24,
+      PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
+    );
 
     // Create message
     const { messageBytes } = generateMessage({
       bitcoinAddress,
-      mldsa44Address: mldsa44KeyPair.address
+      mldsa44Address: mldsa44KeyPair.address,
+      slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
     });
 
-    // Signing
+    // Signingdsa
     const mldsa44SignedMessage = ml_dsa44.sign(
       mldsa44KeyPair.privateKey,
       messageBytes
     );
-    // Best effort to zero out private key
+    const slhdsaSha2S128SignedMessage = slh_dsa_sha2_128s.sign(
+      slhdsaSha2S128KeyPair.privateKey,
+      messageBytes
+    );
+    // Best effort to zero out private keys
     mldsa44KeyPair.privateKey.fill(0);
+    slhdsaSha2S128KeyPair.privateKey.fill(0);
 
     // Response
     return {
@@ -393,6 +429,15 @@ const generateSignedMessages = (
         publicKey: bytesToBase64(mldsa44KeyPair.publicKey) as PQPublicKeyString,
         signedMessage: bytesToBase64(mldsa44SignedMessage) as SignedMessage,
         address: mldsa44KeyPair.address
+      },
+      SLH_DSA_SHA2_S_128: {
+        publicKey: bytesToBase64(
+          slhdsaSha2S128KeyPair.publicKey
+        ) as PQPublicKeyString,
+        signedMessage: bytesToBase64(
+          slhdsaSha2S128SignedMessage
+        ) as SignedMessage,
+        address: slhdsaSha2S128KeyPair.address
       }
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
