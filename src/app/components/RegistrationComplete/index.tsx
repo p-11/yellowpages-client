@@ -42,7 +42,7 @@ export function RegistrationComplete() {
 
   const copySocialLink = useCallback(() => {
     navigator.clipboard.writeText(
-      `https://yellowpages.xyz/?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}`
+      `https://yellowpages.xyz/share/?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}`
     );
   }, [encodedBitcoinAddress, encodedMldsa44Address]);
 
