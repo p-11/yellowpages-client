@@ -47,9 +47,7 @@ const domains = {
   verificationService: IS_PROD
     ? 'https://verification-api.yellowpages.xyz'
     : 'http://localhost:8080',
-  proofService: IS_PROD
-    ? 'wss://not.implemented.com'
-    : 'ws://localhost:8008'
+  proofService: IS_PROD ? 'wss://not.implemented.com' : 'ws://localhost:8008'
 };
 
 /**
@@ -128,30 +126,30 @@ export async function createProof(body: {
 }): Promise<void> {
   // Create WebSocket connection
   const ws = new WebSocket(`${domains.proofService}/prove`);
-  
+
   // Set up event handlers
-  const { 
-    onHandshakeResponse,
-    onSocketOpen,
-    onSuccessClose, 
-    abortController,
-    cleanup
-  } = setupWebSocketHandlers(ws);
+  const { onHandshakeResponse, onSocketOpen, onSuccessClose, cleanup } =
+    setupWebSocketHandlers(ws);
 
   try {
     // Step 1: Wait for WebSocket to connect
     await raceWithTimeout('Connection', onSocketOpen);
-    
+
     // Step 2: Send handshake
     ws.send(JSON.stringify({ message: 'hello' }));
-    
+
     // Step 3: Wait for handshake acknowledgment
-    const handshakeResponse = await raceWithTimeout<HandshakeResponse>('Handshake', onHandshakeResponse);
-    
+    const handshakeResponse = await raceWithTimeout<HandshakeResponse>(
+      'Handshake',
+      onHandshakeResponse
+    );
+
     if (handshakeResponse.message !== 'ack') {
-      throw new Error(`Unexpected server response: ${JSON.stringify(handshakeResponse)}`);
+      throw new Error(
+        `Unexpected server response: ${JSON.stringify(handshakeResponse)}`
+      );
     }
-    
+
     // Step 4: Send proof request
     const proofRequest = {
       bitcoin_address: body.btcAddress,
@@ -161,7 +159,7 @@ export async function createProof(body: {
       ml_dsa_public_key: body.mldsa44PublicKey
     };
     ws.send(JSON.stringify(proofRequest));
-    
+
     // Step 5: Wait for successful completion (normal close)
     await raceWithTimeout('Proof verification', onSuccessClose);
   } finally {
@@ -185,16 +183,17 @@ async function raceWithTimeout<T>(
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
-      reject(new Error(`Operation "${operation}" timed out after ${timeoutMs/1000} seconds`));
+      reject(
+        new Error(
+          `Operation "${operation}" timed out after ${timeoutMs / 1000} seconds`
+        )
+      );
     }, timeoutMs);
   });
-  
+
   try {
     // Simple race between the main promise and timeout
-    return await Promise.race([
-      operationPromise,
-      timeoutPromise
-    ]);
+    return await Promise.race([operationPromise, timeoutPromise]);
   } finally {
     if (timeoutId !== undefined) {
       clearTimeout(timeoutId);
@@ -208,21 +207,23 @@ async function raceWithTimeout<T>(
 function setupWebSocketHandlers(ws: WebSocket) {
   // First set up error handlers
   const errorHandlers = setupWebSocketErrorHandlers(ws);
-  
+
   // Then set up success handlers
-  const successHandlers = setupWebSocketSuccessHandlers(ws, errorHandlers.registerAbortHandler);
-  
+  const successHandlers = setupWebSocketSuccessHandlers(
+    ws,
+    errorHandlers.registerAbortHandler
+  );
+
   // Function to clean up all listeners
   const cleanup = () => {
     successHandlers.cleanupSuccessHandlers();
     errorHandlers.cleanupErrorHandlers();
   };
-  
-  return { 
+
+  return {
     onHandshakeResponse: successHandlers.onHandshakeResponse,
     onSocketOpen: successHandlers.onSocketOpen,
     onSuccessClose: successHandlers.onSuccessClose,
-    abortController: errorHandlers.abortController,
     cleanup
   };
 }
@@ -234,36 +235,39 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
   // Create abort controller for coordinating cancellation
   const abortController = new AbortController();
   const signal = abortController.signal;
-  
+
   // Store error listener references for cleanup
   const errorListeners = {
     error: null as ((event: Event) => void) | null,
     errorClose: null as ((event: CloseEvent) => void) | null
   };
-  
+
   // Helper function to register an abort handler
-  const registerAbortHandler = (reject: (reason: any) => void, customMessage: string) => {
+  const registerAbortHandler = (
+    reject: (reason: any) => void,
+    customMessage: string
+  ) => {
     const abortHandler = () => {
       reject(signal.reason || new Error(customMessage));
     };
     signal.addEventListener('abort', abortHandler, { once: true });
     return () => signal.removeEventListener('abort', abortHandler);
   };
-  
+
   // Handle WebSocket network error events
   const networkErrorHandler = (event: Event) => {
     const error = new Error('Network error while connecting to proof service');
     abortController.abort(error);
   };
-  
+
   errorListeners.error = networkErrorHandler;
   ws.addEventListener('error', networkErrorHandler);
-  
+
   // Handle WebSocket close error events
   const closeErrorHandler = (event: CloseEvent) => {
     if (event.code !== WebSocketCloseCode.Normal) {
       let errorMessage = `Connection closed unexpectedly: code ${event.code}`;
-      
+
       if (event.code === WebSocketCloseCode.PolicyViolation) {
         errorMessage = `Policy violation (code ${WebSocketCloseCode.PolicyViolation})`;
       } else if (event.code === WebSocketCloseCode.InternalError) {
@@ -273,22 +277,24 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
       } else {
         errorMessage = `Connection closed unexpectedly: code ${event.code}`;
       }
-      
+
       const error = new Error(errorMessage);
       abortController.abort(error);
     }
   };
-  
+
   errorListeners.errorClose = closeErrorHandler;
   ws.addEventListener('close', closeErrorHandler);
-  
+
   // Function to clean up error listeners
   const cleanupErrorHandlers = () => {
-    if (errorListeners.error) ws.removeEventListener('error', errorListeners.error);
-    if (errorListeners.errorClose) ws.removeEventListener('close', errorListeners.errorClose);
+    if (errorListeners.error)
+      ws.removeEventListener('error', errorListeners.error);
+    if (errorListeners.errorClose)
+      ws.removeEventListener('close', errorListeners.errorClose);
   };
-  
-  return { 
+
+  return {
     abortController,
     signal,
     registerAbortHandler,
@@ -300,8 +306,11 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
  * Set up WebSocket success handlers
  */
 function setupWebSocketSuccessHandlers(
-  ws: WebSocket, 
-  registerAbortHandler: (reject: (reason: any) => void, customMessage: string) => (() => void)
+  ws: WebSocket,
+  registerAbortHandler: (
+    reject: (reason: any) => void,
+    customMessage: string
+  ) => () => void
 ) {
   // Store success listener references for cleanup
   const successListeners = {
@@ -309,48 +318,54 @@ function setupWebSocketSuccessHandlers(
     message: null as ((event: MessageEvent) => void) | null,
     successClose: null as ((event: CloseEvent) => void) | null
   };
-  
+
   // Store abort handlers for cleanup
   const abortHandlers: Array<() => void> = [];
-  
+
   // Promise that resolves when the socket connects
   const onSocketOpen = new Promise<void>((resolve, reject) => {
     const openHandler = (event: Event) => {
       resolve();
     };
-    
+
     // Handle abort
     abortHandlers.push(registerAbortHandler(reject, 'Connection aborted'));
-    
+
     successListeners.open = openHandler;
     ws.addEventListener('open', openHandler);
   });
-  
+
   // Promise that resolves when a handshake response is received
-  const onHandshakeResponse = new Promise<HandshakeResponse>((resolve, reject) => {
-    const messageHandler = (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        // Validate that this is a handshake response
-        if (typeof data.message !== 'string') {
-          reject(new Error(`Expected handshake response with message field, got: ${JSON.stringify(data)}`));
-          return;
+  const onHandshakeResponse = new Promise<HandshakeResponse>(
+    (resolve, reject) => {
+      const messageHandler = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          // Validate that this is a handshake response
+          if (typeof data.message !== 'string') {
+            reject(
+              new Error(
+                `Expected handshake response with message field, got: ${JSON.stringify(data)}`
+              )
+            );
+            return;
+          }
+
+          resolve(data as HandshakeResponse);
+        } catch (e) {
+          reject(new Error(`Failed to parse JSON from WebSocket: ${e}`));
         }
-        
-        resolve(data as HandshakeResponse);
-      } catch (e) {
-        reject(new Error(`Failed to parse JSON from WebSocket: ${e}`));
-      }
-    };
-    
-    // Handle abort
-    abortHandlers.push(registerAbortHandler(reject, 'Handshake aborted'));
-    
-    successListeners.message = messageHandler;
-    ws.addEventListener('message', messageHandler);
-  });
-  
+      };
+
+      // Handle abort
+      abortHandlers.push(registerAbortHandler(reject, 'Handshake aborted'));
+
+      successListeners.message = messageHandler;
+      ws.addEventListener('message', messageHandler);
+    }
+  );
+
   // Promise that resolves when the socket closes successfully
   const onSuccessClose = new Promise<void>((resolve, reject) => {
     const successCloseHandler = (event: CloseEvent) => {
@@ -358,25 +373,28 @@ function setupWebSocketSuccessHandlers(
         resolve();
       }
     };
-    
+
     // Handle abort
     abortHandlers.push(registerAbortHandler(reject, 'Connection aborted'));
-    
+
     successListeners.successClose = successCloseHandler;
     ws.addEventListener('close', successCloseHandler);
   });
-  
+
   // Function to clean up success listeners
   const cleanupSuccessHandlers = () => {
-    if (successListeners.open) ws.removeEventListener('open', successListeners.open);
-    if (successListeners.message) ws.removeEventListener('message', successListeners.message);
-    if (successListeners.successClose) ws.removeEventListener('close', successListeners.successClose);
-    
+    if (successListeners.open)
+      ws.removeEventListener('open', successListeners.open);
+    if (successListeners.message)
+      ws.removeEventListener('message', successListeners.message);
+    if (successListeners.successClose)
+      ws.removeEventListener('close', successListeners.successClose);
+
     // Clean up abort handlers
     abortHandlers.forEach(removeHandler => removeHandler());
   };
-  
-  return { 
+
+  return {
     onHandshakeResponse,
     onSocketOpen,
     onSuccessClose,
