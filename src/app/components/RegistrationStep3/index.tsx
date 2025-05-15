@@ -135,8 +135,7 @@ export function RegistrationStep3() {
         await searchYellowpagesByBtcAddress(bitcoinAddress);
 
         router.push('/registration-complete');
-      } catch (error) {
-        console.error('Registration failed:', error);
+      } catch {
         setShowFailedRequestAlert(true);
         setIsSubmitting(false);
       }

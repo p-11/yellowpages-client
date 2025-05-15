@@ -280,8 +280,6 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
         errorMessage = `Server encountered an internal error (code ${WebSocketCloseCode.InternalError})`;
       } else if (event.code === WebSocketCloseCode.Timeout) {
         errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
-      } else {
-        errorMessage = `Connection closed unexpectedly: code ${event.code}`;
       }
 
       const error = new Error(errorMessage);
