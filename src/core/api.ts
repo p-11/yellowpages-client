@@ -245,9 +245,9 @@ function setupWebSocketHandlers(ws: WebSocket) {
   const abortHandlers: Array<() => void> = [];
   
   // Helper function to register an abort handler
-  const registerAbortHandler = (reject: (reason: any) => void, customMessage?: string) => {
+  const registerAbortHandler = (reject: (reason: any) => void, customMessage: string) => {
     const abortHandler = () => {
-      reject(signal.reason || new Error(customMessage || 'Connection aborted'));
+      reject(signal.reason || new Error(customMessage));
     };
     signal.addEventListener('abort', abortHandler, { once: true });
     abortHandlers.push(() => signal.removeEventListener('abort', abortHandler));
