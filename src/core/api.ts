@@ -246,7 +246,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
 
   // Helper function to register an abort handler
   const registerAbortHandler = (
-    reject: (reason: any) => void,
+    reject: (reason: unknown) => void,
     customMessage: string
   ) => {
     const abortHandler = () => {
@@ -257,7 +257,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
   };
 
   // Handle WebSocket network error events
-  const networkErrorHandler = (event: Event) => {
+  const networkErrorHandler = () => {
     const error = new Error('Network error while connecting to proof service');
     abortController.abort(error);
   };
@@ -310,13 +310,13 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
 function setupWebSocketSuccessHandlers(
   ws: WebSocket,
   registerAbortHandler: (
-    reject: (reason: any) => void,
+    reject: (reason: unknown) => void,
     customMessage: string
   ) => () => void
 ) {
   // Store success listener references for cleanup
   const successListeners = {
-    open: null as ((event: Event) => void) | null,
+    open: null as (() => void) | null,
     message: null as ((event: MessageEvent) => void) | null,
     successClose: null as ((event: CloseEvent) => void) | null
   };
@@ -326,7 +326,7 @@ function setupWebSocketSuccessHandlers(
 
   // Promise that resolves when the socket connects
   const onSocketOpen = new Promise<void>((resolve, reject) => {
-    const openHandler = (event: Event) => {
+    const openHandler = () => {
       resolve();
     };
 
