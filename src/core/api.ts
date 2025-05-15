@@ -48,8 +48,8 @@ const domains = {
     ? 'https://verification-api.yellowpages.xyz'
     : 'http://localhost:8080',
   proofService: IS_PROD
-    ? 'https://not.implemented.com'
-    : 'http://localhost:8008'
+    ? 'wss://not.implemented.com'
+    : 'ws://localhost:8008'
 };
 
 /**
@@ -125,11 +125,9 @@ export async function createProof(body: {
   mldsa44Address: string;
   mldsa44SignedMessage: string;
   mldsa44PublicKey: string;
-}): Promise<void> {
-  const wsUrl = `${domains.proofService.replace('http', 'ws')}/prove`;
-  
+}): Promise<void> {  
   // Create WebSocket connection
-  const ws = new WebSocket(wsUrl);
+  const ws = new WebSocket(`${domains.proofService}/prove`);
   
   // Set up event handlers
   const { 
