@@ -228,21 +228,41 @@ async function raceWithTimeout<T>({
  * Set up all WebSocket event handlers
  */
 function setupWebSocketHandlers(ws: WebSocket) {
+  // First set up error handlers
+  const errorHandlers = setupWebSocketErrorHandlers(ws);
+  
+  // Then set up success handlers
+  const successHandlers = setupWebSocketSuccessHandlers(ws, errorHandlers);
+  
+  // Function to clean up all listeners
+  const cleanup = () => {
+    successHandlers.cleanupSuccessHandlers();
+    errorHandlers.cleanupErrorHandlers();
+  };
+  
+  return { 
+    onHandshakeResponse: successHandlers.onHandshakeResponse,
+    onSocketOpen: successHandlers.onSocketOpen,
+    onSuccessClose: successHandlers.onSuccessClose,
+    abortController: errorHandlers.abortController,
+    cleanup
+  };
+}
+
+
+/**
+ * Set up WebSocket error handlers
+ */
+function setupWebSocketErrorHandlers(ws: WebSocket) {
   // Create abort controller for coordinating cancellation
   const abortController = new AbortController();
   const signal = abortController.signal;
   
-  // Store listener references for cleanup
-  const listeners = {
-    open: null as ((event: Event) => void) | null,
-    message: null as ((event: MessageEvent) => void) | null,
+  // Store error listener references for cleanup
+  const errorListeners = {
     error: null as ((event: Event) => void) | null,
-    successClose: null as ((event: CloseEvent) => void) | null,
     errorClose: null as ((event: CloseEvent) => void) | null
   };
-  
-  // Store abort handlers for cleanup
-  const abortHandlers: Array<() => void> = [];
   
   // Helper function to register an abort handler
   const registerAbortHandler = (reject: (reason: any) => void, customMessage: string) => {
@@ -250,9 +270,70 @@ function setupWebSocketHandlers(ws: WebSocket) {
       reject(signal.reason || new Error(customMessage));
     };
     signal.addEventListener('abort', abortHandler, { once: true });
-    abortHandlers.push(() => signal.removeEventListener('abort', abortHandler));
-    return abortHandler;
+    return () => signal.removeEventListener('abort', abortHandler);
   };
+  
+  // Handle WebSocket network error events
+  const networkErrorHandler = (event: Event) => {
+    const error = new Error('Network error while connecting to proof service');
+    abortController.abort(error);
+  };
+  
+  errorListeners.error = networkErrorHandler;
+  ws.addEventListener('error', networkErrorHandler);
+  
+  // Handle WebSocket close error events
+  const closeErrorHandler = (event: CloseEvent) => {
+    if (event.code !== WebSocketCloseCode.Normal) {
+      let errorMessage = `Connection closed unexpectedly: code ${event.code}`;
+      
+      if (event.code === WebSocketCloseCode.PolicyViolation) {
+        errorMessage = `Policy violation (code ${WebSocketCloseCode.PolicyViolation})`;
+      } else if (event.code === WebSocketCloseCode.InternalError) {
+        errorMessage = `Server encountered an internal error (code ${WebSocketCloseCode.InternalError})`;
+      } else if (event.code === WebSocketCloseCode.Timeout) {
+        errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
+      } else {
+        errorMessage = `Connection closed unexpectedly: code ${event.code}`;
+      }
+      
+      const error = new Error(errorMessage);
+      abortController.abort(error);
+    }
+  };
+  
+  errorListeners.errorClose = closeErrorHandler;
+  ws.addEventListener('close', closeErrorHandler);
+  
+  // Function to clean up error listeners
+  const cleanupErrorHandlers = () => {
+    if (errorListeners.error) ws.removeEventListener('error', errorListeners.error);
+    if (errorListeners.errorClose) ws.removeEventListener('close', errorListeners.errorClose);
+  };
+  
+  return { 
+    abortController,
+    signal,
+    registerAbortHandler,
+    cleanupErrorHandlers
+  };
+}
+
+/**
+ * Set up WebSocket success handlers
+ */
+function setupWebSocketSuccessHandlers(ws: WebSocket, errorHandlers: ReturnType<typeof setupWebSocketErrorHandlers>) {
+  const { abortController, signal, registerAbortHandler } = errorHandlers;
+  
+  // Store success listener references for cleanup
+  const successListeners = {
+    open: null as ((event: Event) => void) | null,
+    message: null as ((event: MessageEvent) => void) | null,
+    successClose: null as ((event: CloseEvent) => void) | null
+  };
+  
+  // Store abort handlers for cleanup
+  const abortHandlers: Array<() => void> = [];
   
   // Promise that resolves when the socket connects
   const onSocketOpen = new Promise<void>((resolve, reject) => {
@@ -261,9 +342,9 @@ function setupWebSocketHandlers(ws: WebSocket) {
     };
     
     // Handle abort
-    registerAbortHandler(reject, 'Connection aborted');
+    abortHandlers.push(registerAbortHandler(reject, 'Connection aborted'));
     
-    listeners.open = openHandler;
+    successListeners.open = openHandler;
     ws.addEventListener('open', openHandler);
   });
   
@@ -286,40 +367,11 @@ function setupWebSocketHandlers(ws: WebSocket) {
     };
     
     // Handle abort
-    registerAbortHandler(reject, 'Handshake aborted');
+    abortHandlers.push(registerAbortHandler(reject, 'Handshake aborted'));
     
-    listeners.message = messageHandler;
+    successListeners.message = messageHandler;
     ws.addEventListener('message', messageHandler);
   });
-  
-  // Handle WebSocket error events
-  const errorHandler = (event: Event) => {
-    const error = new Error('Network error while connecting to proof service');
-    abortController.abort(error);
-  };
-  
-  listeners.error = errorHandler;
-  ws.addEventListener('error', errorHandler);
-  
-  // Handle WebSocket close error events
-  const closeErrorHandler = (event: CloseEvent) => {
-    if (event.code !== WebSocketCloseCode.Normal) {
-      let errorMessage = `Connection closed unexpectedly: code ${event.code}`;
-      
-      if (event.code === WebSocketCloseCode.PolicyViolation) {
-        errorMessage = `Policy violation (code ${WebSocketCloseCode.PolicyViolation})`;
-      } else if (event.code === WebSocketCloseCode.InternalError) {
-        errorMessage = `Server encountered an internal error (code ${WebSocketCloseCode.InternalError})`;
-      } else if (event.code === WebSocketCloseCode.Timeout) {
-        errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
-      } else {
-        errorMessage = `Connection closed unexpectedly: code ${event.code}`;
-      }
-      
-      const error = new Error(errorMessage);
-      abortController.abort(error);
-    }
-  };
   
   // Promise that resolves when the socket closes successfully
   const onSuccessClose = new Promise<void>((resolve, reject) => {
@@ -330,23 +382,17 @@ function setupWebSocketHandlers(ws: WebSocket) {
     };
     
     // Handle abort
-    registerAbortHandler(reject, 'Connection aborted');
+    abortHandlers.push(registerAbortHandler(reject, 'Connection aborted'));
     
-    listeners.successClose = successCloseHandler;
+    successListeners.successClose = successCloseHandler;
     ws.addEventListener('close', successCloseHandler);
   });
   
-  // Set up error close handler
-  listeners.errorClose = closeErrorHandler;
-  ws.addEventListener('close', closeErrorHandler);
-  
-  // Function to clean up all listeners
-  const cleanup = () => {
-    if (listeners.open) ws.removeEventListener('open', listeners.open);
-    if (listeners.message) ws.removeEventListener('message', listeners.message);
-    if (listeners.error) ws.removeEventListener('error', listeners.error);
-    if (listeners.successClose) ws.removeEventListener('close', listeners.successClose);
-    if (listeners.errorClose) ws.removeEventListener('close', listeners.errorClose);
+  // Function to clean up success listeners
+  const cleanupSuccessHandlers = () => {
+    if (successListeners.open) ws.removeEventListener('open', successListeners.open);
+    if (successListeners.message) ws.removeEventListener('message', successListeners.message);
+    if (successListeners.successClose) ws.removeEventListener('close', successListeners.successClose);
     
     // Clean up abort handlers
     abortHandlers.forEach(removeHandler => removeHandler());
@@ -356,7 +402,6 @@ function setupWebSocketHandlers(ws: WebSocket) {
     onHandshakeResponse,
     onSocketOpen,
     onSuccessClose,
-    abortController,
-    cleanup
+    cleanupSuccessHandlers
   };
 }
