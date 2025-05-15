@@ -132,11 +132,11 @@ export async function createProof(body: {
   try {
     // Step 1: Wait for WebSocket to connect
     console.log('Waiting for WebSocket connection to open');
-    await executeWithTimeout(
-      'Connection', 
-      onSocketOpen, 
-      [onErrorEvent]
-    );
+    await executeWithTimeout({
+      operation: 'Connection',
+      resolvePromise: onSocketOpen,
+      rejectPromises: [onErrorEvent, onErrorClose]
+    });
     
     console.log('WebSocket connection opened, sending handshake');
     
@@ -144,11 +144,11 @@ export async function createProof(body: {
     ws.send(JSON.stringify({ message: 'hello' }));
     
     // Step 3: Wait for handshake acknowledgment
-    const handshakeResponse = await executeWithTimeout(
-      'Handshake',
-      onHandshakeResponse,
-      [onErrorEvent, onErrorClose]
-    );
+    const handshakeResponse = await executeWithTimeout<HandshakeResponse>({
+      operation: 'Handshake',
+      resolvePromise: onHandshakeResponse,
+      rejectPromises: [onErrorEvent, onErrorClose]
+    });
     
     if (handshakeResponse.message !== 'ack') {
       throw new Error(`Unexpected server response: ${JSON.stringify(handshakeResponse)}`);
@@ -168,12 +168,11 @@ export async function createProof(body: {
     console.log('Proof request sent');
     
     // Step 5: Wait for successful completion (normal close)
-    await executeWithTimeout(
-      'Proof verification',
-      onSuccessClose,
-      [onErrorEvent, onErrorClose],
-      45000  // Allow more time for proof verification
-    );
+    await executeWithTimeout({
+      operation: 'Proof verification',
+      resolvePromise: onSuccessClose,
+      rejectPromises: [onErrorEvent, onErrorClose],
+    });
   } finally {
     // Ensure connection is closed if still open
     if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
@@ -184,17 +183,24 @@ export async function createProof(body: {
 
 /**
  * Execute a promise with a timeout, cleaning up the timeout afterward
- * @param operation Name of the operation for the timeout message
- * @param mainPromise The main promise to execute
- * @param errorPromises Promises that only reject on error conditions
- * @param timeoutMs Timeout in milliseconds (default: 30000)
+ * @param params Configuration object for the execution
+ * @param params.operation Name of the operation for the timeout message
+ * @param params.resolvePromise The main promise that should eventually resolve (never Promise<never>)
+ * @param params.rejectPromises Promises that only reject on error conditions
+ * @param params.timeoutMs Timeout in milliseconds (default: 30000)
  */
-async function executeWithTimeout<T>(
-  operation: string,
-  mainPromise: Promise<T>,
-  errorPromises: Promise<never>[] = [],
-  timeoutMs: number = 30000
-): Promise<T> {
+async function executeWithTimeout<T>({
+  operation,
+  resolvePromise,
+  rejectPromises = [],
+  timeoutMs = 30000
+}: {
+  operation: string;
+  // NOTE: TypeScript cannot statically prevent Promise<never> from being used here for `resolvePromise`.
+  resolvePromise: Promise<T>;
+  rejectPromises?: Promise<never>[];
+  timeoutMs?: number;
+}): Promise<T> {
   let timeoutId: NodeJS.Timeout | undefined;
   
   const timeoutPromise = new Promise<never>((_, reject) => {
@@ -206,8 +212,8 @@ async function executeWithTimeout<T>(
   
   try {
     return await Promise.race([
-      mainPromise,
-      ...errorPromises,
+      resolvePromise,
+      ...rejectPromises,
       timeoutPromise
     ]);
   } finally {
