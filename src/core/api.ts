@@ -144,7 +144,7 @@ export async function createProof(body: {
   try {
     // Step 1: Wait for WebSocket to connect
     console.log('Waiting for WebSocket connection to open');
-    await executeWithTimeout({
+    await raceWithTimeout({
       operation: 'Connection',
       resolvePromise: onSocketOpen,
       rejectPromises: [onErrorEvent, onErrorClose]
@@ -156,7 +156,7 @@ export async function createProof(body: {
     ws.send(JSON.stringify({ message: 'hello' }));
     
     // Step 3: Wait for handshake acknowledgment
-    const handshakeResponse = await executeWithTimeout<HandshakeResponse>({
+    const handshakeResponse = await raceWithTimeout<HandshakeResponse>({
       operation: 'Handshake',
       resolvePromise: onHandshakeResponse,
       rejectPromises: [onErrorEvent, onErrorClose]
@@ -180,10 +180,10 @@ export async function createProof(body: {
     console.log('Proof request sent');
     
     // Step 5: Wait for successful completion (normal close)
-    await executeWithTimeout({
+    await raceWithTimeout({
       operation: 'Proof verification',
       resolvePromise: onSuccessClose,
-      rejectPromises: [onErrorEvent, onErrorClose],
+      rejectPromises: [onErrorEvent, onErrorClose]
     });
   } finally {
     // Ensure connection is closed if still open
@@ -194,14 +194,14 @@ export async function createProof(body: {
 }
 
 /**
- * Execute a promise with a timeout, cleaning up the timeout afterward
- * @param params Configuration object for the execution
+ * Execute a promise race with a timeout, cleaning up the timeout afterward
+ * @param params Configuration object for the race
  * @param params.operation Name of the operation for the timeout message
- * @param params.resolvePromise The main promise that should eventually resolve (never Promise<never>)
- * @param params.rejectPromises Promises that only reject on error conditions
+ * @param params.resolvePromise The main promise that should resolve if successful
+ * @param params.rejectPromises Promises that reject on error conditions
  * @param params.timeoutMs Timeout in milliseconds (default: 30000)
  */
-async function executeWithTimeout<T>({
+async function raceWithTimeout<T>({
   operation,
   resolvePromise,
   rejectPromises = [],
