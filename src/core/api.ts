@@ -135,7 +135,8 @@ export async function createProof(body: {
     onSocketOpen,
     onErrorEvent, 
     onSuccessClose, 
-    onErrorClose
+    onErrorClose,
+    cleanup
   } = setupWebSocketHandlers(ws);
 
   try {
@@ -177,10 +178,8 @@ export async function createProof(body: {
       rejectPromises: [onErrorEvent, onErrorClose]
     });
   } finally {
-    // Ensure connection is closed if still open
-    if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
-      ws.close();
-    }
+    // Clean up all event listeners
+    cleanup();
   }
 }
 
@@ -229,9 +228,23 @@ async function raceWithTimeout<T>({
  * Set up all WebSocket event handlers
  */
 function setupWebSocketHandlers(ws: WebSocket) {
+  // Store listener references for cleanup
+  const listeners = {
+    open: null as ((event: Event) => void) | null,
+    message: null as ((event: MessageEvent) => void) | null,
+    error: null as ((event: Event) => void) | null,
+    close: null as ((event: CloseEvent) => void) | null,
+    successClose: null as ((event: CloseEvent) => void) | null,
+    errorClose: null as ((event: CloseEvent) => void) | null
+  };
+  
   // Promise that resolves when the socket connects
   const onSocketOpen = new Promise<void>((resolve) => {
-    ws.addEventListener('open', () => resolve());
+    const openHandler = (event: Event) => {
+      resolve();
+    };
+    listeners.open = openHandler;
+    ws.addEventListener('open', openHandler);
   });
   
   // Promise that resolves when a handshake response is received
@@ -239,7 +252,6 @@ function setupWebSocketHandlers(ws: WebSocket) {
     const messageHandler = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
-        ws.removeEventListener('message', messageHandler);
         
         // Validate that this is a handshake response
         if (typeof data.message !== 'string') {
@@ -249,33 +261,39 @@ function setupWebSocketHandlers(ws: WebSocket) {
         
         resolve(data as HandshakeResponse);
       } catch (e) {
-        ws.removeEventListener('message', messageHandler);
         reject(new Error(`Failed to parse JSON from WebSocket: ${e}`));
       }
     };
     
+    listeners.message = messageHandler;
     ws.addEventListener('message', messageHandler);
   });
   
   // Promise that rejects when an error occurs
   const onErrorEvent = new Promise<never>((_, reject) => {
-    ws.addEventListener('error', (event) => {
+    const errorHandler = (event: Event) => {
       reject(new Error('Network error while connecting to proof service'));
-    });
+    };
+    
+    listeners.error = errorHandler;
+    ws.addEventListener('error', errorHandler);
   });
   
   // Promise that resolves when the socket closes successfully
   const onSuccessClose = new Promise<void>((resolve) => {
-    ws.addEventListener('close', (event) => {
+    const successCloseHandler = (event: CloseEvent) => {
       if (event.code === WebSocketCloseCode.Normal) {
         resolve();
       }
-    });
+    };
+    
+    listeners.successClose = successCloseHandler;
+    ws.addEventListener('close', successCloseHandler);
   });
   
   // Promise that rejects when the socket closes with an error
   const onErrorClose = new Promise<never>((_, reject) => {
-    ws.addEventListener('close', (event) => {
+    const errorCloseHandler = (event: CloseEvent) => {
       if (event.code !== WebSocketCloseCode.Normal) {
         let errorMessage = `Connection closed unexpectedly: code ${event.code}`;
         
@@ -291,14 +309,27 @@ function setupWebSocketHandlers(ws: WebSocket) {
         
         reject(new Error(errorMessage));
       }
-    });
+    };
+    
+    listeners.errorClose = errorCloseHandler;
+    ws.addEventListener('close', errorCloseHandler);
   });
+  
+  // Function to clean up all listeners
+  const cleanup = () => {
+    if (listeners.open) ws.removeEventListener('open', listeners.open);
+    if (listeners.message) ws.removeEventListener('message', listeners.message);
+    if (listeners.error) ws.removeEventListener('error', listeners.error);
+    if (listeners.successClose) ws.removeEventListener('close', listeners.successClose);
+    if (listeners.errorClose) ws.removeEventListener('close', listeners.errorClose);
+  };
   
   return { 
     onHandshakeResponse,
     onSocketOpen,
     onErrorEvent, 
     onSuccessClose, 
-    onErrorClose
+    onErrorClose,
+    cleanup
   };
 }
