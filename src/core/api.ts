@@ -1,7 +1,7 @@
 /**
  * Types
  */
-export interface Proof {
+interface Proof {
   id: string;
   btc_address: string;
   ml_dsa_44_address: string;
@@ -46,8 +46,10 @@ const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 const domains = {
   verificationService: IS_PROD
     ? 'https://verification-api.yellowpages.xyz'
-    : 'http://localhost:8080',
-  proofService: IS_PROD ? 'wss://not.implemented.com' : 'ws://localhost:8008'
+    : 'https://verification-api.yellowpages-development.xyz',
+  proofService: IS_PROD
+    ? 'wss://not.implemented.com'
+    : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
 };
 
 /**
