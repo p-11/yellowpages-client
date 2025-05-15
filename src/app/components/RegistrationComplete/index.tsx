@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
@@ -27,9 +28,23 @@ export function RegistrationComplete() {
     setShowProofDialog(!showProofDialog);
   }, [showProofDialog]);
 
+  const encodedBitcoinAddress = useMemo(
+    () => (bitcoinAddress ? encodeURIComponent(bitcoinAddress) : ''),
+    [bitcoinAddress]
+  );
+  const encodedMldsa44Address = useMemo(
+    () =>
+      signedMessages
+        ? encodeURIComponent(signedMessages.ML_DSA_44.address)
+        : '',
+    [signedMessages]
+  );
+
   const copySocialLink = useCallback(() => {
-    navigator.clipboard.writeText('https://yellowpages.xyz');
-  }, []);
+    navigator.clipboard.writeText(
+      `https://yellowpages.xyz/?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}`
+    );
+  }, [encodedBitcoinAddress, encodedMldsa44Address]);
 
   if (!bitcoinAddress || !signedMessages) return null;
 
@@ -61,9 +76,13 @@ export function RegistrationComplete() {
           <p>Help others find themselves in the post quantum world.</p>
           <div className={styles.socialSection}>
             <div className={styles.socialSectionContent}>
-              <p>I found myself in the post-quantum world.</p>
-              <p>Get protected & join the yellowpages.</p>
-              <p>yellowpages.xyz</p>
+              <Image
+                className={styles.ogImage}
+                width={600}
+                height={315}
+                alt='og-image'
+                src={`/og-image?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}`}
+              />
             </div>
           </div>
           <CopyTextToolbarButton label='Copy link' onClick={copySocialLink} />
