@@ -140,21 +140,13 @@ export async function createProof(body: {
 
   try {
     // Step 1: Wait for WebSocket to connect
-    await raceWithTimeout({
-      operation: 'Connection',
-      resolvePromise: onSocketOpen,
-      timeoutMs: 30000
-    });
+    await raceWithTimeout('Connection', onSocketOpen);
     
     // Step 2: Send handshake
     ws.send(JSON.stringify({ message: 'hello' }));
     
     // Step 3: Wait for handshake acknowledgment
-    const handshakeResponse = await raceWithTimeout<HandshakeResponse>({
-      operation: 'Handshake',
-      resolvePromise: onHandshakeResponse,
-      timeoutMs: 30000
-    });
+    const handshakeResponse = await raceWithTimeout<HandshakeResponse>('Handshake', onHandshakeResponse);
     
     if (handshakeResponse.message !== 'ack') {
       throw new Error(`Unexpected server response: ${JSON.stringify(handshakeResponse)}`);
@@ -171,11 +163,7 @@ export async function createProof(body: {
     ws.send(JSON.stringify(proofRequest));
     
     // Step 5: Wait for successful completion (normal close)
-    await raceWithTimeout({
-      operation: 'Proof verification',
-      resolvePromise: onSuccessClose,
-      timeoutMs: 45000  // Allow more time for proof verification
-    });
+    await raceWithTimeout('Proof verification', onSuccessClose);
   } catch (error) {
     // Make sure we abort on any error
     abortController.abort(error);
@@ -188,21 +176,15 @@ export async function createProof(body: {
 
 /**
  * Execute a promise race with a timeout, cleaning up the timeout afterward
- * @param params Configuration object for the race
- * @param params.operation Name of the operation for the timeout message
- * @param params.resolvePromise The main promise that should resolve if successful
- * @param params.timeoutMs Timeout in milliseconds (default: 30000)
+ * @param operation Name of the operation for the timeout message
+ * @param operationPromise The main promise that should resolve if successful
+ * @param timeoutMs Timeout in milliseconds (default: 30000)
  */
-async function raceWithTimeout<T>({
-  operation,
-  resolvePromise,
+async function raceWithTimeout<T>(
+  operation: string,
+  operationPromise: Promise<T>,
   timeoutMs = 30000
-}: {
-  operation: string;
-  // NOTE: TypeScript cannot statically prevent Promise<never> from being used here for `resolvePromise`.
-  resolvePromise: Promise<T>;
-  timeoutMs?: number;
-}): Promise<T> {
+): Promise<T> {
   // Create a timeout promise with cleanup
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {
@@ -214,7 +196,7 @@ async function raceWithTimeout<T>({
   try {
     // Simple race between the main promise and timeout
     return await Promise.race([
-      resolvePromise,
+      operationPromise,
       timeoutPromise
     ]);
   } finally {
@@ -232,7 +214,7 @@ function setupWebSocketHandlers(ws: WebSocket) {
   const errorHandlers = setupWebSocketErrorHandlers(ws);
   
   // Then set up success handlers
-  const successHandlers = setupWebSocketSuccessHandlers(ws, errorHandlers);
+  const successHandlers = setupWebSocketSuccessHandlers(ws, errorHandlers.registerAbortHandler);
   
   // Function to clean up all listeners
   const cleanup = () => {
@@ -248,7 +230,6 @@ function setupWebSocketHandlers(ws: WebSocket) {
     cleanup
   };
 }
-
 
 /**
  * Set up WebSocket error handlers
@@ -322,9 +303,10 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
 /**
  * Set up WebSocket success handlers
  */
-function setupWebSocketSuccessHandlers(ws: WebSocket, errorHandlers: ReturnType<typeof setupWebSocketErrorHandlers>) {
-  const { abortController, signal, registerAbortHandler } = errorHandlers;
-  
+function setupWebSocketSuccessHandlers(
+  ws: WebSocket, 
+  registerAbortHandler: (reject: (reason: any) => void, customMessage: string) => (() => void)
+) {
   // Store success listener references for cleanup
   const successListeners = {
     open: null as ((event: Event) => void) | null,
