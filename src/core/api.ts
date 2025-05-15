@@ -127,8 +127,7 @@ export async function createProof(body: {
   mldsa44PublicKey: string;
 }): Promise<void> {
   const wsUrl = `${domains.proofService.replace('http', 'ws')}/prove`;
-  console.log(`Opening WebSocket connection to: ${wsUrl}`);
-
+  
   // Create WebSocket connection
   const ws = new WebSocket(wsUrl);
   
@@ -143,14 +142,11 @@ export async function createProof(body: {
 
   try {
     // Step 1: Wait for WebSocket to connect
-    console.log('Waiting for WebSocket connection to open');
     await raceWithTimeout({
       operation: 'Connection',
       resolvePromise: onSocketOpen,
       rejectPromises: [onErrorEvent, onErrorClose]
     });
-    
-    console.log('WebSocket connection opened, sending handshake');
     
     // Step 2: Send handshake
     ws.send(JSON.stringify({ message: 'hello' }));
@@ -166,8 +162,6 @@ export async function createProof(body: {
       throw new Error(`Unexpected server response: ${JSON.stringify(handshakeResponse)}`);
     }
     
-    console.log('Received handshake acknowledgment, sending proof request');
-    
     // Step 4: Send proof request
     const proofRequest = {
       bitcoin_address: body.btcAddress,
@@ -177,7 +171,6 @@ export async function createProof(body: {
       ml_dsa_public_key: body.mldsa44PublicKey
     };
     ws.send(JSON.stringify(proofRequest));
-    console.log('Proof request sent');
     
     // Step 5: Wait for successful completion (normal close)
     await raceWithTimeout({
@@ -217,8 +210,7 @@ async function raceWithTimeout<T>({
   
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
-      console.log(`${operation} timed out after ${timeoutMs/1000} seconds`);
-      reject(new Error(`${operation} timed out`));
+      reject(new Error(`Operation "${operation}" timed out after ${timeoutMs/1000} seconds`));
     }, timeoutMs);
   });
   
@@ -247,7 +239,6 @@ function setupWebSocketHandlers(ws: WebSocket) {
   // Promise that resolves when a handshake response is received
   const onHandshakeResponse = new Promise<HandshakeResponse>((resolve, reject) => {
     const messageHandler = (event: MessageEvent) => {
-      console.log(`WebSocket message received:`, event.data);
       try {
         const data = JSON.parse(event.data);
         ws.removeEventListener('message', messageHandler);
@@ -271,40 +262,33 @@ function setupWebSocketHandlers(ws: WebSocket) {
   // Promise that rejects when an error occurs
   const onErrorEvent = new Promise<never>((_, reject) => {
     ws.addEventListener('error', (event) => {
-      console.error('WebSocket error occurred:', event);
       reject(new Error('Network error while connecting to proof service'));
     });
   });
   
-  // Create a promise that resolves when the socket closes successfully
+  // Promise that resolves when the socket closes successfully
   const onSuccessClose = new Promise<void>((resolve) => {
     ws.addEventListener('close', (event) => {
       if (event.code === WebSocketCloseCode.Normal) {
-        console.log(`WebSocket closed with success code ${WebSocketCloseCode.Normal} (Normal)`);
         resolve();
       }
     });
   });
   
-  // Create a promise that rejects when the socket closes with an error
+  // Promise that rejects when the socket closes with an error
   const onErrorClose = new Promise<never>((_, reject) => {
     ws.addEventListener('close', (event) => {
       if (event.code !== WebSocketCloseCode.Normal) {
-        console.log(`WebSocket closed with error code: ${event.code}, reason: ${event.reason}`);
-        
         let errorMessage = `Connection closed unexpectedly: code ${event.code}`;
         
         if (event.code === WebSocketCloseCode.PolicyViolation) {
-          errorMessage = 'Policy violation';
-          console.error(`Policy violation detected (code ${WebSocketCloseCode.PolicyViolation})`);
+          errorMessage = `Policy violation (code ${WebSocketCloseCode.PolicyViolation})`;
         } else if (event.code === WebSocketCloseCode.InternalError) {
-          errorMessage = 'Server error';
-          console.error(`Server encountered an internal error (code ${WebSocketCloseCode.InternalError})`);
+          errorMessage = `Server encountered an internal error (code ${WebSocketCloseCode.InternalError})`;
         } else if (event.code === WebSocketCloseCode.Timeout) {
-          errorMessage = 'Operation timed out on server';
-          console.error(`Server timeout detected (code ${WebSocketCloseCode.Timeout})`);
+          errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
         } else {
-          console.error(`Unexpected close code: ${event.code}`);
+          errorMessage = `Connection closed unexpectedly: code ${event.code}`;
         }
         
         reject(new Error(errorMessage));
