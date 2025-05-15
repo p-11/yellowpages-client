@@ -21,6 +21,13 @@ export interface Proof {
 }
 
 /**
+ * Expected WebSocket message response format
+ */
+interface HandshakeResponse {
+  message: string;
+}
+
+/**
  * Base domains per service and environment.
  */
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
@@ -115,7 +122,7 @@ export async function createProof(body: {
   
   // Set up event handlers
   const { 
-    waitForMessage, 
+    waitForHandshakeResponse,
     waitForSocketOpen,
     onErrorEvent, 
     onSuccessClose, 
@@ -139,7 +146,7 @@ export async function createProof(body: {
     // Step 3: Wait for handshake acknowledgment
     const handshakeResponse = await executeWithTimeout(
       'Handshake',
-      waitForMessage(),
+      waitForHandshakeResponse(),
       [onErrorEvent, onErrorClose]
     );
     
@@ -221,15 +228,22 @@ function setupWebSocketHandlers(ws: WebSocket) {
     });
   };
   
-  // Create a promise that resolves when a message is received
-  const waitForMessage = (): Promise<any> => {
+  // Create a promise that resolves when a handshake response is received
+  const waitForHandshakeResponse = (): Promise<HandshakeResponse> => {
     return new Promise((resolve, reject) => {
       const messageHandler = (event: MessageEvent) => {
         console.log(`WebSocket message received:`, event.data);
         try {
           const data = JSON.parse(event.data);
           ws.removeEventListener('message', messageHandler);
-          resolve(data);
+          
+          // Validate that this is a handshake response
+          if (typeof data.message !== 'string') {
+            reject(new Error(`Expected handshake response with message field, got: ${JSON.stringify(data)}`));
+            return;
+          }
+          
+          resolve(data as HandshakeResponse);
         } catch (e) {
           ws.removeEventListener('message', messageHandler);
           reject(new Error(`Failed to parse JSON from WebSocket: ${e}`));
@@ -285,7 +299,7 @@ function setupWebSocketHandlers(ws: WebSocket) {
   });
   
   return { 
-    waitForMessage, 
+    waitForHandshakeResponse,
     waitForSocketOpen,
     onErrorEvent, 
     onSuccessClose, 
