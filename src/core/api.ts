@@ -28,6 +28,18 @@ interface HandshakeResponse {
 }
 
 /**
+ * WebSocket close codes that we use in this application
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+ */
+enum WebSocketCloseCode {
+  Normal = 1000,
+  PolicyViolation = 1008,
+  InternalError = 1011,
+  // Custom codes
+  Timeout = 4000
+}
+
+/**
  * Base domains per service and environment.
  */
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
@@ -264,33 +276,33 @@ function setupWebSocketHandlers(ws: WebSocket) {
     });
   });
   
-  // Promise that resolves when the socket closes successfully
+  // Create a promise that resolves when the socket closes successfully
   const onSuccessClose = new Promise<void>((resolve) => {
     ws.addEventListener('close', (event) => {
-      if (event.code === 1000) {
-        console.log('WebSocket closed with success code 1000');
+      if (event.code === WebSocketCloseCode.Normal) {
+        console.log(`WebSocket closed with success code ${WebSocketCloseCode.Normal} (Normal)`);
         resolve();
       }
     });
   });
   
-  // Promise that rejects when the socket closes with an error
+  // Create a promise that rejects when the socket closes with an error
   const onErrorClose = new Promise<never>((_, reject) => {
     ws.addEventListener('close', (event) => {
-      if (event.code !== 1000) {
+      if (event.code !== WebSocketCloseCode.Normal) {
         console.log(`WebSocket closed with error code: ${event.code}, reason: ${event.reason}`);
         
         let errorMessage = `Connection closed unexpectedly: code ${event.code}`;
         
-        if (event.code === 1008) {
+        if (event.code === WebSocketCloseCode.PolicyViolation) {
           errorMessage = 'Policy violation';
-          console.error('Policy violation detected (code 1008)');
-        } else if (event.code === 1011) {
+          console.error(`Policy violation detected (code ${WebSocketCloseCode.PolicyViolation})`);
+        } else if (event.code === WebSocketCloseCode.InternalError) {
           errorMessage = 'Server error';
-          console.error('Server encountered an internal error (code 1011)');
-        } else if (event.code === 4000) {
+          console.error(`Server encountered an internal error (code ${WebSocketCloseCode.InternalError})`);
+        } else if (event.code === WebSocketCloseCode.Timeout) {
           errorMessage = 'Operation timed out on server';
-          console.error('Server timeout detected (code 4000)');
+          console.error(`Server timeout detected (code ${WebSocketCloseCode.Timeout})`);
         } else {
           console.error(`Unexpected close code: ${event.code}`);
         }
