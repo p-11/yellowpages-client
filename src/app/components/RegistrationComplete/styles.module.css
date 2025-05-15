@@ -23,7 +23,7 @@
     letter-spacing: -0.05rem;
 }
 
-.entryDetailsSection {
+.entryToolbar {
     margin-top: 8px;
     margin-bottom: 24px;
 }
@@ -37,10 +37,10 @@
     display: flex;
 }
 
-.socialSectionContent {
+.shareDialogContent {
     border: 4px solid #cfbf67;
     border-radius: 10px;
-    background-color: #E8D674;
+    margin-bottom: 16px;
 }
 
 .ogImage {
@@ -49,10 +49,36 @@
     height: auto;
 }
 
+.shareLinkBox {
+    margin-top: 12px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    background-color: #d8cb7e;
+    border: 1px solid #8b8250;
+}
+
+.shareLink {
+    font-size: 14px;
+}
+
+.shareDialogFooter {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
 @media only screen and (min-width: 768px) {
     .title {
         margin-top: 32px;
         font-size: 1.8rem;
         margin-bottom: 16px;
+    }
+
+    .entryToolbar {
+        display: flex;
+        gap: 16px;
     }
 }
