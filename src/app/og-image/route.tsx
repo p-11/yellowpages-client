@@ -18,7 +18,8 @@ export async function GET(request: Request) {
           paddingLeft: 60,
           paddingRight: 60,
           height: '100%',
-          width: '100%'
+          width: '100%',
+          color: '#1E0B00'
         }}
       >
         <div
@@ -33,10 +34,11 @@ export async function GET(request: Request) {
               border: '2px solid #1E0B00',
               borderRadius: '6px',
               position: 'relative',
-              paddingTop: '16px',
+              marginTop: 6,
+              paddingTop: '32px',
               paddingLeft: '20px',
               paddingRight: '20px',
-              paddingBottom: '26px',
+              paddingBottom: '42px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column'
@@ -46,7 +48,7 @@ export async function GET(request: Request) {
               style={{
                 backgroundColor: '#E8D674',
                 position: 'absolute',
-                top: '-18px',
+                top: '-17px',
                 left: '14px',
                 paddingRight: '6px',
                 paddingLeft: '6px',
@@ -54,7 +56,7 @@ export async function GET(request: Request) {
                 flexDirection: 'column'
               }}
             >
-              <span style={{ fontSize: 24 }}>ENTRY</span>
+              <span style={{ fontSize: 22 }}>ENTRY</span>
             </div>
             <div
               style={{
