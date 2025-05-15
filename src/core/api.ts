@@ -32,10 +32,14 @@ interface HandshakeResponse {
  * @see https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
  */
 enum WebSocketCloseCode {
+  // eslint-disable-next-line no-unused-vars
   Normal = 1000,
+  // eslint-disable-next-line no-unused-vars
   PolicyViolation = 1008,
+  // eslint-disable-next-line no-unused-vars
   InternalError = 1011,
   // Custom codes
+  // eslint-disable-next-line no-unused-vars
   Timeout = 4000
 }
 
@@ -240,13 +244,13 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
 
   // Store error listener references for cleanup
   const errorListeners = {
-    error: null as ((event: Event) => void) | null,
-    errorClose: null as ((event: CloseEvent) => void) | null
+    error: null as ((_event: Event) => void) | null,
+    errorClose: null as ((_event: CloseEvent) => void) | null
   };
 
   // Helper function to register an abort handler
   const registerAbortHandler = (
-    reject: (reason: unknown) => void,
+    reject: (_reason: unknown) => void,
     customMessage: string
   ) => {
     const abortHandler = () => {
@@ -310,15 +314,15 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
 function setupWebSocketSuccessHandlers(
   ws: WebSocket,
   registerAbortHandler: (
-    reject: (reason: unknown) => void,
-    customMessage: string
+    _reject: (_reason: unknown) => void,
+    _customMessage: string
   ) => () => void
 ) {
   // Store success listener references for cleanup
   const successListeners = {
     open: null as (() => void) | null,
-    message: null as ((event: MessageEvent) => void) | null,
-    successClose: null as ((event: CloseEvent) => void) | null
+    message: null as ((_event: MessageEvent) => void) | null,
+    successClose: null as ((_event: CloseEvent) => void) | null
   };
 
   // Store abort handlers for cleanup
