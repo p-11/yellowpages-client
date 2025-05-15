@@ -164,10 +164,6 @@ export async function createProof(body: {
     
     // Step 5: Wait for successful completion (normal close)
     await raceWithTimeout('Proof verification', onSuccessClose);
-  } catch (error) {
-    // Make sure we abort on any error
-    abortController.abort(error);
-    throw error;
   } finally {
     // Clean up all event listeners
     cleanup();
