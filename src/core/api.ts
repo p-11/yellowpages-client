@@ -213,7 +213,7 @@ async function executeWithTimeout<T>({
   rejectPromises?: Promise<never>[];
   timeoutMs?: number;
 }): Promise<T> {
-  let timeoutId: NodeJS.Timeout | undefined;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
