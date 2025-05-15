@@ -122,8 +122,8 @@ export async function createProof(body: {
   
   // Set up event handlers
   const { 
-    waitForHandshakeResponse,
-    waitForSocketOpen,
+    onHandshakeResponse,
+    onSocketOpen,
     onErrorEvent, 
     onSuccessClose, 
     onErrorClose
@@ -134,7 +134,7 @@ export async function createProof(body: {
     console.log('Waiting for WebSocket connection to open');
     await executeWithTimeout(
       'Connection', 
-      waitForSocketOpen(), 
+      onSocketOpen, 
       [onErrorEvent]
     );
     
@@ -146,7 +146,7 @@ export async function createProof(body: {
     // Step 3: Wait for handshake acknowledgment
     const handshakeResponse = await executeWithTimeout(
       'Handshake',
-      waitForHandshakeResponse(),
+      onHandshakeResponse,
       [onErrorEvent, onErrorClose]
     );
     
@@ -221,40 +221,36 @@ async function executeWithTimeout<T>(
  * Set up all WebSocket event handlers
  */
 function setupWebSocketHandlers(ws: WebSocket) {
-  // Create a promise that resolves when the socket connects
-  const waitForSocketOpen = (): Promise<void> => {
-    return new Promise<void>((resolve) => {
-      ws.addEventListener('open', () => resolve());
-    });
-  };
+  // Promise that resolves when the socket connects
+  const onSocketOpen = new Promise<void>((resolve) => {
+    ws.addEventListener('open', () => resolve());
+  });
   
-  // Create a promise that resolves when a handshake response is received
-  const waitForHandshakeResponse = (): Promise<HandshakeResponse> => {
-    return new Promise((resolve, reject) => {
-      const messageHandler = (event: MessageEvent) => {
-        console.log(`WebSocket message received:`, event.data);
-        try {
-          const data = JSON.parse(event.data);
-          ws.removeEventListener('message', messageHandler);
-          
-          // Validate that this is a handshake response
-          if (typeof data.message !== 'string') {
-            reject(new Error(`Expected handshake response with message field, got: ${JSON.stringify(data)}`));
-            return;
-          }
-          
-          resolve(data as HandshakeResponse);
-        } catch (e) {
-          ws.removeEventListener('message', messageHandler);
-          reject(new Error(`Failed to parse JSON from WebSocket: ${e}`));
+  // Promise that resolves when a handshake response is received
+  const onHandshakeResponse = new Promise<HandshakeResponse>((resolve, reject) => {
+    const messageHandler = (event: MessageEvent) => {
+      console.log(`WebSocket message received:`, event.data);
+      try {
+        const data = JSON.parse(event.data);
+        ws.removeEventListener('message', messageHandler);
+        
+        // Validate that this is a handshake response
+        if (typeof data.message !== 'string') {
+          reject(new Error(`Expected handshake response with message field, got: ${JSON.stringify(data)}`));
+          return;
         }
-      };
-      
-      ws.addEventListener('message', messageHandler);
-    });
-  };
+        
+        resolve(data as HandshakeResponse);
+      } catch (e) {
+        ws.removeEventListener('message', messageHandler);
+        reject(new Error(`Failed to parse JSON from WebSocket: ${e}`));
+      }
+    };
+    
+    ws.addEventListener('message', messageHandler);
+  });
   
-  // Create a promise that rejects when an error occurs
+  // Promise that rejects when an error occurs
   const onErrorEvent = new Promise<never>((_, reject) => {
     ws.addEventListener('error', (event) => {
       console.error('WebSocket error occurred:', event);
@@ -262,7 +258,7 @@ function setupWebSocketHandlers(ws: WebSocket) {
     });
   });
   
-  // Create a promise that resolves when the socket closes successfully
+  // Promise that resolves when the socket closes successfully
   const onSuccessClose = new Promise<void>((resolve) => {
     ws.addEventListener('close', (event) => {
       if (event.code === 1000) {
@@ -272,7 +268,7 @@ function setupWebSocketHandlers(ws: WebSocket) {
     });
   });
   
-  // Create a promise that rejects when the socket closes with an error
+  // Promise that rejects when the socket closes with an error
   const onErrorClose = new Promise<never>((_, reject) => {
     ws.addEventListener('close', (event) => {
       if (event.code !== 1000) {
@@ -299,8 +295,8 @@ function setupWebSocketHandlers(ws: WebSocket) {
   });
   
   return { 
-    waitForHandshakeResponse,
-    waitForSocketOpen,
+    onHandshakeResponse,
+    onSocketOpen,
     onErrorEvent, 
     onSuccessClose, 
     onErrorClose
