@@ -38,6 +38,15 @@ export default function HomePage() {
           Check the directory <ArrowRightIcon />
         </Link>
       </div>
+      <div className={styles.footer}>
+        <iframe
+          src='https://status.projecteleven.com/badge?theme=light'
+          width='250'
+          height='30'
+          scrolling='no'
+          style={{ colorScheme: 'normal', border: 0 }}
+        />
+      </div>
     </main>
   );
 }
