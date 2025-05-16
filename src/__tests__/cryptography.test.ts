@@ -227,15 +227,17 @@ describe('crypto module', () => {
 describe('ML-KEM-768 operations', () => {
   test('generateMlKem768Keypair generates valid keypair', () => {
     const keypair = generateMlKem768Keypair();
-    
+
     // Check that keypair has expected properties
     expect(keypair).toHaveProperty('encapsulationKey');
     expect(keypair).toHaveProperty('decapsulationKey');
-    
+
     // Check key sizes
-    expect(keypair.decapsulationKey.length).toBe(ML_KEM_768_DECAPSULATION_KEY_SIZE);
+    expect(keypair.decapsulationKey.length).toBe(
+      ML_KEM_768_DECAPSULATION_KEY_SIZE
+    );
     expect(keypair.encapsulationKey.length).toBeGreaterThan(0);
-    
+
     // Check that keys contain data (not all zeros)
     expect(keypair.encapsulationKey.some(byte => byte !== 0)).toBe(true);
     expect(keypair.decapsulationKey.some(byte => byte !== 0)).toBe(true);
@@ -243,14 +245,14 @@ describe('ML-KEM-768 operations', () => {
 
   test('destroyMlKem768Keypair zeroes out key material', () => {
     const keypair = generateMlKem768Keypair();
-    
+
     // Verify keys have data before destruction
     expect(keypair.encapsulationKey.some(byte => byte !== 0)).toBe(true);
     expect(keypair.decapsulationKey.some(byte => byte !== 0)).toBe(true);
-    
+
     // Destroy the keypair
     destroyMlKem768Keypair(keypair);
-    
+
     // Verify all bytes are now zero
     expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
     expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
@@ -259,22 +261,22 @@ describe('ML-KEM-768 operations', () => {
   test('end-to-end ML-KEM-768 key exchange', () => {
     // Create a keypair for the test
     const aliceKeypair = generateMlKem768Keypair();
-    
+
     // Clone the keypair to test against (since the original will be destroyed)
     const aliceKeypairClone = {
       encapsulationKey: new Uint8Array(aliceKeypair.encapsulationKey),
       decapsulationKey: new Uint8Array(aliceKeypair.decapsulationKey)
     };
-    
+
     // Bob uses Alice's encapsulation key to create a ciphertext and shared secret
     const bobResult = ml_kem768.encapsulate(aliceKeypairClone.encapsulationKey);
-    
+
     // Convert to branded type for the function
     const ciphertextBytes = bobResult.cipherText as MlKem768CiphertextBytes;
-    
+
     // Verify ciphertext has correct length
     expect(ciphertextBytes.length).toBe(ML_KEM_768_CIPHERTEXT_SIZE);
-    
+
     // Mock a try-catch to test if deriveMlKem768SharedSecret completes without error
     let error: Error | null = null;
     try {
@@ -282,37 +284,39 @@ describe('ML-KEM-768 operations', () => {
     } catch (e) {
       error = e as Error;
     }
-    
+
     // Verify no error was thrown
     expect(error).toBeNull();
-    
+
     // Verify keypair was destroyed by deriveMlKem768SharedSecret
     expect(aliceKeypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
     expect(aliceKeypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
-    
+
     // We don't test the actual shared secret value, as it's destroyed inside the function
   });
 
   test('base64 encoding and decoding round trip works', () => {
     // Generate random test data using randomBytes
     const original = randomBytes(32);
-    
+
     // Convert to base64 and back
     const base64Str = base64.encode(original);
     const roundTrip = base64.decode(base64Str);
-    
+
     // Verify the round trip produces the same bytes
     expect(Array.from(roundTrip)).toEqual(Array.from(original));
   });
 
   test('deriveMlKem768SharedSecret throws on invalid ciphertext size', () => {
     const keypair = generateMlKem768Keypair();
-    const invalidCiphertext = new Uint8Array(ML_KEM_768_CIPHERTEXT_SIZE - 1) as MlKem768CiphertextBytes;
-    
+    const invalidCiphertext = new Uint8Array(
+      ML_KEM_768_CIPHERTEXT_SIZE - 1
+    ) as MlKem768CiphertextBytes;
+
     expect(() => {
       deriveMlKem768SharedSecret(invalidCiphertext, keypair);
     }).toThrow(/Invalid ML-KEM-768 ciphertext byte length/);
-    
+
     // Keypair should still be destroyed even though an error was thrown
     expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
     expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);

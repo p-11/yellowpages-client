@@ -1,8 +1,8 @@
 /**
  * Types
  */
-import { 
-  generateMlKem768Keypair, 
+import {
+  generateMlKem768Keypair,
   deriveMlKem768SharedSecret,
   destroyMlKem768Keypair,
   ML_KEM_768_CIPHERTEXT_SIZE,
@@ -69,7 +69,9 @@ const domains = {
   verificationService: IS_PROD
     ? 'https://verification-api.yellowpages.xyz'
     : 'https://verification-api.yellowpages-development.xyz',
-  proofService: IS_PROD ? 'wss://not.implemented.com' : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
+  proofService: IS_PROD
+    ? 'wss://not.implemented.com'
+    : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
 };
 
 /**
@@ -152,7 +154,7 @@ export async function createProof(body: {
   // Set up event handlers
   const { onHandshakeResponse, onSocketOpen, onSuccessClose, cleanup } =
     setupWebSocketHandlers(ws);
-    
+
   // Initialize keypair outside try block so we can clean it up in finally
   let mlKem768Keypair: MlKem768Keypair | undefined;
 
@@ -162,7 +164,9 @@ export async function createProof(body: {
 
     // Step 2: Generate ML-KEM-768 key pair
     mlKem768Keypair = generateMlKem768Keypair();
-    const mlKem768EncapsulationKeyBase64 = base64.encode(mlKem768Keypair.encapsulationKey);
+    const mlKem768EncapsulationKeyBase64 = base64.encode(
+      mlKem768Keypair.encapsulationKey
+    );
 
     // Step 3: Send handshake with ML-KEM-768 public key
     const handshakeMessage: HandshakeMessage = {
@@ -178,20 +182,29 @@ export async function createProof(body: {
 
     // Step 5: Validate and decode the ciphertext
     const mlKem768CiphertextBase64 = handshakeResponse.ml_kem_768_ciphertext;
-    
+
     // Validate base64 ciphertext length
-    if (!mlKem768CiphertextBase64 || mlKem768CiphertextBase64.length > MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE) {
-      throw new Error(`Invalid ML-KEM-768 ciphertext length: expected base64 length <= ${MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE}, got ${mlKem768CiphertextBase64.length}`);
+    if (
+      !mlKem768CiphertextBase64 ||
+      mlKem768CiphertextBase64.length > MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
+    ) {
+      throw new Error(
+        `Invalid ML-KEM-768 ciphertext length: expected base64 length <= ${MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE}, got ${mlKem768CiphertextBase64.length}`
+      );
     }
 
     // Decode base64 to bytes
-    const mlKem768CiphertextBytes = base64.decode(mlKem768CiphertextBase64) as MlKem768CiphertextBytes;
-    
+    const mlKem768CiphertextBytes = base64.decode(
+      mlKem768CiphertextBase64
+    ) as MlKem768CiphertextBytes;
+
     // Validate exact byte length
     if (mlKem768CiphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
-      throw new Error(`Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${mlKem768CiphertextBytes.length}`);
+      throw new Error(
+        `Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${mlKem768CiphertextBytes.length}`
+      );
     }
-    
+
     // Derive shared secret
     deriveMlKem768SharedSecret(mlKem768CiphertextBytes, mlKem768Keypair);
 
@@ -210,7 +223,7 @@ export async function createProof(body: {
   } finally {
     // Clean up WebSocket event listeners
     cleanup();
-    
+
     // Ensure keypair is destroyed, even if deriveMlKem768SharedSecret wasn't called
     if (mlKem768Keypair) {
       destroyMlKem768Keypair(mlKem768Keypair);

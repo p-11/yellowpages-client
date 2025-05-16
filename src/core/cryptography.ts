@@ -30,7 +30,9 @@ const ML_KEM_768_CIPHERTEXT_SIZE = 1088; // Size in bytes
 const ML_KEM_768_DECAPSULATION_KEY_SIZE = 2400; // Size in bytes
 const ML_KEM_768_SHARED_SECRET_SIZE = 32; // Size in bytes
 // Base64 encoding increases size by approximately 4/3
-const MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE = Math.ceil(ML_KEM_768_CIPHERTEXT_SIZE * 1.4);
+const MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE = Math.ceil(
+  ML_KEM_768_CIPHERTEXT_SIZE * 1.4
+);
 
 /*
  * Types
@@ -50,7 +52,10 @@ export type PQPublicKey = Brand<Uint8Array, 'PQPublicKey'>;
 export type PQPublicKeyString = Brand<string, 'PQPublicKeyString'>;
 export type PQPrivateKey = Brand<Uint8Array, 'PQPrivateKey'>;
 export type PQAddress = Brand<string, 'PQAddress'>;
-export type MlKem768CiphertextBytes = Brand<Uint8Array, 'MlKem768CiphertextBytes'>;
+export type MlKem768CiphertextBytes = Brand<
+  Uint8Array,
+  'MlKem768CiphertextBytes'
+>;
 
 const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
   AddressType.p2pkh,
@@ -116,7 +121,9 @@ function generateMlKem768Keypair(): MlKem768Keypair {
       decapsulationKey: keyPair.secretKey
     };
   } catch (error) {
-    throw new Error(`Failed to generate ML-KEM-768 keypair: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to generate ML-KEM-768 keypair: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 
@@ -130,36 +137,50 @@ function deriveMlKem768SharedSecret(
   keypair: MlKem768Keypair
 ): void {
   let sharedSecret: Uint8Array | undefined;
-  
+
   try {
     // Validate ciphertext length
     if (ciphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
-      throw new Error(`Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${ciphertextBytes.length}`);
+      throw new Error(
+        `Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${ciphertextBytes.length}`
+      );
     }
 
     // Validate decapsulation key length
     if (keypair.decapsulationKey.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE) {
-      throw new Error(`Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey.length}`);
+      throw new Error(
+        `Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey.length}`
+      );
     }
 
     // Derive the shared secret
-    sharedSecret = ml_kem768.decapsulate(ciphertextBytes, keypair.decapsulationKey);
-    
+    sharedSecret = ml_kem768.decapsulate(
+      ciphertextBytes,
+      keypair.decapsulationKey
+    );
+
     // Verify shared secret has the correct length
-    if (!sharedSecret || sharedSecret.length !== ML_KEM_768_SHARED_SECRET_SIZE) {
-      throw new Error(`Invalid ML-KEM-768 shared secret length: expected ${ML_KEM_768_SHARED_SECRET_SIZE}, got ${sharedSecret?.length ?? 'undefined'}`);
+    if (
+      !sharedSecret ||
+      sharedSecret.length !== ML_KEM_768_SHARED_SECRET_SIZE
+    ) {
+      throw new Error(
+        `Invalid ML-KEM-768 shared secret length: expected ${ML_KEM_768_SHARED_SECRET_SIZE}, got ${sharedSecret?.length ?? 'undefined'}`
+      );
     }
-    
+
     // Successfully derived shared secret - in the future we'll use it here to encrypt using AES
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to derive ML-KEM-768 shared secret: ${errorMessage}`);
+    throw new Error(
+      `Failed to derive ML-KEM-768 shared secret: ${errorMessage}`
+    );
   } finally {
     // Ensure the shared secret is destroyed
     if (sharedSecret) {
       sharedSecret.fill(0);
     }
-    
+
     // Always destroy the keypair
     destroyMlKem768Keypair(keypair);
   }
