@@ -3,7 +3,7 @@
  */
 import { ml_kem768 } from '@noble/post-quantum/ml-kem';
 import { randomBytes } from '@noble/hashes/utils';
-import { bytesToBase64 } from './cryptography';
+import { bytesToBase64, generateMlKem768Keypair, deriveMlKem768SharedSecret } from './cryptography';
 
 /**
  * Function to convert base64 to bytes
@@ -163,9 +163,8 @@ export async function createProof(body: {
     await raceWithTimeout('Connection', onSocketOpen);
 
     // Step 2: Generate ML-KEM-768 key pair
-    const seed = randomBytes(64);
-    const keyPair = ml_kem768.keygen(seed);
-    const encapsulationKeyBase64 = bytesToBase64(keyPair.publicKey);
+    const keyPair = generateMlKem768Keypair();
+    const encapsulationKeyBase64 = bytesToBase64(keyPair.encapsulationKey);
 
     // Step 3: Send handshake with ML-KEM-768 public key
     const handshakeMessage: HandshakeMessage = {
@@ -183,9 +182,9 @@ export async function createProof(body: {
     const ciphertextBytes = base64ToBytes(
       handshakeResponse.ml_kem_768_ciphertext
     );
-    const _sharedSecret = ml_kem768.decapsulate(
+    const _sharedSecret = deriveMlKem768SharedSecret(
       ciphertextBytes,
-      keyPair.secretKey
+      keyPair.decapsulationKey
     );
 
     // Step 6: Send proof request
@@ -382,7 +381,7 @@ function setupWebSocketSuccessHandlers(
           if (typeof data.ml_kem_768_ciphertext !== 'string') {
             reject(
               new Error(
-                `Expected handshake response with ciphertext field, got: ${JSON.stringify(data)}`
+                `Expected handshake response with ml_kem_768_ciphertext field, got: ${JSON.stringify(data)}`
               )
             );
             return;

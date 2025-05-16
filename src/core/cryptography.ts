@@ -4,6 +4,8 @@ import { HDKey } from '@scure/bip32';
 import { hmac } from '@noble/hashes/hmac';
 import { sha512 } from '@noble/hashes/sha2';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
+import { ml_kem768 } from '@noble/post-quantum/ml-kem';
+import { randomBytes } from '@noble/hashes/utils';
 import {
   validate,
   getAddressInfo,
@@ -44,6 +46,12 @@ const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
   AddressType.p2pkh,
   AddressType.p2wpkh
 ];
+
+export type MlKem768Keypair = {
+  encapsulationKey: Uint8Array; // Public key used for encapsulation (formerly publicKey)
+  decapsulationKey: Uint8Array; // Secret key used for decapsulation (formerly secretKey)
+};
+export type MlKem768SharedSecret = Uint8Array;
 
 /*
  * Supported Algorithms
@@ -86,6 +94,43 @@ const BIP85_PURPOSE = 83696968; // "BIPS" on phone keypad
 const BIP85_HMAC_KEY = 'bip-entropy-from-k'; // from standard
 // Set as an env var to pass BIP-85 test vectors
 const DEFAULT_APP_NO = parseInt(process.env.BIP85_APP_NO ?? '503131', 10); // 503131 = P11 -> UTF-8
+
+/*
+ * Helper Function to convert base64 to bytes
+ */
+function base64ToBytes(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+/**
+ * Generate an ML-KEM-768 key pair for post-quantum key encapsulation
+ * @returns {MlKem768Keypair} The key pair containing encapsulationKey and decapsulationKey
+ */
+function generateMlKem768Keypair(): MlKem768Keypair {
+  const keyPair = ml_kem768.keygen();
+  return {
+    encapsulationKey: keyPair.publicKey,
+    decapsulationKey: keyPair.secretKey
+  };
+}
+
+/**
+ * Derive a shared secret using ML-KEM-768 decapsulation
+ * @param ciphertextBytes The ciphertext bytes from the server
+ * @param decapsulationKey The decapsulation key from our keypair
+ * @returns {MlKem768SharedSecret} The derived shared secret
+ */
+function deriveMlKem768SharedSecret(
+  ciphertextBytes: Uint8Array,
+  decapsulationKey: Uint8Array
+): MlKem768SharedSecret {
+  return ml_kem768.decapsulate(ciphertextBytes, decapsulationKey);
+}
 
 /*
  * Checks if a Bitcoin address is valid and supported
@@ -403,6 +448,9 @@ const generateSignedMessages = (
 
 export {
   bytesToBase64,
+  base64ToBytes,
+  generateMlKem768Keypair,
+  deriveMlKem768SharedSecret,
   generatePQAddress,
   generateSeedPhrase,
   generateSignedMessages,
