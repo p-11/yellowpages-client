@@ -12,7 +12,8 @@
     "l:c": "eslint \"./**/*.tsx\"",
     "l:f": "eslint \"./**/*.tsx\" --fix",
     "p:c": "prettier --config .prettierrc \"./**/*.+(js|mjs|json|ts|tsx)\" --check --ignore-unknown",
-    "p:f": "prettier --config .prettierrc \"./**/*.+(js|mjs|json|ts|tsx)\" --write --ignore-unknown"
+    "p:f": "prettier --config .prettierrc \"./**/*.+(js|mjs|json|ts|tsx)\" --write --ignore-unknown",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@noble/hashes": "^1.8.0",

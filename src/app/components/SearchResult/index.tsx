@@ -53,6 +53,7 @@ export function SearchResult() {
             <DirectoryEntry
               bitcoinAddress={bitcoinAddress}
               mldsa44Address={result.ml_dsa_44_address}
+              slhdsaSha2S128Address={result.slhdsa_sha2_s_128_address}
             />
           </div>
           <div className={styles.entryDetailsSection}>
