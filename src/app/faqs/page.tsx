@@ -37,6 +37,31 @@ export default function FaqsPage() {
             media.
           </p>
         </AccordionItem>
+        <AccordionItem title='Why should I use yellowpages?'>
+          <p>
+            Quantum devices break Bitcoin&apos;s current elliptic-curve
+            signatures, and protocol upgrades take years. By recording a
+            yellowpages proof now you create indisputable evidence of ownership
+            that wallets, exchanges, or a future protocol upgrade can rely on to
+            migrate your funds, no on-chain transaction or address reveal
+            required.
+          </p>
+        </AccordionItem>
+        <AccordionItem title='How does it work?'>
+          <p>
+            yellowpages works through a straightforward, private handshake. A
+            fresh post-quantum (PQ) key pair is generated, then you create a
+            signature using your Bitcoin wallet linking the Bitcoin address you
+            own to the PQ key pair and address. You upload that signature to the
+            yellowpages Proving Engine, which runs inside a Trusted Execution
+            Environment. The Trust Execution Environment confirms the link and
+            demonstration of ownership, packages them into a compact proof that
+            links the addresses without exposing either key or the signatures,
+            and time-stamps that proof in Project Eleven&apos;s directory.
+            Anyone can verify the proof, now or after “Q-Day”, but no one can
+            derive your verifying or private keys from it.
+          </p>
+        </AccordionItem>
         <h2>2. Getting Started</h2>
         <AccordionItem title='Which Bitcoin wallets does yellowpages support today?'>
           <p>
@@ -45,6 +70,26 @@ export default function FaqsPage() {
             button, you&apos;re good to go, see the compatibility table below
             for details
           </p>
+        </AccordionItem>
+        <AccordionItem title='How do I create a signature?'>
+          <p>
+            This will vary from wallet to wallet; however, the general process
+            is as follows
+          </p>
+          <ul>
+            <li>
+              In your Bitcoin wallet, copy the address you want to protect.
+            </li>
+            <li>
+              On the yellowpages app, paste that address and copy the challenge
+              text we show you.
+            </li>
+            <li>
+              Back in your wallet, open Sign/Verify Message, paste the challenge
+              and click Sign.
+            </li>
+            <li>Copy the resulting signature and paste it into yellowpages.</li>
+          </ul>
         </AccordionItem>
       </div>
     </main>
