@@ -121,11 +121,15 @@ function base64ToBytes(base64: string): Uint8Array {
  * @returns {MlKem768Keypair} The key pair containing encapsulationKey and decapsulationKey
  */
 function generateMlKem768Keypair(): MlKem768Keypair {
-  const keyPair = ml_kem768.keygen();
-  return {
-    encapsulationKey: keyPair.publicKey,
-    decapsulationKey: keyPair.secretKey
-  };
+  try {
+    const keyPair = ml_kem768.keygen();
+    return {
+      encapsulationKey: keyPair.publicKey,
+      decapsulationKey: keyPair.secretKey
+    };
+  } catch (error) {
+    throw new Error(`Failed to generate ML-KEM-768 keypair: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 /**
@@ -155,10 +159,13 @@ function deriveMlKem768SharedSecret(
     
     // Verify shared secret has the correct length
     if (!sharedSecret || sharedSecret.length !== ML_KEM_768_SHARED_SECRET_SIZE) {
-      throw new Error(`Invalid ML-KEM-768 shared secret length: expected ${ML_KEM_768_SHARED_SECRET_SIZE}, got ${sharedSecret.length}`);
+      throw new Error(`Invalid ML-KEM-768 shared secret length: expected ${ML_KEM_768_SHARED_SECRET_SIZE}, got ${sharedSecret?.length ?? 'undefined'}`);
     }
     
     // Successfully derived shared secret - in the future we'll use it here to encrypt using AES
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to derive ML-KEM-768 shared secret: ${errorMessage}`);
   } finally {
     // Ensure the shared secret is destroyed
     if (sharedSecret) {
