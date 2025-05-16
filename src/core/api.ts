@@ -5,7 +5,7 @@ interface Proof {
   id: string;
   btc_address: string;
   ml_dsa_44_address: string;
-  slhdsa_sha2_s_128_address: string;
+  slh_dsa_sha2_s_128_address: string;
   creation_date: string;
   version: string;
   proof: string;
@@ -167,9 +167,9 @@ export async function createProof(body: {
       ml_dsa_44_address: body.mldsa44Address,
       ml_dsa_44_signed_message: body.mldsa44SignedMessage,
       ml_dsa_44_public_key: body.mldsa44PublicKey,
-      slhdsa_sha2_s_128_address: body.slhdsaSha2S128Address,
-      slhdsa_sha2_s_128_signed_message: body.slhdsaSha2S128SignedMessage,
-      slhdsa_sha2_s_128_public_key: body.slhdsaSha2S128PublicKey
+      slh_dsa_sha2_s_128_address: body.slhdsaSha2S128Address,
+      slh_dsa_sha2_s_128_signed_message: body.slhdsaSha2S128SignedMessage,
+      slh_dsa_sha2_s_128_public_key: body.slhdsaSha2S128PublicKey
     };
     ws.send(JSON.stringify(proofRequest));
 
