@@ -23,10 +23,6 @@ export default function FaqsPage() {
             cryptographic proof, never your keys, so you stay private while
             future-proofing your coins.
           </p>
-          <p>
-            More information can be found within the document yellowpages:
-            Post-quantum proofs of Bitcoin ownership.
-          </p>
         </AccordionItem>
         <AccordionItem title='What data will sharing my directory entry reveal?'>
           <p>
@@ -140,11 +136,9 @@ export default function FaqsPage() {
         <h2>4. Security &amp; Privacy</h2>
         <AccordionItem title='What makes this post quantum secure?'>
           <p>
-            Yes, your new key pair is generated using NIST-standardised,
-            quantum-safe signatures. The proving step never relies on classical
-            ECC security; it simply checks that your signatures are valid and
-            binds them into a proof. All communication between yourself,
-            yellowpages and the TEE are secured using PQ cryptography.
+            Your new key pair is generated using NIST-standardised, quantum-safe
+            signatures. All communication between yourself and the yellowpages
+            is secured using PQ cryptography
           </p>
         </AccordionItem>
         <AccordionItem title='Does the yellowpages ever see my Bitcoin private key?'>
