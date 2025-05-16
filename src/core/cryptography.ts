@@ -130,12 +130,12 @@ function generateMlKem768Keypair(): MlKem768Keypair {
 /**
  * Derive a shared secret using ML-KEM-768 decapsulation
  * @param ciphertextBytes The ciphertext bytes from the server
- * @param decapsulationKey The decapsulation key from our keypair
+ * @param keypair The ML-KEM-768 keypair - will be completely zeroed out after use
  * @returns {MlKem768SharedSecret} The derived shared secret
  */
 function deriveMlKem768SharedSecret(
   ciphertextBytes: Uint8Array,
-  decapsulationKey: Uint8Array
+  keypair: MlKem768Keypair
 ): MlKem768SharedSecret {
   // Validate ciphertext length
   if (ciphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
@@ -143,11 +143,26 @@ function deriveMlKem768SharedSecret(
   }
   
   // Validate decapsulation key length
-  if (decapsulationKey.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE) {
-    throw new Error(`Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${decapsulationKey.length}`);
+  if (keypair.decapsulationKey.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE) {
+    throw new Error(`Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey.length}`);
   }
   
-  return ml_kem768.decapsulate(ciphertextBytes, decapsulationKey);
+  try {
+    // Derive the shared secret
+    return ml_kem768.decapsulate(ciphertextBytes, keypair.decapsulationKey);
+  } finally {
+    destroyMlKem768Keypair(keypair)
+  }
+}
+
+/**
+ * Securely destroy an ML-KEM-768 keypair by zeroing out all key material
+ * @param keypair The keypair to destroy - both keys will be zeroed out
+ */
+function destroyMlKem768Keypair(keypair: MlKem768Keypair): void {
+  // Zero out both keys
+  keypair.encapsulationKey.fill(0);
+  keypair.decapsulationKey.fill(0);
 }
 
 /*
@@ -469,6 +484,7 @@ export {
   base64ToBytes,
   generateMlKem768Keypair,
   deriveMlKem768SharedSecret,
+  destroyMlKem768Keypair,
   generatePQAddress,
   generateSeedPhrase,
   generateSignedMessages,

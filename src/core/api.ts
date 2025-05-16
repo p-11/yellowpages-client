@@ -5,6 +5,7 @@ import {
   bytesToBase64, 
   generateMlKem768Keypair, 
   deriveMlKem768SharedSecret,
+  destroyMlKem768Keypair,
   ML_KEM_768_CIPHERTEXT_SIZE,
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
 } from './cryptography';
@@ -201,8 +202,10 @@ export async function createProof(body: {
     // Derive shared secret
     const _sharedSecret = deriveMlKem768SharedSecret(
       ciphertextBytes,
-      keyPair.decapsulationKey
+      keyPair
     );
+    // the function above should destroy the keypair, but we will do it again anyways as a double-check
+    destroyMlKem768Keypair(keyPair);
 
     // Step 6: Send proof request
     const proofRequest = {
