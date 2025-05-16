@@ -1,6 +1,22 @@
 /**
  * Types
  */
+import { ml_kem768 } from '@noble/post-quantum/ml-kem';
+import { randomBytes } from '@noble/hashes/utils';
+import { bytesToBase64 } from './cryptography';
+
+/**
+ * Function to convert base64 to bytes
+ */
+function base64ToBytes(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
 interface Proof {
   id: string;
   btc_address: string;
@@ -24,7 +40,14 @@ interface Proof {
  * Expected WebSocket message response format
  */
 interface HandshakeResponse {
-  message: string;
+  ml_kem_768_ciphertext: string; // Base64-encoded ML-KEM ciphertext
+}
+
+/**
+ * Handshake message format
+ */
+interface HandshakeMessage {
+  ml_kem_768_encapsulation_key: string; // Base64-encoded ML-KEM encapsulation key
 }
 
 /**
@@ -51,9 +74,7 @@ const domains = {
   verificationService: IS_PROD
     ? 'https://verification-api.yellowpages.xyz'
     : 'https://verification-api.yellowpages-development.xyz',
-  proofService: IS_PROD
-    ? 'wss://not.implemented.com'
-    : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
+  proofService: IS_PROD ? 'wss://not.implemented.com' : 'ws://localhost:8008'
 };
 
 /**
@@ -141,22 +162,33 @@ export async function createProof(body: {
     // Step 1: Wait for WebSocket to connect
     await raceWithTimeout('Connection', onSocketOpen);
 
-    // Step 2: Send handshake
-    ws.send(JSON.stringify({ message: 'hello' }));
+    // Step 2: Generate ML-KEM-768 key pair
+    const seed = randomBytes(64);
+    const keyPair = ml_kem768.keygen(seed);
+    const encapsulationKeyBase64 = bytesToBase64(keyPair.publicKey);
 
-    // Step 3: Wait for handshake acknowledgment
+    // Step 3: Send handshake with ML-KEM-768 public key
+    const handshakeMessage: HandshakeMessage = {
+      ml_kem_768_encapsulation_key: encapsulationKeyBase64
+    };
+    ws.send(JSON.stringify(handshakeMessage));
+
+    // Step 4: Wait for handshake acknowledgment
     const handshakeResponse = await raceWithTimeout<HandshakeResponse>(
       'Handshake',
       onHandshakeResponse
     );
 
-    if (handshakeResponse.message !== 'ack') {
-      throw new Error(
-        `Unexpected server response: ${JSON.stringify(handshakeResponse)}`
-      );
-    }
+    // Step 5: Decapsulate the ciphertext to derive the shared secret
+    const ciphertextBytes = base64ToBytes(
+      handshakeResponse.ml_kem_768_ciphertext
+    );
+    const _sharedSecret = ml_kem768.decapsulate(
+      ciphertextBytes,
+      keyPair.secretKey
+    );
 
-    // Step 4: Send proof request
+    // Step 6: Send proof request
     const proofRequest = {
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
@@ -166,7 +198,7 @@ export async function createProof(body: {
     };
     ws.send(JSON.stringify(proofRequest));
 
-    // Step 5: Wait for successful completion (normal close)
+    // Step 7: Wait for successful completion (normal close)
     await raceWithTimeout('Proof verification', onSuccessClose);
   } finally {
     // Clean up all event listeners
@@ -347,10 +379,10 @@ function setupWebSocketSuccessHandlers(
           const data = JSON.parse(event.data);
 
           // Validate that this is a handshake response
-          if (typeof data.message !== 'string') {
+          if (typeof data.ml_kem_768_ciphertext !== 'string') {
             reject(
               new Error(
-                `Expected handshake response with message field, got: ${JSON.stringify(data)}`
+                `Expected handshake response with ciphertext field, got: ${JSON.stringify(data)}`
               )
             );
             return;
