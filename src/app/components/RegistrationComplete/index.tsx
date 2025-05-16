@@ -42,7 +42,7 @@ export function RegistrationComplete() {
           linked to your Bitcoin address.
         </p>
         <div className={styles.warningSection}>
-          <Alert>Remember to save your new post-quantum addresses</Alert>
+          <Alert>Remember to save your new post-quantum addresseses</Alert>
         </div>
         <div className={styles.entrySection}>
           <DirectoryEntry

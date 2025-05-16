@@ -48,6 +48,12 @@ export function DirectoryEntry({
           <CopyTextToolbarButton onClick={copyMldsa44Address} />
         )}
       </div>
+      <div className={styles.headerRow}>
+        <span className={styles.rowHeaderText}>
+          Post-Quantum SLH-DSA-SHA2-128-s address
+        </span>
+        <div className={styles.separator} />
+      </div>
       <div className={`${styles.row} ${styles.indented} ${styles.addressRow}`}>
         <div>
           <span className={styles.address}>{slhdsaSha2S128Address}</span>
