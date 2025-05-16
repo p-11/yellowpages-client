@@ -2,7 +2,6 @@
  * Types
  */
 import { 
-  bytesToBase64, 
   generateMlKem768Keypair, 
   deriveMlKem768SharedSecret,
   destroyMlKem768Keypair,
@@ -11,18 +10,7 @@ import {
   MlKem768Keypair,
   MlKem768CiphertextBytes
 } from './cryptography';
-
-/**
- * Function to convert base64 to bytes
- */
-function base64ToBytes(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
+import { base64 } from '@scure/base';
 
 interface Proof {
   id: string;
@@ -174,7 +162,7 @@ export async function createProof(body: {
 
     // Step 2: Generate ML-KEM-768 key pair
     mlKem768Keypair = generateMlKem768Keypair();
-    const mlKem768EncapsulationKeyBase64 = bytesToBase64(mlKem768Keypair.encapsulationKey);
+    const mlKem768EncapsulationKeyBase64 = base64.encode(mlKem768Keypair.encapsulationKey);
 
     // Step 3: Send handshake with ML-KEM-768 public key
     const handshakeMessage: HandshakeMessage = {
@@ -197,7 +185,7 @@ export async function createProof(body: {
     }
 
     // Decode base64 to bytes
-    const mlKem768CiphertextBytes = base64ToBytes(mlKem768CiphertextBase64) as MlKem768CiphertextBytes;
+    const mlKem768CiphertextBytes = base64.decode(mlKem768CiphertextBase64) as MlKem768CiphertextBytes;
     
     // Validate exact byte length
     if (mlKem768CiphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {

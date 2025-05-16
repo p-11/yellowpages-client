@@ -18,6 +18,7 @@ import {
   Version,
   PubKeyType
 } from '@project-eleven/pq-address';
+import { base64 } from '@scure/base';
 
 // Get Environment
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
@@ -272,25 +273,6 @@ function derivePQEntropyLength(
   return config.entropyLength;
 }
 
-/*
- * Helper Function to convert bytes to base64
- */
-function bytesToBase64(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes));
-}
-
-/*
- * Helper Function to convert base64 to bytes
- */
-function base64ToBytes(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
 /**
  * Generate a seed phrase using the BIP-39 algorithm.
  * @returns {Mnemonic24} The generated seed phrase.
@@ -489,8 +471,8 @@ const generateSignedMessages = (
     // Response
     return {
       ML_DSA_44: {
-        publicKey: bytesToBase64(mldsa44KeyPair.publicKey) as PQPublicKeyString,
-        signedMessage: bytesToBase64(mldsa44SignedMessage) as SignedMessage,
+        publicKey: base64.encode(mldsa44KeyPair.publicKey) as PQPublicKeyString,
+        signedMessage: base64.encode(mldsa44SignedMessage) as SignedMessage,
         address: mldsa44KeyPair.address
       }
     };
@@ -501,8 +483,6 @@ const generateSignedMessages = (
 };
 
 export {
-  bytesToBase64,
-  base64ToBytes,
   generateMlKem768Keypair,
   deriveMlKem768SharedSecret,
   destroyMlKem768Keypair,
