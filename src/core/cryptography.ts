@@ -5,7 +5,6 @@ import { hmac } from '@noble/hashes/hmac';
 import { sha512 } from '@noble/hashes/sha2';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem';
-import { randomBytes } from '@noble/hashes/utils';
 import {
   validate,
   getAddressInfo,
@@ -104,18 +103,6 @@ const BIP85_HMAC_KEY = 'bip-entropy-from-k'; // from standard
 // Set as an env var to pass BIP-85 test vectors
 const DEFAULT_APP_NO = parseInt(process.env.BIP85_APP_NO ?? '503131', 10); // 503131 = P11 -> UTF-8
 
-/*
- * Helper Function to convert base64 to bytes
- */
-function base64ToBytes(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
 /**
  * Generate an ML-KEM-768 key pair for post-quantum key encapsulation
  * @returns {MlKem768Keypair} The key pair containing encapsulationKey and decapsulationKey
@@ -141,19 +128,19 @@ function deriveMlKem768SharedSecret(
   ciphertextBytes: MlKem768CiphertextBytes,
   keypair: MlKem768Keypair
 ): void {
-  // Validate ciphertext length
-  if (ciphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
-    throw new Error(`Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${ciphertextBytes.length}`);
-  }
-  
-  // Validate decapsulation key length
-  if (keypair.decapsulationKey.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE) {
-    throw new Error(`Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey.length}`);
-  }
-  
   let sharedSecret: Uint8Array | undefined;
   
   try {
+    // Validate ciphertext length
+    if (ciphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
+      throw new Error(`Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${ciphertextBytes.length}`);
+    }
+
+    // Validate decapsulation key length
+    if (keypair.decapsulationKey.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE) {
+      throw new Error(`Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey.length}`);
+    }
+
     // Derive the shared secret
     sharedSecret = ml_kem768.decapsulate(ciphertextBytes, keypair.decapsulationKey);
     
@@ -290,6 +277,18 @@ function derivePQEntropyLength(
  */
 function bytesToBase64(bytes: Uint8Array): string {
   return btoa(String.fromCharCode(...bytes));
+}
+
+/*
+ * Helper Function to convert base64 to bytes
+ */
+function base64ToBytes(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
 }
 
 /**
