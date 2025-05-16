@@ -28,6 +28,7 @@ const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
  */
 const ML_KEM_768_CIPHERTEXT_SIZE = 1088; // Size in bytes
 const ML_KEM_768_DECAPSULATION_KEY_SIZE = 2400; // Size in bytes
+const ML_KEM_768_SHARED_SECRET_SIZE = 32; // Size in bytes
 // Base64 encoding increases size by approximately 4/3
 const MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE = Math.ceil(ML_KEM_768_CIPHERTEXT_SIZE * 1.4);
 
@@ -136,7 +137,7 @@ function generateMlKem768Keypair(): MlKem768Keypair {
 function deriveMlKem768SharedSecret(
   ciphertextBytes: Uint8Array,
   keypair: MlKem768Keypair
-): MlKem768SharedSecret {
+): void {
   // Validate ciphertext length
   if (ciphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
     throw new Error(`Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${ciphertextBytes.length}`);
@@ -147,11 +148,26 @@ function deriveMlKem768SharedSecret(
     throw new Error(`Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey.length}`);
   }
   
+  let sharedSecret: Uint8Array | undefined;
+  
   try {
     // Derive the shared secret
-    return ml_kem768.decapsulate(ciphertextBytes, keypair.decapsulationKey);
+    sharedSecret = ml_kem768.decapsulate(ciphertextBytes, keypair.decapsulationKey);
+    
+    // Verify shared secret has the correct length
+    if (!sharedSecret || sharedSecret.length !== ML_KEM_768_SHARED_SECRET_SIZE) {
+      throw new Error(`Invalid ML-KEM-768 shared secret length: expected ${ML_KEM_768_SHARED_SECRET_SIZE}, got ${sharedSecret.length}`);
+    }
+    
+    // Successfully derived shared secret - in the future we'll use it here to encrypt using AES
   } finally {
-    destroyMlKem768Keypair(keypair)
+    // Ensure the shared secret is destroyed
+    if (sharedSecret) {
+      sharedSecret.fill(0);
+    }
+    
+    // Always destroy the keypair
+    destroyMlKem768Keypair(keypair);
   }
 }
 
@@ -495,5 +511,6 @@ export {
   isValidBitcoinSignature,
   ML_KEM_768_CIPHERTEXT_SIZE,
   ML_KEM_768_DECAPSULATION_KEY_SIZE,
+  ML_KEM_768_SHARED_SECRET_SIZE,
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
 };
