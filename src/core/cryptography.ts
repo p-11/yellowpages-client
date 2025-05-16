@@ -132,7 +132,6 @@ function generateMlKem768Keypair(): MlKem768Keypair {
  * Derive a shared secret using ML-KEM-768 decapsulation
  * @param ciphertextBytes The ciphertext bytes from the server
  * @param keypair The ML-KEM-768 keypair - will be completely zeroed out after use
- * @returns {MlKem768SharedSecret} The derived shared secret
  */
 function deriveMlKem768SharedSecret(
   ciphertextBytes: Uint8Array,
