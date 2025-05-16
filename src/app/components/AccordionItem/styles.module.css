@@ -34,6 +34,12 @@
     margin-top: 0;
 }
 
+.content li {
+    line-height: 1.75rem;
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
 @media only screen and (min-width: 768px) {
     .item {
         border-bottom: none;
@@ -41,5 +47,9 @@
 
     .separator {
         opacity: 1;
+    }
+
+    .content li {
+        font-size: 16px;
     }
 }
