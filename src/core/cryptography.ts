@@ -50,6 +50,7 @@ export type PQPublicKey = Brand<Uint8Array, 'PQPublicKey'>;
 export type PQPublicKeyString = Brand<string, 'PQPublicKeyString'>;
 export type PQPrivateKey = Brand<Uint8Array, 'PQPrivateKey'>;
 export type PQAddress = Brand<string, 'PQAddress'>;
+export type MlKem768CiphertextBytes = Brand<Uint8Array, 'MlKem768CiphertextBytes'>;
 
 const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
   AddressType.p2pkh,
@@ -60,7 +61,6 @@ export type MlKem768Keypair = {
   encapsulationKey: Uint8Array; // Public key used for encapsulation (formerly publicKey)
   decapsulationKey: Uint8Array; // Secret key used for decapsulation (formerly secretKey)
 };
-export type MlKem768SharedSecret = Uint8Array;
 
 /*
  * Supported Algorithms
@@ -138,7 +138,7 @@ function generateMlKem768Keypair(): MlKem768Keypair {
  * @param keypair The ML-KEM-768 keypair - will be completely zeroed out after use
  */
 function deriveMlKem768SharedSecret(
-  ciphertextBytes: Uint8Array,
+  ciphertextBytes: MlKem768CiphertextBytes,
   keypair: MlKem768Keypair
 ): void {
   // Validate ciphertext length

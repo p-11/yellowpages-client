@@ -8,7 +8,8 @@ import {
   destroyMlKem768Keypair,
   ML_KEM_768_CIPHERTEXT_SIZE,
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
-  MlKem768Keypair
+  MlKem768Keypair,
+  MlKem768CiphertextBytes
 } from './cryptography';
 
 /**
@@ -196,7 +197,7 @@ export async function createProof(body: {
     }
 
     // Decode base64 to bytes
-    const mlKem768CiphertextBytes = base64ToBytes(mlKem768CiphertextBase64);
+    const mlKem768CiphertextBytes = base64ToBytes(mlKem768CiphertextBase64) as MlKem768CiphertextBytes;
     
     // Validate exact byte length
     if (mlKem768CiphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
