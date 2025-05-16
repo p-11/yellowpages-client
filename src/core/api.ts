@@ -1,9 +1,13 @@
 /**
  * Types
  */
-import { ml_kem768 } from '@noble/post-quantum/ml-kem';
-import { randomBytes } from '@noble/hashes/utils';
-import { bytesToBase64, generateMlKem768Keypair, deriveMlKem768SharedSecret } from './cryptography';
+import { 
+  bytesToBase64, 
+  generateMlKem768Keypair, 
+  deriveMlKem768SharedSecret,
+  ML_KEM_768_CIPHERTEXT_SIZE,
+  MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
+} from './cryptography';
 
 /**
  * Function to convert base64 to bytes
@@ -178,10 +182,23 @@ export async function createProof(body: {
       onHandshakeResponse
     );
 
-    // Step 5: Decapsulate the ciphertext to derive the shared secret
-    const ciphertextBytes = base64ToBytes(
-      handshakeResponse.ml_kem_768_ciphertext
-    );
+    // Step 5: Validate and decode the ciphertext
+    const ciphertextBase64 = handshakeResponse.ml_kem_768_ciphertext;
+    
+    // Validate base64 ciphertext length
+    if (!ciphertextBase64 || ciphertextBase64.length > MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE) {
+      throw new Error(`Invalid ML-KEM-768 ciphertext length: expected base64 length <= ${MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE}, got ${ciphertextBase64.length}`);
+    }
+
+    // Decode base64 to bytes
+    const ciphertextBytes = base64ToBytes(ciphertextBase64);
+    
+    // Validate exact byte length
+    if (ciphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
+      throw new Error(`Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${ciphertextBytes.length}`);
+    }
+    
+    // Derive shared secret
     const _sharedSecret = deriveMlKem768SharedSecret(
       ciphertextBytes,
       keyPair.decapsulationKey

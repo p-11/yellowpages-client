@@ -24,6 +24,14 @@ import {
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 
 /*
+ * Constants for ML-KEM-768
+ */
+const ML_KEM_768_CIPHERTEXT_SIZE = 1088; // Size in bytes
+const ML_KEM_768_DECAPSULATION_KEY_SIZE = 2400; // Size in bytes
+// Base64 encoding increases size by approximately 4/3
+const MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE = Math.ceil(ML_KEM_768_CIPHERTEXT_SIZE * 1.4);
+
+/*
  * Types
  */
 
@@ -129,6 +137,16 @@ function deriveMlKem768SharedSecret(
   ciphertextBytes: Uint8Array,
   decapsulationKey: Uint8Array
 ): MlKem768SharedSecret {
+  // Validate ciphertext length
+  if (ciphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
+    throw new Error(`Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${ciphertextBytes.length}`);
+  }
+  
+  // Validate decapsulation key length
+  if (decapsulationKey.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE) {
+    throw new Error(`Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${decapsulationKey.length}`);
+  }
+  
   return ml_kem768.decapsulate(ciphertextBytes, decapsulationKey);
 }
 
@@ -458,5 +476,8 @@ export {
   generateKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
-  isValidBitcoinSignature
+  isValidBitcoinSignature,
+  ML_KEM_768_CIPHERTEXT_SIZE,
+  ML_KEM_768_DECAPSULATION_KEY_SIZE,
+  MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
 };
