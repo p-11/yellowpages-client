@@ -17,9 +17,10 @@
 }
 
 .content h2 {
+    font-size: 20px;
     font-weight: 400;
-    margin-top: 34px;
-    margin-bottom: 20px;
+    margin-top: 48px;
+    margin-bottom: 12px;
 }
 
 @media only screen and (min-width: 768px) {
@@ -27,5 +28,10 @@
         margin-top: 32px;
         font-size: 1.8rem;
         margin-bottom: 16px
+    }
+
+    .content h2 {
+        margin-top: 34px;
+        margin-bottom: 20px;
     }
 }

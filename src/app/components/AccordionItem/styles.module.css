@@ -16,6 +16,7 @@
 .itemHeader h3 {
     font-weight: 500;
     margin: 0;
+    font-size: 16px;
 }
 
 .separator {
@@ -27,7 +28,7 @@
 }
 
 .indicator {
-    font-size: 18px;
+    font-size: 17px;
 }
 
 .content p:first-of-type {
