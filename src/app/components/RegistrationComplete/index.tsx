@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
@@ -11,6 +12,8 @@ import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { DownloadIcon } from '@/app/icons/DownloadIcon';
 import { ProofDialog } from '@/app/components/ProofDialog';
+import { Dialog, DialogTitle } from '@/app/components/Dialog';
+import { ShareIcon } from '@/app/icons/ShareIcon';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
@@ -18,6 +21,7 @@ export function RegistrationComplete() {
     useRegistrationSessionContext();
   const router = useRouter();
   const [showProofDialog, setShowProofDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const navigateToHomepage = useCallback(() => {
     router.push('/');
@@ -27,9 +31,29 @@ export function RegistrationComplete() {
     setShowProofDialog(!showProofDialog);
   }, [showProofDialog]);
 
-  const copySocialLink = useCallback(() => {
-    navigator.clipboard.writeText('https://yellowpages.xyz');
-  }, []);
+  const toggleShareDialog = useCallback(() => {
+    setShowShareDialog(!showShareDialog);
+  }, [showShareDialog]);
+
+  const encodedBitcoinAddress = useMemo(
+    () => (bitcoinAddress ? encodeURIComponent(bitcoinAddress) : ''),
+    [bitcoinAddress]
+  );
+  const encodedMldsa44Address = useMemo(
+    () =>
+      signedMessages
+        ? encodeURIComponent(signedMessages.ML_DSA_44.address)
+        : '',
+    [signedMessages]
+  );
+
+  const shareLink = useMemo(() => {
+    return `https://yellowpages.xyz/share/?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}`;
+  }, [encodedBitcoinAddress, encodedMldsa44Address]);
+
+  const copyShareLink = useCallback(() => {
+    navigator.clipboard.writeText(shareLink);
+  }, [shareLink]);
 
   if (!bitcoinAddress || !signedMessages) return null;
 
@@ -51,22 +75,16 @@ export function RegistrationComplete() {
             showCopyButton
           />
         </div>
-        <div className={styles.entryDetailsSection}>
+        <div className={styles.entryToolbar}>
           <ToolbarButton onClick={toggleProofDialog}>
             <DownloadIcon /> View and download proof
+          </ToolbarButton>
+          <ToolbarButton onClick={toggleShareDialog}>
+            <ShareIcon /> Share your entry
           </ToolbarButton>
         </div>
         <div>
           <h2 className={styles.sectionTitle}>What&apos;s next?</h2>
-          <p>Help others find themselves in the post quantum world.</p>
-          <div className={styles.socialSection}>
-            <div className={styles.socialSectionContent}>
-              <p>I found myself in the post-quantum world.</p>
-              <p>Get protected & join the yellowpages.</p>
-              <p>yellowpages.xyz</p>
-            </div>
-          </div>
-          <CopyTextToolbarButton label='Copy link' onClick={copySocialLink} />
           <p>
             Check your registration by{' '}
             <Link href='/search'>searching the directory</Link> or visit our{' '}
@@ -86,6 +104,29 @@ export function RegistrationComplete() {
       </div>
       {showProofDialog && proofData && (
         <ProofDialog proofData={proofData} onExit={toggleProofDialog} />
+      )}
+      {showShareDialog && (
+        <Dialog large>
+          <DialogTitle>Share your entry</DialogTitle>
+          <div className={styles.shareDialogContent}>
+            <Image
+              className={styles.ogImage}
+              width={702}
+              height={368}
+              alt='yellowpages entry'
+              src={`/og-image?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}`}
+            />
+          </div>
+          <div className={styles.shareLinkBox}>
+            <span className={styles.shareLink}>{shareLink}</span>
+          </div>
+          <CopyTextToolbarButton label='Copy link' onClick={copyShareLink} />
+          <div className={styles.shareDialogFooter}>
+            <Button variant='primary' onClick={toggleShareDialog}>
+              Close
+            </Button>
+          </div>
+        </Dialog>
       )}
     </main>
   );
