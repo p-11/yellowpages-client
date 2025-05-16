@@ -1,6 +1,17 @@
 /**
  * Types
  */
+import {
+  generateMlKem768Keypair,
+  deriveMlKem768SharedSecret,
+  destroyMlKem768Keypair,
+  ML_KEM_768_CIPHERTEXT_SIZE,
+  MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
+  MlKem768Keypair,
+  MlKem768CiphertextBytes
+} from './cryptography';
+import { base64 } from '@scure/base';
+
 interface Proof {
   id: string;
   btc_address: string;
@@ -24,7 +35,14 @@ interface Proof {
  * Expected WebSocket message response format
  */
 interface HandshakeResponse {
-  message: string;
+  ml_kem_768_ciphertext: string; // Base64-encoded ML-KEM ciphertext
+}
+
+/**
+ * Handshake message format
+ */
+interface HandshakeMessage {
+  ml_kem_768_encapsulation_key: string; // Base64-encoded ML-KEM encapsulation key
 }
 
 /**
@@ -137,26 +155,60 @@ export async function createProof(body: {
   const { onHandshakeResponse, onSocketOpen, onSuccessClose, cleanup } =
     setupWebSocketHandlers(ws);
 
+  // Initialize keypair outside try block so we can clean it up in finally
+  let mlKem768Keypair: MlKem768Keypair | undefined;
+
   try {
     // Step 1: Wait for WebSocket to connect
     await raceWithTimeout('Connection', onSocketOpen);
 
-    // Step 2: Send handshake
-    ws.send(JSON.stringify({ message: 'hello' }));
+    // Step 2: Generate ML-KEM-768 key pair
+    mlKem768Keypair = generateMlKem768Keypair();
+    const mlKem768EncapsulationKeyBase64 = base64.encode(
+      mlKem768Keypair.encapsulationKey
+    );
 
-    // Step 3: Wait for handshake acknowledgment
+    // Step 3: Send handshake with ML-KEM-768 public key
+    const handshakeMessage: HandshakeMessage = {
+      ml_kem_768_encapsulation_key: mlKem768EncapsulationKeyBase64
+    };
+    ws.send(JSON.stringify(handshakeMessage));
+
+    // Step 4: Wait for handshake acknowledgment
     const handshakeResponse = await raceWithTimeout<HandshakeResponse>(
       'Handshake',
       onHandshakeResponse
     );
 
-    if (handshakeResponse.message !== 'ack') {
+    // Step 5: Validate and decode the ciphertext
+    const mlKem768CiphertextBase64 = handshakeResponse.ml_kem_768_ciphertext;
+
+    // Validate base64 ciphertext length
+    if (
+      !mlKem768CiphertextBase64 ||
+      mlKem768CiphertextBase64.length > MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
+    ) {
       throw new Error(
-        `Unexpected server response: ${JSON.stringify(handshakeResponse)}`
+        `Invalid ML-KEM-768 ciphertext length: expected base64 length <= ${MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE}, got ${mlKem768CiphertextBase64.length}`
       );
     }
 
-    // Step 4: Send proof request
+    // Decode base64 to bytes
+    const mlKem768CiphertextBytes = base64.decode(
+      mlKem768CiphertextBase64
+    ) as MlKem768CiphertextBytes;
+
+    // Validate exact byte length
+    if (mlKem768CiphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
+      throw new Error(
+        `Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${mlKem768CiphertextBytes.length}`
+      );
+    }
+
+    // Derive shared secret
+    deriveMlKem768SharedSecret(mlKem768CiphertextBytes, mlKem768Keypair);
+
+    // Step 6: Send proof request
     const proofRequest = {
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
@@ -166,11 +218,16 @@ export async function createProof(body: {
     };
     ws.send(JSON.stringify(proofRequest));
 
-    // Step 5: Wait for successful completion (normal close)
+    // Step 7: Wait for successful completion (normal close)
     await raceWithTimeout('Proof verification', onSuccessClose);
   } finally {
-    // Clean up all event listeners
+    // Clean up WebSocket event listeners
     cleanup();
+
+    // Ensure keypair is destroyed, even if deriveMlKem768SharedSecret wasn't called
+    if (mlKem768Keypair) {
+      destroyMlKem768Keypair(mlKem768Keypair);
+    }
   }
 }
 
@@ -347,10 +404,10 @@ function setupWebSocketSuccessHandlers(
           const data = JSON.parse(event.data);
 
           // Validate that this is a handshake response
-          if (typeof data.message !== 'string') {
+          if (typeof data.ml_kem_768_ciphertext !== 'string') {
             reject(
               new Error(
-                `Expected handshake response with message field, got: ${JSON.stringify(data)}`
+                `Expected handshake response with ml_kem_768_ciphertext field, got: ${JSON.stringify(data)}`
               )
             );
             return;
