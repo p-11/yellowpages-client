@@ -1,0 +1,45 @@
+.item {
+    border-bottom: 1px dashed #111;
+}
+
+.itemHeader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    text-align: left;
+    line-height: 1.5rem;
+}
+
+.itemHeader h3 {
+    font-weight: 500;
+    margin: 0;
+}
+
+.separator {
+    height: 1px;
+    flex: 1;
+    border-top: 1px dashed #111;
+    margin-top: 3px;
+    opacity: 0;
+}
+
+.indicator {
+    font-size: 18px;
+}
+
+.content p:first-of-type {
+    margin-top: 0;
+}
+
+@media only screen and (min-width: 768px) {
+    .item {
+        border-bottom: none;
+    }
+
+    .separator {
+        opacity: 1;
+    }
+}
