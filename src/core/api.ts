@@ -160,9 +160,9 @@ export async function createProof(body: {
     const proofRequest = {
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
-      ml_dsa_address: body.mldsa44Address,
-      ml_dsa_signed_message: body.mldsa44SignedMessage,
-      ml_dsa_public_key: body.mldsa44PublicKey
+      ml_dsa_44_address: body.mldsa44Address,
+      ml_dsa_44_signed_message: body.mldsa44SignedMessage,
+      ml_dsa_44_public_key: body.mldsa44PublicKey
     };
     ws.send(JSON.stringify(proofRequest));
 
