@@ -1,8 +1,8 @@
-.item {
+.accordion {
     border-bottom: 1px dashed #111;
 }
 
-.itemHeader {
+.accordionHeader {
     width: 100%;
     display: flex;
     align-items: center;
@@ -13,13 +13,13 @@
     line-height: 1.5rem;
 }
 
-.itemHeader h3 {
+.accordionHeader h3 {
     font-weight: 500;
     margin: 0;
     font-size: 16px;
 }
 
-.separator {
+.accordionSeparator {
     height: 1px;
     flex: 1;
     border-top: 1px dashed #111;
@@ -27,30 +27,30 @@
     opacity: 0;
 }
 
-.indicator {
+.accordionIndicator {
     font-size: 17px;
 }
 
-.content p:first-of-type {
+.accordionContent p:first-of-type {
     margin-top: 0;
 }
 
-.content li {
+.accordionContent li {
     line-height: 1.75rem;
     font-size: 15px;
     margin-bottom: 6px;
 }
 
 @media only screen and (min-width: 768px) {
-    .item {
+    .accordion {
         border-bottom: none;
     }
 
-    .separator {
+    .accordionSeparator {
         opacity: 1;
     }
 
-    .content li {
+    .accordionContent li {
         font-size: 16px;
     }
 }

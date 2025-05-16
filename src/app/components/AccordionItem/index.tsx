@@ -17,13 +17,15 @@ export const AccordionItem = ({
   }, [isExpanded]);
 
   return (
-    <div className={styles.item}>
-      <button className={styles.itemHeader} onClick={toggle}>
+    <div className={styles.accordion}>
+      <button className={styles.accordionHeader} onClick={toggle}>
         <h3>{title}</h3>
-        <div className={styles.separator} />
-        <span className={styles.indicator}>{isExpanded ? '-' : '+'}</span>
+        <div className={styles.accordionSeparator} />
+        <span className={styles.accordionIndicator}>
+          {isExpanded ? '-' : '+'}
+        </span>
       </button>
-      {isExpanded && <div className={styles.content}>{children}</div>}
+      {isExpanded && <div className={styles.accordionContent}>{children}</div>}
     </div>
   );
 };
