@@ -68,7 +68,7 @@ export default function FaqsPage() {
             Any wallet that lets you sign an arbitrary message with your Bitcoin
             private key will work. If your wallet can display a “Sign Message”
             button, you&apos;re good to go, see the compatibility table below
-            for details
+            for details.
           </p>
         </AccordionItem>
         <AccordionItem title='How do I create a signature?'>
@@ -90,6 +90,49 @@ export default function FaqsPage() {
             </li>
             <li>Copy the resulting signature and paste it into yellowpages.</li>
           </ul>
+        </AccordionItem>
+        <AccordionItem title='Can I use my post-quantum key pair on Bitcoin?'>
+          <p>
+            Not yet. Bitcoin only accepts ECDSA signatures on-chain today, so
+            your PQ key can&apos;t spend coins directly. yellowpages simply
+            records the link between your current Bitcoin address and your new
+            PQ address, ready for wallets or a future protocol upgrade that
+            understands PQ signatures.
+          </p>
+        </AccordionItem>
+        <AccordionItem title='Do I have to move my coins or sign an on-chain transaction?'>
+          <p>
+            No. The whole process is off-chain, you generate signatures locally
+            and upload them to our proving engine, there is no need to perform a
+            transaction or broadcast anything to the Bitcoin network.
+          </p>
+        </AccordionItem>
+        <AccordionItem title='Is there a cost or transaction fee?'>
+          <p>
+            Because there&apos;s no blockchain transaction, there&apos;s no
+            miner fee. yellowpages is free to use.
+          </p>
+        </AccordionItem>
+        <h2>3. Key Management</h2>
+        <AccordionItem title='Can I update or revoke a linkage later if I rotate keys or lose access?'>
+          <p>
+            Every yellowpages proof links a specific Bitcoin address to a
+            specific set of post-quantum keys. Therefore, every separate Bitcoin
+            address you own must be registered separately. The directory
+            automatically treats the newest timestamp as authoritative.
+          </p>
+          <p>
+            Lost your PQ key or seed phrase? Simply generate a new PQ key and
+            register a new proof for your original Bitcoin address.
+          </p>
+        </AccordionItem>
+        <AccordionItem title='What is the 24-word seed phrase?'>
+          <p>
+            This seed phrase generates your PQ keys. This is not held by
+            yellowpage for your own privacy. This gives you ownership over your
+            PQ keys. This must be securely and confidentially secured by you.
+            There is no mechanism for recovery if these keys are lost.
+          </p>
         </AccordionItem>
       </div>
     </main>
