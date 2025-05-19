@@ -101,7 +101,8 @@ export function RegistrationStep3() {
 
       const { message } = generateMessage({
         bitcoinAddress,
-        mldsa44Address: signedMessages.ML_DSA_44.address
+        mldsa44Address: signedMessages.ML_DSA_44.address,
+        slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address
       });
       setSigningMessage(message);
 
@@ -137,7 +138,11 @@ export function RegistrationStep3() {
           btcSignedMessage: signature,
           mldsa44Address: signedMessages.ML_DSA_44.address,
           mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
-          mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage
+          mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
+          slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
+          slhdsaSha2S128PublicKey: signedMessages.SLH_DSA_SHA2_S_128.publicKey,
+          slhdsaSha2S128SignedMessage:
+            signedMessages.SLH_DSA_SHA2_S_128.signedMessage
         });
 
         const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);

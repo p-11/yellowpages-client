@@ -72,6 +72,7 @@ export function RegistrationComplete() {
           <DirectoryEntry
             bitcoinAddress={bitcoinAddress}
             mldsa44Address={signedMessages.ML_DSA_44.address}
+            slhdsaSha2S128Address={signedMessages.SLH_DSA_SHA2_S_128.address}
             showCopyButton
           />
         </div>

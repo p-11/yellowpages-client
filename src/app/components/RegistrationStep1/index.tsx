@@ -71,7 +71,7 @@ export function RegistrationStep1() {
           Make a backup of your Post-Quantum seed phrase
         </RegistrationStepTitle>
         <p>
-          This is the 24-word seed phrase for your new Post-Quantum address.
+          This is the 24-word seed phrase for your new Post-Quantum addresses.
         </p>
       </RegistrationHeader>
       <Alert className={styles.alert}>

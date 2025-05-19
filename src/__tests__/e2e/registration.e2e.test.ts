@@ -117,7 +117,7 @@ test('successful registration and search result', async ({ page }) => {
   await page.getByRole('button', { name: 'Close' }).click();
   await expect(
     page.getByText(
-      'Registered and cryptographically linked to a post-quantum address'
+      'Registered and cryptographically linked to post-quantum addresses'
     )
   ).toBeVisible();
 });

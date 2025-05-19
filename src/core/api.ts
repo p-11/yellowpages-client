@@ -18,6 +18,7 @@ interface Proof {
   id: string;
   btc_address: string;
   ml_dsa_44_address: string;
+  slh_dsa_sha2_s_128_address: string;
   creation_date: string;
   version: string;
   proof: string;
@@ -149,6 +150,9 @@ export async function createProof(body: {
   mldsa44Address: string;
   mldsa44SignedMessage: string;
   mldsa44PublicKey: string;
+  slhdsaSha2S128Address: string;
+  slhdsaSha2S128PublicKey: string;
+  slhdsaSha2S128SignedMessage: string;
 }): Promise<void> {
   // Create WebSocket connection
   const ws = new WebSocket(`${domains.proofService}/prove`);
@@ -213,7 +217,10 @@ export async function createProof(body: {
       bitcoin_signed_message: body.btcSignedMessage,
       ml_dsa_44_address: body.mldsa44Address,
       ml_dsa_44_signed_message: body.mldsa44SignedMessage,
-      ml_dsa_44_public_key: body.mldsa44PublicKey
+      ml_dsa_44_public_key: body.mldsa44PublicKey,
+      slh_dsa_sha2_s_128_address: body.slhdsaSha2S128Address,
+      slh_dsa_sha2_s_128_signed_message: body.slhdsaSha2S128SignedMessage,
+      slh_dsa_sha2_s_128_public_key: body.slhdsaSha2S128PublicKey
     };
     const proofRequestBytes = utf8ToBytes(
       JSON.stringify(proofRequest)

@@ -46,13 +46,14 @@ export function SearchResult() {
         <>
           <div className={styles.alertSection}>
             <Alert type='success'>
-              Registered and cryptographically linked to a post-quantum address
+              Registered and cryptographically linked to post-quantum addresses
             </Alert>
           </div>
           <div className={styles.entrySection}>
             <DirectoryEntry
               bitcoinAddress={bitcoinAddress}
               mldsa44Address={result.ml_dsa_44_address}
+              slhdsaSha2S128Address={result.slh_dsa_sha2_s_128_address}
             />
           </div>
           <div className={styles.entryDetailsSection}>
