@@ -14,6 +14,11 @@
     margin-bottom: 16px;
 }
 
+.seedPhraseButton {
+    width: 100%;
+    text-align: left;
+}
+
 @media only screen and (min-width: 768px) {
     .alert {
         margin-top: 40px;
