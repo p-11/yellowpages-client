@@ -284,7 +284,10 @@ describe('ML-KEM-768 operations', () => {
     expect(ciphertextBytes.length).toBe(ML_KEM_768_CIPHERTEXT_SIZE);
 
     // Get Alice's shared secret
-    const aliceSharedSecret = deriveMlKem768SharedSecret(ciphertextBytes, aliceKeypair);
+    const aliceSharedSecret = deriveMlKem768SharedSecret(
+      ciphertextBytes,
+      aliceKeypair
+    );
 
     // Verify shared secret properties
     expect(aliceSharedSecret.length).toBe(ML_KEM_768_SHARED_SECRET_SIZE);
@@ -327,7 +330,9 @@ describe('Proof request encryption', () => {
       test: 'data',
       more: 'fields'
     };
-    const proofRequestBytes = utf8ToBytes(JSON.stringify(proofRequest)) as ProofRequestBytes;
+    const proofRequestBytes = utf8ToBytes(
+      JSON.stringify(proofRequest)
+    ) as ProofRequestBytes;
 
     // Alice encrypts the proof request
     const encryptedMessage = encryptProofRequestData(
@@ -356,7 +361,6 @@ describe('Proof request encryption', () => {
     expect(aliceKeypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
     expect(aliceKeypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
   });
-
 
   test('encryptProofRequestData throws on invalid ML-KEM ciphertext', () => {
     const keypair = generateMlKem768Keypair();

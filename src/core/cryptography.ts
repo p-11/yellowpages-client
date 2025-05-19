@@ -56,7 +56,10 @@ export type PQPublicKey = Brand<Uint8Array, 'PQPublicKey'>;
 export type PQPublicKeyString = Brand<string, 'PQPublicKeyString'>;
 export type PQPrivateKey = Brand<Uint8Array, 'PQPrivateKey'>;
 export type PQAddress = Brand<string, 'PQAddress'>;
-export type MlKem768CiphertextBytes = Brand<Uint8Array, 'MlKem768CiphertextBytes'>;
+export type MlKem768CiphertextBytes = Brand<
+  Uint8Array,
+  'MlKem768CiphertextBytes'
+>;
 export type ProofRequestBytes = Brand<Uint8Array, 'ProofRequestBytes'>;
 
 const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
@@ -516,7 +519,10 @@ function encryptProofRequestData(
 
   try {
     // Derive the shared secret
-    mlKemSharedSecret = deriveMlKem768SharedSecret(mlKem768CiphertextBytes, mlKem768Keypair);
+    mlKemSharedSecret = deriveMlKem768SharedSecret(
+      mlKem768CiphertextBytes,
+      mlKem768Keypair
+    );
 
     // Verify the shared secret is the correct length for AES-256-GCM
     if (mlKemSharedSecret.length !== AES_256_GCM_KEY_SIZE) {
@@ -534,16 +540,16 @@ function encryptProofRequestData(
 
     // Combine nonce and encrypted data into a single buffer
     // Format: [12 bytes nonce][N bytes ciphertext]
-    const aes256GcmEncryptedMessage = new Uint8Array(AES_256_GCM_NONCE_SIZE + aes256GcmCiphertext.length);
+    const aes256GcmEncryptedMessage = new Uint8Array(
+      AES_256_GCM_NONCE_SIZE + aes256GcmCiphertext.length
+    );
     aes256GcmEncryptedMessage.set(aes256GcmNonce);
     aes256GcmEncryptedMessage.set(aes256GcmCiphertext, AES_256_GCM_NONCE_SIZE);
 
     return aes256GcmEncryptedMessage;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Failed to encrypt proof request: ${errorMessage}`
-    );
+    throw new Error(`Failed to encrypt proof request: ${errorMessage}`);
   } finally {
     // Clean up all sensitive cryptographic material
     if (mlKemSharedSecret) {

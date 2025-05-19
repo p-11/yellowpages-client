@@ -3,7 +3,6 @@
  */
 import {
   generateMlKem768Keypair,
-  deriveMlKem768SharedSecret,
   destroyMlKem768Keypair,
   encryptProofRequestData,
   ML_KEM_768_CIPHERTEXT_SIZE,
@@ -13,9 +12,7 @@ import {
   ProofRequestBytes
 } from './cryptography';
 import { base64 } from '@scure/base';
-import { gcm } from '@noble/ciphers/aes.js';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
-import { randomBytes } from '@noble/ciphers/webcrypto.js';
 
 interface Proof {
   id: string;
@@ -218,8 +215,10 @@ export async function createProof(body: {
       ml_dsa_44_signed_message: body.mldsa44SignedMessage,
       ml_dsa_44_public_key: body.mldsa44PublicKey
     };
-    const proofRequestBytes = utf8ToBytes(JSON.stringify(proofRequest)) as ProofRequestBytes;
-    
+    const proofRequestBytes = utf8ToBytes(
+      JSON.stringify(proofRequest)
+    ) as ProofRequestBytes;
+
     // Encrypt the proof request - this also handles destroying the keypair
     const aes256GcmEncryptedMessage = encryptProofRequestData(
       proofRequestBytes,
