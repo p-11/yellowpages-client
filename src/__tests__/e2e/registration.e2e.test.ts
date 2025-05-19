@@ -194,7 +194,9 @@ test('step 2 should not show a confirmed state when the session has refreshed', 
   // Step 1 page
   await expect(page.getByText('Your session has refreshed')).toBeVisible();
   await page
-    .locator('button:below(:text("Your session has refreshed"))')
+    .locator(
+      'button:has-text("continue"):below(:text("Your session has refreshed"))'
+    )
     .first()
     .click();
   await page.getByRole('button', { name: 'Continue' }).click();

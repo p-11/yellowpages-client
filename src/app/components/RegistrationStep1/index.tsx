@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
@@ -29,12 +29,20 @@ export function RegistrationStep1() {
   const router = useRouter();
   const { seedPhrase, showNewSessionAlert, setShowNewSessionAlert } =
     useRegistrationSessionContext();
+  const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
+    null
+  );
 
   const copySeedPhrase = useCallback(() => {
     if (seedPhrase) {
       navigator.clipboard.writeText(seedPhrase);
     }
   }, [seedPhrase]);
+
+  const seedPhraseClickHandler = useCallback(() => {
+    copySeedPhrase();
+    copyTextToolbarButtonRef.current?.showSuccessIndicator();
+  }, [copySeedPhrase]);
 
   const toggleSeedPhraseVisibility = useCallback(
     () => setIsSeedPhraseVisible(!isSeedPhraseVisible),
@@ -69,13 +77,18 @@ export function RegistrationStep1() {
       <Alert className={styles.alert}>
         Save it somewhere safe and do not share it with anyone
       </Alert>
-      <HighlightedBox>
-        <span
-          className={`${styles.seedPhrase} ${isSeedPhraseVisible ? styles.visibleSeedPhrase : ''}`}
-        >
-          {seedPhrase}
-        </span>
-      </HighlightedBox>
+      <button
+        className={styles.seedPhraseButton}
+        onClick={seedPhraseClickHandler}
+      >
+        <HighlightedBox>
+          <span
+            className={`${styles.seedPhrase} ${isSeedPhraseVisible ? styles.visibleSeedPhrase : ''}`}
+          >
+            {seedPhrase}
+          </span>
+        </HighlightedBox>
+      </button>
       <Toolbar>
         <ToolbarButton onClick={toggleSeedPhraseVisibility}>
           {isSeedPhraseVisible ? (
@@ -90,7 +103,10 @@ export function RegistrationStep1() {
             </>
           )}
         </ToolbarButton>
-        <CopyTextToolbarButton onClick={copySeedPhrase} />
+        <CopyTextToolbarButton
+          ref={copyTextToolbarButtonRef}
+          onClick={copySeedPhrase}
+        />
       </Toolbar>
       <RegistrationFooter>
         <Button variant='secondary' onClick={cancelRegistration}>

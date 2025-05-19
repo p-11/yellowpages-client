@@ -12,8 +12,8 @@
     font-size: 24px;
 }
 
-.message {
-    margin-bottom: 100px;
+.content {
+    margin-bottom: 80px;
 }
 
 .links {
@@ -68,6 +68,11 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+}
+
+.footer {
+    position: fixed;
+    bottom: 24px
 }
 
 @media only screen and (min-width: 768px) {

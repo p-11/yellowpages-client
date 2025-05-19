@@ -99,6 +99,8 @@ export const RegistrationSessionProvider = ({
 
   const onLoadStep1Route = useCallback(() => {
     if (!activeSession.current) {
+      clearSensitiveState();
+
       const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
 
       if (hasPreviousSession) {
@@ -107,7 +109,7 @@ export const RegistrationSessionProvider = ({
 
       startRegistrationSession();
     }
-  }, [startRegistrationSession]);
+  }, [clearSensitiveState, startRegistrationSession]);
 
   const onLoadStep2Route = useCallback(() => {
     handleSessionRedirects();

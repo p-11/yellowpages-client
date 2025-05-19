@@ -5,6 +5,7 @@ import { hmac } from '@noble/hashes/hmac';
 import { sha512 } from '@noble/hashes/sha2';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
+import { ml_kem768 } from '@noble/post-quantum/ml-kem';
 import {
   validate,
   getAddressInfo,
@@ -18,9 +19,21 @@ import {
   Version,
   PubKeyType
 } from '@project-eleven/pq-address';
+import { base64 } from '@scure/base';
 
 // Get Environment
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
+
+/*
+ * Constants for ML-KEM-768
+ */
+const ML_KEM_768_CIPHERTEXT_SIZE = 1088; // Size in bytes
+const ML_KEM_768_DECAPSULATION_KEY_SIZE = 2400; // Size in bytes
+const ML_KEM_768_SHARED_SECRET_SIZE = 32; // Size in bytes
+// Base64 encoding increases size by approximately 4/3
+const MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE = Math.ceil(
+  ML_KEM_768_CIPHERTEXT_SIZE * 1.4
+);
 
 /*
  * Types
@@ -40,11 +53,20 @@ export type PQPublicKey = Brand<Uint8Array, 'PQPublicKey'>;
 export type PQPublicKeyString = Brand<string, 'PQPublicKeyString'>;
 export type PQPrivateKey = Brand<Uint8Array, 'PQPrivateKey'>;
 export type PQAddress = Brand<string, 'PQAddress'>;
+export type MlKem768CiphertextBytes = Brand<
+  Uint8Array,
+  'MlKem768CiphertextBytes'
+>;
 
 const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
   AddressType.p2pkh,
   AddressType.p2wpkh
 ];
+
+export type MlKem768Keypair = {
+  encapsulationKey: Uint8Array; // Public key used for encapsulation (formerly publicKey)
+  decapsulationKey: Uint8Array; // Secret key used for decapsulation (formerly secretKey)
+};
 
 /*
  * Supported Algorithms
@@ -95,6 +117,93 @@ const BIP85_PURPOSE = 83696968; // "BIPS" on phone keypad
 const BIP85_HMAC_KEY = 'bip-entropy-from-k'; // from standard
 // Set as an env var to pass BIP-85 test vectors
 const DEFAULT_APP_NO = parseInt(process.env.BIP85_APP_NO ?? '503131', 10); // 503131 = P11 -> UTF-8
+
+/**
+ * Generate an ML-KEM-768 key pair for post-quantum key encapsulation
+ * @returns {MlKem768Keypair} The key pair containing encapsulationKey and decapsulationKey
+ */
+function generateMlKem768Keypair(): MlKem768Keypair {
+  try {
+    const keyPair = ml_kem768.keygen();
+    return {
+      encapsulationKey: keyPair.publicKey,
+      decapsulationKey: keyPair.secretKey
+    };
+  } catch (error) {
+    throw new Error(
+      `Failed to generate ML-KEM-768 keypair: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
+ * Derive a shared secret using ML-KEM-768 decapsulation
+ * @param ciphertextBytes The ciphertext bytes from the server
+ * @param keypair The ML-KEM-768 keypair - will be completely zeroed out after use
+ */
+function deriveMlKem768SharedSecret(
+  ciphertextBytes: MlKem768CiphertextBytes,
+  keypair: MlKem768Keypair
+): void {
+  let sharedSecret: Uint8Array | undefined;
+
+  try {
+    // Validate ciphertext length
+    if (ciphertextBytes.length !== ML_KEM_768_CIPHERTEXT_SIZE) {
+      throw new Error(
+        `Invalid ML-KEM-768 ciphertext byte length: expected ${ML_KEM_768_CIPHERTEXT_SIZE}, got ${ciphertextBytes.length}`
+      );
+    }
+
+    // Validate decapsulation key length
+    if (keypair.decapsulationKey.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE) {
+      throw new Error(
+        `Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey.length}`
+      );
+    }
+
+    // Derive the shared secret
+    sharedSecret = ml_kem768.decapsulate(
+      ciphertextBytes,
+      keypair.decapsulationKey
+    );
+
+    // Verify shared secret has the correct length
+    if (
+      !sharedSecret ||
+      sharedSecret.length !== ML_KEM_768_SHARED_SECRET_SIZE
+    ) {
+      throw new Error(
+        `Invalid ML-KEM-768 shared secret length: expected ${ML_KEM_768_SHARED_SECRET_SIZE}, got ${sharedSecret?.length ?? 'undefined'}`
+      );
+    }
+
+    // Successfully derived shared secret - in the future we'll use it here to encrypt using AES
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to derive ML-KEM-768 shared secret: ${errorMessage}`
+    );
+  } finally {
+    // Ensure the shared secret is destroyed
+    if (sharedSecret) {
+      sharedSecret.fill(0);
+    }
+
+    // Always destroy the keypair
+    destroyMlKem768Keypair(keypair);
+  }
+}
+
+/**
+ * Securely destroy an ML-KEM-768 keypair by zeroing out all key material
+ * @param keypair The keypair to destroy - both keys will be zeroed out
+ */
+function destroyMlKem768Keypair(keypair: MlKem768Keypair): void {
+  // Zero out both keys
+  keypair.encapsulationKey.fill(0);
+  keypair.decapsulationKey.fill(0);
+}
 
 /*
  * Checks if a Bitcoin address is valid and supported
@@ -192,13 +301,6 @@ function derivePQEntropyLength(
     throw new Error(`Unsupported algorithm: ${algo}`);
   }
   return config.entropyLength;
-}
-
-/*
- * Helper Function to convert bytes to base64
- */
-function bytesToBase64(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes));
 }
 
 /**
@@ -426,15 +528,15 @@ const generateSignedMessages = (
     // Response
     return {
       ML_DSA_44: {
-        publicKey: bytesToBase64(mldsa44KeyPair.publicKey) as PQPublicKeyString,
-        signedMessage: bytesToBase64(mldsa44SignedMessage) as SignedMessage,
+        publicKey: base64.encode(mldsa44KeyPair.publicKey) as PQPublicKeyString,
+        signedMessage: base64.encode(mldsa44SignedMessage) as SignedMessage,
         address: mldsa44KeyPair.address
       },
       SLH_DSA_SHA2_S_128: {
-        publicKey: bytesToBase64(
+        publicKey: base64.encode(
           slhdsaSha2S128KeyPair.publicKey
         ) as PQPublicKeyString,
-        signedMessage: bytesToBase64(
+        signedMessage: base64.encode(
           slhdsaSha2S128SignedMessage
         ) as SignedMessage,
         address: slhdsaSha2S128KeyPair.address
@@ -447,7 +549,9 @@ const generateSignedMessages = (
 };
 
 export {
-  bytesToBase64,
+  generateMlKem768Keypair,
+  deriveMlKem768SharedSecret,
+  destroyMlKem768Keypair,
   generatePQAddress,
   generateSeedPhrase,
   generateSignedMessages,
@@ -455,5 +559,9 @@ export {
   generateKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
-  isValidBitcoinSignature
+  isValidBitcoinSignature,
+  ML_KEM_768_CIPHERTEXT_SIZE,
+  ML_KEM_768_DECAPSULATION_KEY_SIZE,
+  ML_KEM_768_SHARED_SECRET_SIZE,
+  MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
 };
