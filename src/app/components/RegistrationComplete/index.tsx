@@ -91,8 +91,9 @@ export function RegistrationComplete() {
             <Link href='/faqs'>FAQs page</Link> to learn more.
           </p>
           <p>
-            Own multiple addresses? You can register as many addresses as you
-            need to. Each address will be linked to a different post-quantum
+            Own multiple addresses? You can{' '}
+            <Link href='/register/step-1'>register</Link> as many addresses as
+            you need to. Each address will be linked to a different post-quantum
             address suite.
           </p>
         </div>
