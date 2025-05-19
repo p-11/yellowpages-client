@@ -1,13 +1,12 @@
-import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { ButtonHTMLAttributes } from 'react';
 import styles from './styles.module.css';
 
-export const ToolbarButton = forwardRef<
-  HTMLButtonElement,
-  { children: React.ReactNode } & ButtonHTMLAttributes<HTMLButtonElement>
->(function ToolbarButton({ children, ...props }, ref) {
+export function ToolbarButton(
+  props: { children: React.ReactNode } & ButtonHTMLAttributes<HTMLButtonElement>
+) {
   return (
-    <button ref={ref} {...props} className={styles.toolbarButton}>
-      {children}
+    <button {...props} className={styles.toolbarButton}>
+      {props.children}
     </button>
   );
-});
+}

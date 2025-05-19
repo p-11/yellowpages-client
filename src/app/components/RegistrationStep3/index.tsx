@@ -64,7 +64,9 @@ export function RegistrationStep3() {
     setProofData
   } = useRegistrationSessionContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const copySigningMessageButtonRef = useRef<HTMLButtonElement>(null);
+  const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
+    null
+  );
 
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
   const isSignaturePopulated = signature && signature.length > 0;
@@ -74,6 +76,11 @@ export function RegistrationStep3() {
       navigator.clipboard.writeText(signingMessage);
     }
   }, [signingMessage]);
+
+  const signingMessageClickHandler = useCallback(() => {
+    copySigningMessage();
+    copyTextToolbarButtonRef.current?.showSuccessIndicator();
+  }, [copySigningMessage]);
 
   const acknowledgeBitcoinAddressAlert = useCallback(() => {
     setShowInvalidBitcoinAddressAlert(false);
@@ -222,7 +229,7 @@ export function RegistrationStep3() {
           </span>
           <button
             className={styles.signingMessageButton}
-            onClick={copySigningMessageButtonRef.current?.click}
+            onClick={signingMessageClickHandler}
           >
             <HighlightedBox>
               <span className={styles.signingMessage}>
@@ -232,7 +239,7 @@ export function RegistrationStep3() {
           </button>
           <Toolbar>
             <CopyTextToolbarButton
-              ref={copySigningMessageButtonRef}
+              ref={copyTextToolbarButtonRef}
               onClick={copySigningMessage}
             />
           </Toolbar>

@@ -1,21 +1,28 @@
-import { useCallback, useState, forwardRef, useRef } from 'react';
+import {
+  useCallback,
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle
+} from 'react';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CheckIcon } from '@/app/icons/CheckIcon';
 import { CopyIcon } from '@/app/icons/CopyIcon';
 
-export const CopyTextToolbarButton = forwardRef<
-  HTMLButtonElement,
+export const CopyTextToolbarButton = forwardRef(function CopyTextToolbarButton(
   {
+    label = 'Copy',
+    onClick
+  }: {
     label?: string;
     onClick: () => void;
-  }
->(function CopyTextToolbarButton({ label = 'Copy', onClick }, ref) {
+  },
+  ref
+) {
   const [isIndicatorVisible, setIsIndicatorVisible] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  const clickHandler = useCallback(() => {
-    onClick();
-
+  const showSuccessIndicator = useCallback(() => {
     setIsIndicatorVisible(true);
 
     if (timeoutRef.current) {
@@ -26,10 +33,19 @@ export const CopyTextToolbarButton = forwardRef<
       setIsIndicatorVisible(false);
       timeoutRef.current = null;
     }, 1000);
-  }, [onClick]);
+  }, []);
+
+  const clickHandler = useCallback(() => {
+    onClick();
+    showSuccessIndicator();
+  }, [onClick, showSuccessIndicator]);
+
+  useImperativeHandle(ref, () => ({
+    showSuccessIndicator
+  }));
 
   return (
-    <ToolbarButton ref={ref} onClick={clickHandler}>
+    <ToolbarButton onClick={clickHandler}>
       {isIndicatorVisible ? (
         <>
           <CheckIcon />
