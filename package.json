@@ -16,6 +16,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@noble/ciphers": "^1.3.0",
     "@noble/hashes": "^1.8.0",
     "@noble/post-quantum": "^0.4.1",
     "@project-eleven/pq-address": "^0.2.0",

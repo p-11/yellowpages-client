@@ -3,14 +3,16 @@
  */
 import {
   generateMlKem768Keypair,
-  deriveMlKem768SharedSecret,
   destroyMlKem768Keypair,
+  encryptProofRequestData,
   ML_KEM_768_CIPHERTEXT_SIZE,
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
   MlKem768Keypair,
-  MlKem768CiphertextBytes
+  MlKem768CiphertextBytes,
+  ProofRequestBytes
 } from './cryptography';
 import { base64 } from '@scure/base';
+import { utf8ToBytes } from '@noble/ciphers/utils.js';
 
 interface Proof {
   id: string;
@@ -209,10 +211,7 @@ export async function createProof(body: {
       );
     }
 
-    // Derive shared secret
-    deriveMlKem768SharedSecret(mlKem768CiphertextBytes, mlKem768Keypair);
-
-    // Step 6: Send proof request
+    // Step 6: Create and encrypt proof request
     const proofRequest = {
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
@@ -223,7 +222,20 @@ export async function createProof(body: {
       slh_dsa_sha2_s_128_signed_message: body.slhdsaSha2S128SignedMessage,
       slh_dsa_sha2_s_128_public_key: body.slhdsaSha2S128PublicKey
     };
-    ws.send(JSON.stringify(proofRequest));
+    const proofRequestBytes = utf8ToBytes(
+      JSON.stringify(proofRequest)
+    ) as ProofRequestBytes;
+
+    // Encrypt the proof request - this also handles destroying the keypair
+    const aes256GcmEncryptedMessage = encryptProofRequestData(
+      proofRequestBytes,
+      mlKem768Keypair,
+      mlKem768CiphertextBytes
+    );
+    mlKem768Keypair = undefined; // Keypair is destroyed by encryptProofRequestData
+
+    // Send the encrypted proof request as a binary message
+    ws.send(aes256GcmEncryptedMessage);
 
     // Step 7: Wait for successful completion (normal close)
     await raceWithTimeout('Proof verification', onSuccessClose);
@@ -231,7 +243,7 @@ export async function createProof(body: {
     // Clean up WebSocket event listeners
     cleanup();
 
-    // Ensure keypair is destroyed, even if deriveMlKem768SharedSecret wasn't called
+    // Clean up cryptographic material
     if (mlKem768Keypair) {
       destroyMlKem768Keypair(mlKem768Keypair);
     }
