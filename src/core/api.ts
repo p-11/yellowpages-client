@@ -5,6 +5,7 @@ import {
   generateMlKem768Keypair,
   deriveMlKem768SharedSecret,
   destroyMlKem768Keypair,
+  encryptProofRequestData,
   ML_KEM_768_CIPHERTEXT_SIZE,
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
   MlKem768Keypair,
@@ -158,9 +159,8 @@ export async function createProof(body: {
   const { onHandshakeResponse, onSocketOpen, onSuccessClose, cleanup } =
     setupWebSocketHandlers(ws);
 
-  // Initialize keypair and shared secret outside try block so we can clean them up in finally
+  // Initialize keypair outside try block so we can clean it up in finally
   let mlKem768Keypair: MlKem768Keypair | undefined;
-  let sharedSecret: Uint8Array | undefined;
 
   try {
     // Step 1: Wait for WebSocket to connect
@@ -209,13 +209,7 @@ export async function createProof(body: {
       );
     }
 
-    // Step 6: Derive shared secret and set up AES-GCM
-    sharedSecret = deriveMlKem768SharedSecret(mlKem768CiphertextBytes, mlKem768Keypair);
-
-    // Generate a random 96-bit (12-byte) nonce for AES-GCM
-    const nonce = randomBytes(12);
-
-    // Create proof request and convert to JSON bytes
+    // Step 6: Create and encrypt proof request
     const proofRequest = {
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
@@ -224,18 +218,17 @@ export async function createProof(body: {
       ml_dsa_44_public_key: body.mldsa44PublicKey
     };
     const proofRequestBytes = utf8ToBytes(JSON.stringify(proofRequest));
-
-    // Encrypt the proof request using AES-GCM
-    const aes = gcm(sharedSecret, nonce);
-    const encryptedProofRequest = aes.encrypt(proofRequestBytes);
-
-    // Combine nonce and encrypted data into a single buffer
-    const message = new Uint8Array(nonce.length + encryptedProofRequest.length);
-    message.set(nonce);
-    message.set(encryptedProofRequest, nonce.length);
+    
+    // Encrypt the proof request - this also handles destroying the keypair
+    const aes256GcmEncryptedMessage = encryptProofRequestData(
+      proofRequestBytes,
+      mlKem768Keypair,
+      mlKem768CiphertextBytes
+    );
+    mlKem768Keypair = undefined; // Keypair is destroyed by encryptProofRequestData
 
     // Send the encrypted proof request as a binary message
-    ws.send(message);
+    ws.send(aes256GcmEncryptedMessage);
 
     // Step 7: Wait for successful completion (normal close)
     await raceWithTimeout('Proof verification', onSuccessClose);
@@ -246,9 +239,6 @@ export async function createProof(body: {
     // Clean up cryptographic material
     if (mlKem768Keypair) {
       destroyMlKem768Keypair(mlKem768Keypair);
-    }
-    if (sharedSecret) {
-      sharedSecret.fill(0);
     }
   }
 }
