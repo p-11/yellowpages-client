@@ -135,7 +135,7 @@ function generateMlKem768Keypair(): MlKem768Keypair {
 function deriveMlKem768SharedSecret(
   ciphertextBytes: MlKem768CiphertextBytes,
   keypair: MlKem768Keypair
-): void {
+): Uint8Array {
   let sharedSecret: Uint8Array | undefined;
 
   try {
@@ -169,18 +169,14 @@ function deriveMlKem768SharedSecret(
       );
     }
 
-    // Successfully derived shared secret - in the future we'll use it here to encrypt using AES
+    // Return the shared secret - caller is responsible for cleanup
+    return sharedSecret;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
       `Failed to derive ML-KEM-768 shared secret: ${errorMessage}`
     );
   } finally {
-    // Ensure the shared secret is destroyed
-    if (sharedSecret) {
-      sharedSecret.fill(0);
-    }
-
     // Always destroy the keypair
     destroyMlKem768Keypair(keypair);
   }

@@ -11,6 +11,9 @@ import {
   MlKem768CiphertextBytes
 } from './cryptography';
 import { base64 } from '@scure/base';
+import { gcm } from '@noble/ciphers/aes.js';
+import { utf8ToBytes } from '@noble/ciphers/utils.js';
+import { randomBytes } from '@noble/ciphers/webcrypto.js';
 
 interface Proof {
   id: string;
@@ -71,7 +74,7 @@ const domains = {
     : 'https://verification-api.yellowpages-development.xyz',
   proofService: IS_PROD
     ? 'wss://not.implemented.com'
-    : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
+    : 'ws://0.0.0.0:8008'
 };
 
 /**
@@ -155,8 +158,9 @@ export async function createProof(body: {
   const { onHandshakeResponse, onSocketOpen, onSuccessClose, cleanup } =
     setupWebSocketHandlers(ws);
 
-  // Initialize keypair outside try block so we can clean it up in finally
+  // Initialize keypair and shared secret outside try block so we can clean them up in finally
   let mlKem768Keypair: MlKem768Keypair | undefined;
+  let sharedSecret: Uint8Array | undefined;
 
   try {
     // Step 1: Wait for WebSocket to connect
@@ -205,10 +209,13 @@ export async function createProof(body: {
       );
     }
 
-    // Derive shared secret
-    deriveMlKem768SharedSecret(mlKem768CiphertextBytes, mlKem768Keypair);
+    // Step 6: Derive shared secret and set up AES-GCM
+    sharedSecret = deriveMlKem768SharedSecret(mlKem768CiphertextBytes, mlKem768Keypair);
 
-    // Step 6: Send proof request
+    // Generate a random 96-bit (12-byte) nonce for AES-GCM
+    const nonce = randomBytes(12);
+
+    // Create proof request and convert to JSON bytes
     const proofRequest = {
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
@@ -216,7 +223,19 @@ export async function createProof(body: {
       ml_dsa_44_signed_message: body.mldsa44SignedMessage,
       ml_dsa_44_public_key: body.mldsa44PublicKey
     };
-    ws.send(JSON.stringify(proofRequest));
+    const proofRequestBytes = utf8ToBytes(JSON.stringify(proofRequest));
+
+    // Encrypt the proof request using AES-GCM
+    const aes = gcm(sharedSecret, nonce);
+    const encryptedProofRequest = aes.encrypt(proofRequestBytes);
+
+    // Combine nonce and encrypted data into a single buffer
+    const message = new Uint8Array(nonce.length + encryptedProofRequest.length);
+    message.set(nonce);
+    message.set(encryptedProofRequest, nonce.length);
+
+    // Send the encrypted proof request as a binary message
+    ws.send(message);
 
     // Step 7: Wait for successful completion (normal close)
     await raceWithTimeout('Proof verification', onSuccessClose);
@@ -224,9 +243,12 @@ export async function createProof(body: {
     // Clean up WebSocket event listeners
     cleanup();
 
-    // Ensure keypair is destroyed, even if deriveMlKem768SharedSecret wasn't called
+    // Clean up cryptographic material
     if (mlKem768Keypair) {
       destroyMlKem768Keypair(mlKem768Keypair);
+    }
+    if (sharedSecret) {
+      sharedSecret.fill(0);
     }
   }
 }
