@@ -528,13 +528,6 @@ function encryptProofRequestData(
     // Generate a random 96-bit (12-byte) nonce for AES-256-GCM
     aes256GcmNonce = randomBytes(AES_256_GCM_NONCE_SIZE);
 
-    // Verify the nonce is the correct length
-    if (aes256GcmNonce.length !== AES_256_GCM_NONCE_SIZE) {
-      throw new Error(
-        `Invalid AES-256-GCM nonce length: expected ${AES_256_GCM_NONCE_SIZE} bytes, got ${aes256GcmNonce.length}`
-      );
-    }
-
     // Encrypt using AES-256-GCM with the ML-KEM derived shared secret as key
     const aes256Gcm = gcm(mlKemSharedSecret, aes256GcmNonce);
     const aes256GcmCiphertext = aes256Gcm.encrypt(requestBytes);
