@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
@@ -64,6 +64,7 @@ export function RegistrationStep3() {
     setProofData
   } = useRegistrationSessionContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const copySigningMessageButtonRef = useRef<HTMLButtonElement>(null);
 
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
   const isSignaturePopulated = signature && signature.length > 0;
@@ -219,13 +220,21 @@ export function RegistrationStep3() {
           <span className={styles.inputLabel}>
             2. Sign this message with your wallet
           </span>
-          <HighlightedBox>
-            <span className={styles.signingMessage}>
-              {signingMessage ?? ''}
-            </span>
-          </HighlightedBox>
+          <button
+            className={styles.signingMessageButton}
+            onClick={copySigningMessageButtonRef.current?.click}
+          >
+            <HighlightedBox>
+              <span className={styles.signingMessage}>
+                {signingMessage ?? ''}
+              </span>
+            </HighlightedBox>
+          </button>
           <Toolbar>
-            <CopyTextToolbarButton onClick={copySigningMessage} />
+            <CopyTextToolbarButton
+              ref={copySigningMessageButtonRef}
+              onClick={copySigningMessage}
+            />
           </Toolbar>
         </div>
         <div className={styles.step3}>

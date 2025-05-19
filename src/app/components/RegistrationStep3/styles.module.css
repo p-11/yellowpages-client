@@ -74,6 +74,10 @@
     opacity: 0;
 }
 
+.signingMessageButton {
+    text-align: left;
+}
+
 .signingMessage {
     line-height: 1.6rem;
     font-size: 15px;

@@ -1,15 +1,15 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState, forwardRef, useRef } from 'react';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CheckIcon } from '@/app/icons/CheckIcon';
 import { CopyIcon } from '@/app/icons/CopyIcon';
 
-export function CopyTextToolbarButton({
-  label = 'Copy',
-  onClick
-}: {
-  label?: string;
-  onClick: () => void;
-}) {
+export const CopyTextToolbarButton = forwardRef<
+  HTMLButtonElement,
+  {
+    label?: string;
+    onClick: () => void;
+  }
+>(function CopyTextToolbarButton({ label = 'Copy', onClick }, ref) {
   const [isIndicatorVisible, setIsIndicatorVisible] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
@@ -29,7 +29,7 @@ export function CopyTextToolbarButton({
   }, [onClick]);
 
   return (
-    <ToolbarButton onClick={clickHandler}>
+    <ToolbarButton ref={ref} onClick={clickHandler}>
       {isIndicatorVisible ? (
         <>
           <CheckIcon />
@@ -43,4 +43,4 @@ export function CopyTextToolbarButton({
       )}
     </ToolbarButton>
   );
-}
+});
