@@ -393,68 +393,72 @@ describe('crypto module', () => {
       expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
     });
   });
-});
 
-describe('Proof request encryption', () => {
-  test('end-to-end encryption with ML-KEM and AES-256-GCM', () => {
-    // Generate Alice's keypair
-    const aliceKeypair = generateMlKem768Keypair();
+  describe('Proof request encryption', () => {
+    test('end-to-end encryption with ML-KEM and AES-256-GCM', () => {
+      // Generate Alice's keypair
+      const aliceKeypair = generateMlKem768Keypair();
 
-    // Bob generates ciphertext and shared secret
-    const bobResult = ml_kem768.encapsulate(aliceKeypair.encapsulationKey);
-    const mlKemCiphertext = bobResult.cipherText as MlKem768CiphertextBytes;
-    const bobSharedSecret = bobResult.sharedSecret;
+      // Bob generates ciphertext and shared secret
+      const bobResult = ml_kem768.encapsulate(aliceKeypair.encapsulationKey);
+      const mlKemCiphertext = bobResult.cipherText as MlKem768CiphertextBytes;
+      const bobSharedSecret = bobResult.sharedSecret;
 
-    // Create a test proof request
-    const proofRequest = {
-      test: 'data',
-      more: 'fields'
-    };
-    const proofRequestBytes = utf8ToBytes(
-      JSON.stringify(proofRequest)
-    ) as ProofRequestBytes;
+      // Create a test proof request
+      const proofRequest = {
+        test: 'data',
+        more: 'fields'
+      };
+      const proofRequestBytes = utf8ToBytes(
+        JSON.stringify(proofRequest)
+      ) as ProofRequestBytes;
 
-    // Alice encrypts the proof request
-    const encryptedMessage = encryptProofRequestData(
-      proofRequestBytes,
-      aliceKeypair,
-      mlKemCiphertext
-    );
+      // Alice encrypts the proof request
+      const encryptedMessage = encryptProofRequestData(
+        proofRequestBytes,
+        aliceKeypair,
+        mlKemCiphertext
+      );
 
-    // Verify the encrypted message format
-    expect(encryptedMessage.length).toBeGreaterThan(AES_256_GCM_NONCE_SIZE);
+      // Verify the encrypted message format
+      expect(encryptedMessage.length).toBeGreaterThan(AES_256_GCM_NONCE_SIZE);
 
-    // Extract nonce and ciphertext
-    const nonce = encryptedMessage.slice(0, AES_256_GCM_NONCE_SIZE);
-    const ciphertext = encryptedMessage.slice(AES_256_GCM_NONCE_SIZE);
+      // Extract nonce and ciphertext
+      const nonce = encryptedMessage.slice(0, AES_256_GCM_NONCE_SIZE);
+      const ciphertext = encryptedMessage.slice(AES_256_GCM_NONCE_SIZE);
 
-    // Bob decrypts using the shared secret
-    const aes = gcm(bobSharedSecret, nonce);
-    const decryptedBytes = aes.decrypt(ciphertext);
-    const decryptedJson = new TextDecoder().decode(decryptedBytes);
-    const decryptedRequest = JSON.parse(decryptedJson);
+      // Bob decrypts using the shared secret
+      const aes = gcm(bobSharedSecret, nonce);
+      const decryptedBytes = aes.decrypt(ciphertext);
+      const decryptedJson = new TextDecoder().decode(decryptedBytes);
+      const decryptedRequest = JSON.parse(decryptedJson);
 
-    // Verify decrypted data matches original
-    expect(decryptedRequest).toEqual(proofRequest);
+      // Verify decrypted data matches original
+      expect(decryptedRequest).toEqual(proofRequest);
 
-    // Verify Alice's keypair was destroyed
-    expect(aliceKeypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
-    expect(aliceKeypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
-  });
+      // Verify Alice's keypair was destroyed
+      expect(aliceKeypair.encapsulationKey.every(byte => byte === 0)).toBe(
+        true
+      );
+      expect(aliceKeypair.decapsulationKey.every(byte => byte === 0)).toBe(
+        true
+      );
+    });
 
-  test('encryptProofRequestData throws on invalid ML-KEM ciphertext', () => {
-    const keypair = generateMlKem768Keypair();
-    const invalidMlKemCiphertext = new Uint8Array(
-      ML_KEM_768_CIPHERTEXT_SIZE - 1
-    ) as MlKem768CiphertextBytes;
-    const requestBytes = utf8ToBytes('{}') as ProofRequestBytes;
+    test('encryptProofRequestData throws on invalid ML-KEM ciphertext', () => {
+      const keypair = generateMlKem768Keypair();
+      const invalidMlKemCiphertext = new Uint8Array(
+        ML_KEM_768_CIPHERTEXT_SIZE - 1
+      ) as MlKem768CiphertextBytes;
+      const requestBytes = utf8ToBytes('{}') as ProofRequestBytes;
 
-    expect(() => {
-      encryptProofRequestData(requestBytes, keypair, invalidMlKemCiphertext);
-    }).toThrow(/Invalid ML-KEM-768 ciphertext byte length/);
+      expect(() => {
+        encryptProofRequestData(requestBytes, keypair, invalidMlKemCiphertext);
+      }).toThrow(/Invalid ML-KEM-768 ciphertext byte length/);
 
-    // Keypair should be destroyed even if encryption fails
-    expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
-    expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
+      // Keypair should be destroyed even if encryption fails
+      expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
+      expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
+    });
   });
 });
