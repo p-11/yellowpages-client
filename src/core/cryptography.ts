@@ -5,6 +5,8 @@ import { hmac } from '@noble/hashes/hmac';
 import { sha512 } from '@noble/hashes/sha2';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem';
+import { gcm } from '@noble/ciphers/aes.js';
+import { randomBytes } from '@noble/ciphers/webcrypto.js';
 import {
   validate,
   getAddressInfo,
@@ -29,6 +31,8 @@ const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 const ML_KEM_768_CIPHERTEXT_SIZE = 1088; // Size in bytes
 const ML_KEM_768_DECAPSULATION_KEY_SIZE = 2400; // Size in bytes
 const ML_KEM_768_SHARED_SECRET_SIZE = 32; // Size in bytes
+const AES_256_GCM_KEY_SIZE = 32; // 256 bits = 32 bytes
+const AES_256_GCM_NONCE_SIZE = 12; // 96 bits = 12 bytes
 // Base64 encoding increases size by approximately 4/3
 const MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE = Math.ceil(
   ML_KEM_768_CIPHERTEXT_SIZE * 1.4
@@ -56,6 +60,7 @@ export type MlKem768CiphertextBytes = Brand<
   Uint8Array,
   'MlKem768CiphertextBytes'
 >;
+export type ProofRequestBytes = Brand<Uint8Array, 'ProofRequestBytes'>;
 
 const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
   AddressType.p2pkh,
@@ -135,7 +140,7 @@ function generateMlKem768Keypair(): MlKem768Keypair {
 function deriveMlKem768SharedSecret(
   ciphertextBytes: MlKem768CiphertextBytes,
   keypair: MlKem768Keypair
-): void {
+): Uint8Array {
   let sharedSecret: Uint8Array | undefined;
 
   try {
@@ -169,19 +174,13 @@ function deriveMlKem768SharedSecret(
       );
     }
 
-    // Successfully derived shared secret - in the future we'll use it here to encrypt using AES
+    return sharedSecret;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
       `Failed to derive ML-KEM-768 shared secret: ${errorMessage}`
     );
   } finally {
-    // Ensure the shared secret is destroyed
-    if (sharedSecret) {
-      sharedSecret.fill(0);
-    }
-
-    // Always destroy the keypair
     destroyMlKem768Keypair(keypair);
   }
 }
@@ -503,10 +502,71 @@ const generateSignedMessages = (
   }
 };
 
+/**
+ * Encrypts proof request data using ML-KEM-768 derived shared secret and AES-256-GCM
+ * @param requestBytes The proof request data to encrypt
+ * @param mlKem768Keypair The ML-KEM-768 keypair for deriving the shared secret
+ * @param mlKem768CiphertextBytes The ML-KEM-768 ciphertext from the server
+ * @returns Concatenated nonce and encrypted data as a single Uint8Array
+ */
+function encryptProofRequestData(
+  requestBytes: ProofRequestBytes,
+  mlKem768Keypair: MlKem768Keypair,
+  mlKem768CiphertextBytes: MlKem768CiphertextBytes
+): Uint8Array {
+  let mlKemSharedSecret: Uint8Array | undefined;
+  let aes256GcmNonce: Uint8Array | undefined;
+
+  try {
+    // Derive the shared secret
+    mlKemSharedSecret = deriveMlKem768SharedSecret(
+      mlKem768CiphertextBytes,
+      mlKem768Keypair
+    );
+
+    // Verify the shared secret is the correct length for AES-256-GCM
+    if (mlKemSharedSecret.length !== AES_256_GCM_KEY_SIZE) {
+      throw new Error(
+        `Invalid ML-KEM shared secret length for AES-256-GCM: expected ${AES_256_GCM_KEY_SIZE} bytes, got ${mlKemSharedSecret.length}`
+      );
+    }
+
+    // Generate a random 96-bit (12-byte) nonce for AES-256-GCM
+    aes256GcmNonce = randomBytes(AES_256_GCM_NONCE_SIZE);
+
+    // Encrypt using AES-256-GCM with the ML-KEM derived shared secret as key
+    const aes256Gcm = gcm(mlKemSharedSecret, aes256GcmNonce);
+    const aes256GcmCiphertext = aes256Gcm.encrypt(requestBytes);
+
+    // Combine nonce and encrypted data into a single buffer
+    // Format: [12 bytes nonce][N bytes ciphertext]
+    const aes256GcmEncryptedMessage = new Uint8Array(
+      AES_256_GCM_NONCE_SIZE + aes256GcmCiphertext.length
+    );
+    aes256GcmEncryptedMessage.set(aes256GcmNonce);
+    aes256GcmEncryptedMessage.set(aes256GcmCiphertext, AES_256_GCM_NONCE_SIZE);
+
+    return aes256GcmEncryptedMessage;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to encrypt proof request: ${errorMessage}`);
+  } finally {
+    // Clean up all sensitive cryptographic material
+    if (mlKemSharedSecret) {
+      mlKemSharedSecret.fill(0);
+    }
+    if (aes256GcmNonce) {
+      aes256GcmNonce.fill(0);
+    }
+    destroyMlKem768Keypair(mlKem768Keypair);
+  }
+}
+
 export {
   generateMlKem768Keypair,
   deriveMlKem768SharedSecret,
   destroyMlKem768Keypair,
+  encryptProofRequestData,
   generatePQAddress,
   generateSeedPhrase,
   generateSignedMessages,
@@ -518,5 +578,7 @@ export {
   ML_KEM_768_CIPHERTEXT_SIZE,
   ML_KEM_768_DECAPSULATION_KEY_SIZE,
   ML_KEM_768_SHARED_SECRET_SIZE,
+  AES_256_GCM_KEY_SIZE,
+  AES_256_GCM_NONCE_SIZE,
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
 };
