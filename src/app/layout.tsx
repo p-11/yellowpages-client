@@ -5,7 +5,7 @@ import { DevelopmentBanner } from './components/DevelopmentBanner';
 
 const geistMono = localFont({
   src: './fonts/GeistMonoVF.woff',
-  weight: '300 400 500'
+  weight: '400 500 600'
 });
 
 export default function RootLayout({
