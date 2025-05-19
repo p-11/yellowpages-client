@@ -9,7 +9,8 @@ import {
   ML_KEM_768_CIPHERTEXT_SIZE,
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
   MlKem768Keypair,
-  MlKem768CiphertextBytes
+  MlKem768CiphertextBytes,
+  ProofRequestBytes
 } from './cryptography';
 import { base64 } from '@scure/base';
 import { gcm } from '@noble/ciphers/aes.js';
@@ -217,7 +218,7 @@ export async function createProof(body: {
       ml_dsa_44_signed_message: body.mldsa44SignedMessage,
       ml_dsa_44_public_key: body.mldsa44PublicKey
     };
-    const proofRequestBytes = utf8ToBytes(JSON.stringify(proofRequest));
+    const proofRequestBytes = utf8ToBytes(JSON.stringify(proofRequest)) as ProofRequestBytes;
     
     // Encrypt the proof request - this also handles destroying the keypair
     const aes256GcmEncryptedMessage = encryptProofRequestData(

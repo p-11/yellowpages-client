@@ -56,10 +56,8 @@ export type PQPublicKey = Brand<Uint8Array, 'PQPublicKey'>;
 export type PQPublicKeyString = Brand<string, 'PQPublicKeyString'>;
 export type PQPrivateKey = Brand<Uint8Array, 'PQPrivateKey'>;
 export type PQAddress = Brand<string, 'PQAddress'>;
-export type MlKem768CiphertextBytes = Brand<
-  Uint8Array,
-  'MlKem768CiphertextBytes'
->;
+export type MlKem768CiphertextBytes = Brand<Uint8Array, 'MlKem768CiphertextBytes'>;
+export type ProofRequestBytes = Brand<Uint8Array, 'ProofRequestBytes'>;
 
 const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
   AddressType.p2pkh,
@@ -509,7 +507,7 @@ const generateSignedMessages = (
  * @returns Concatenated nonce and encrypted data as a single Uint8Array
  */
 function encryptProofRequestData(
-  requestBytes: Uint8Array,
+  requestBytes: ProofRequestBytes,
   mlKem768Keypair: MlKem768Keypair,
   mlKem768CiphertextBytes: MlKem768CiphertextBytes
 ): Uint8Array {
