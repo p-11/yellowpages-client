@@ -512,7 +512,7 @@ const generateSignedMessages = (
       slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
     });
 
-    // Signingdsa
+    // Signing
     const mldsa44SignedMessage = ml_dsa44.sign(
       mldsa44KeyPair.privateKey,
       messageBytes

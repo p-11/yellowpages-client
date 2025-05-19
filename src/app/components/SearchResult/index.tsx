@@ -46,8 +46,7 @@ export function SearchResult() {
         <>
           <div className={styles.alertSection}>
             <Alert type='success'>
-              Registered and cryptographically linked to a post-quantum
-              addresses
+              Registered and cryptographically linked to post-quantum addresses
             </Alert>
           </div>
           <div className={styles.entrySection}>
