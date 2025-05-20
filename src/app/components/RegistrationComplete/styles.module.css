@@ -1,0 +1,85 @@
+.title {
+    font-size: 1.4rem;
+    letter-spacing: -1px;
+    font-weight: 400;
+    line-height: 2.2rem;
+    margin-bottom: 0;
+}
+
+.entrySection {
+    margin-top: 42px;
+}
+
+.warningSection {
+    margin-top: 24px;
+    margin-bottom: 42px;
+    display: flex;
+}
+
+.sectionTitle {
+    font-weight: 400;
+    font-size: 1.2rem;
+    margin-bottom: 0;
+    letter-spacing: -0.05rem;
+}
+
+.entryToolbar {
+    margin-top: 8px;
+    margin-bottom: 24px;
+}
+
+.footer {
+    margin-top: 40px;
+    margin-bottom: 60px;
+}
+
+.socialSection {
+    display: flex;
+}
+
+.shareDialogContent {
+    border: 2px solid #cfbf67;
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.ogImage {
+    border-radius: 10px;
+    max-width: 100%;
+    height: auto;
+}
+
+.shareLinkBox {
+    margin-top: 12px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    background-color: #d8cb7e;
+    border: 1px solid #8b8250;
+}
+
+.shareLink {
+    font-size: 14px;
+    overflow-wrap: break-word;
+}
+
+.shareDialogFooter {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+@media only screen and (min-width: 768px) {
+    .title {
+        margin-top: 32px;
+        font-size: 1.8rem;
+        margin-bottom: 16px;
+    }
+
+    .entryToolbar {
+        display: flex;
+        gap: 16px;
+    }
+}

@@ -1,0 +1,17 @@
+.alert {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    display: flex;
+    gap: 16px;
+    background-color: #cfbf67;
+}
+
+.alertText {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.4rem;
+    font-weight: 400;
+}

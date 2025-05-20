@@ -1,0 +1,46 @@
+.primaryButton {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: #E8D674;
+    background-color: #1E0B00;  
+    padding-left: 18px;
+    padding-right: 16px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 14px;
+    height: 42px;
+}
+
+.primaryButton:hover {
+    color: #E8D674;
+    opacity: 0.85;
+}
+
+.primaryButton:disabled {
+    opacity: 0.5;
+    cursor: auto;
+}
+
+.secondaryButton {
+    font-size: 14px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    height: 42px;
+    font-weight: 400;
+}
+
+.secondaryButton:hover {
+    text-decoration: underline;
+}
+
+@media only screen and (min-width: 768px) {
+    .primaryButton, .secondaryButton {
+        font-size: 15px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+}

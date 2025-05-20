@@ -1,0 +1,87 @@
+.homepage {
+    display: flex;
+    flex-direction: column;
+    height: 100svh;
+    margin-top: 0;
+    margin-bottom: 0;
+    justify-content: center;
+}
+
+.title {
+    margin-top: 0;
+    font-size: 24px;
+}
+
+.content {
+    margin-bottom: 80px;
+}
+
+.links {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 24px;
+}
+
+.primaryLink, .secondaryLink {
+    font-size: 14px;
+}
+
+.primaryLink {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 10px;
+    background-color: #1E0B00;
+    border: 1px solid #1E0B00;
+    color: #E8D674;
+    text-decoration: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.primaryLink:hover {
+    color: #E8D674;
+}
+
+.primaryLink:hover, .secondaryLink:hover {
+    opacity: 0.85;
+}
+
+.secondaryLink {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 10px;
+    background-color: #cfbf67;
+    border: 1px solid #8b8250;
+    color: #1E0B00;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.footer {
+    position: fixed;
+    bottom: 24px
+}
+
+@media only screen and (min-width: 768px) {
+    .links {
+        flex-direction: row-reverse;
+    }
+
+    .primaryLink, .secondaryLink {
+        font-size: 15px;
+        flex: 1
+    }
+}

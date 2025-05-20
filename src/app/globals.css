@@ -1,5 +1,80 @@
 body {
-  background-color: #0a0a0a;
-  color: #fafafa;
+  margin: 0;
+  background-color: #E8D674;
+  color: #1E0B00;
   font-family: 'Geist Mono', Courier, monospace;
+}
+
+p {
+  color: #1E0B00;
+  line-height: 1.75rem;
+  font-size: 15px;
+}
+
+a {
+  color: #635b34;
+}
+
+a:hover {
+  color: #1E0B00;
+}
+
+main {
+  margin-top: 36px;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+button {
+  font-family: inherit;
+  background: none;
+  border: none;
+  font-size: 15px;
+  padding: 0;
+  line-height: 1rem;
+  color: #1E0B00;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+input, textarea {
+  font-family: inherit;
+  background-color: #d8cb7e;
+  color: #1E0B00;
+  border: 1px solid #8b8250;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-radius: 10px;
+  font-size: 16px;
+  line-height: 1.4rem;
+}
+
+textarea {
+  resize: none;
+  min-height: 67px;
+}
+
+input:focus-within, textarea:focus-within {
+  outline: none;
+  border-color: #444;
+}
+
+@media only screen and (min-width: 768px) {
+  main {
+    margin-top: 100px;
+  }
+
+  p {
+      font-size: 16px;
+  }
 }

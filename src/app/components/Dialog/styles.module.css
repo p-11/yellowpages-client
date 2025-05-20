@@ -1,0 +1,45 @@
+.dialog {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: rgb(238 225 154 / 68%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialogContent {
+    margin-left: 24px;
+    margin-right: 24px;
+    width: calc(100% - 24px);
+    max-width: 420px;
+    background-color: #e8d674;
+    border: 1px solid #8b8250;
+    padding: 24px;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.dialogContent.large {
+    max-width: 760px;
+}
+
+.dialogTitle {
+    margin-top: 0px;
+    margin-bottom: 12px;
+    font-weight: 400;
+}
+
+.dialogDescription {
+    margin-top: 12px;
+    margin-bottom: 24px;
+    line-height: 1.5rem;
+}
+
+.dialogFooter {
+    margin-top: 32px;
+    display: flex;
+    justify-content: flex-end;
+}
