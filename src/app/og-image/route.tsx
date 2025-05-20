@@ -5,6 +5,9 @@ export async function GET(request: Request) {
 
   const btc = decodeURIComponent(searchParams.get('btc') ?? '');
   const mldsa44 = decodeURIComponent(searchParams.get('mldsa44') ?? '');
+  const slhdsaSha2S128 = decodeURIComponent(
+    searchParams.get('slhdsaSha2S128') ?? ''
+  );
 
   return new ImageResponse(
     (
@@ -13,10 +16,10 @@ export async function GET(request: Request) {
           backgroundColor: '#E8D674',
           display: 'flex',
           justifyContent: 'center',
-          gap: 68,
+          gap: 36,
           flexDirection: 'column',
-          paddingLeft: 60,
-          paddingRight: 60,
+          paddingLeft: 52,
+          paddingRight: 52,
           height: '100%',
           width: '100%',
           color: '#1E0B00'
@@ -137,9 +140,53 @@ export async function GET(request: Request) {
                 </span>
               </div>
             </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: '20px'
+              }}
+            >
+              <span
+                style={{
+                  fontWeight: 600,
+                  fontSize: 24
+                }}
+              >
+                Post-Quantum SLH-DSA-SHA2-128-s address
+              </span>
+              <div
+                style={{
+                  height: '1px',
+                  marginTop: 4,
+                  flex: 1,
+                  borderTop: '1px dashed #111'
+                }}
+              />
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '4px',
+                paddingBottom: '8px',
+                paddingTop: '8px',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                marginTop: '8px',
+                marginLeft: '16px'
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ wordBreak: 'break-all', fontSize: 24 }}>
+                  {slhdsaSha2S128}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <span style={{ fontSize: 24 }}>
             I found myself in the post-quantum world. Get protected and join the
             yellowpages.
