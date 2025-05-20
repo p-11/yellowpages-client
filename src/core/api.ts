@@ -73,7 +73,7 @@ const domains = {
     ? 'https://verification-api.yellowpages.xyz'
     : 'https://verification-api.yellowpages-development.xyz',
   proofService: IS_PROD
-    ? 'wss://not.implemented.com'
+    ? 'wss://yellowpages-proof-service.app-d1312b66384d.enclave.evervault.com'
     : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
 };
 
