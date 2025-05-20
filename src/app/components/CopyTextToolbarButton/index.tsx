@@ -3,7 +3,8 @@ import {
   useRef,
   useState,
   forwardRef,
-  useImperativeHandle
+  useImperativeHandle,
+  useEffect
 } from 'react';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
 import { CheckIcon } from '@/app/icons/CheckIcon';
@@ -43,6 +44,15 @@ export const CopyTextToolbarButton = forwardRef(function CopyTextToolbarButton(
   useImperativeHandle(ref, () => ({
     showSuccessIndicator
   }));
+
+  useEffect(() => {
+    return function cleanup() {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <ToolbarButton onClick={clickHandler}>
