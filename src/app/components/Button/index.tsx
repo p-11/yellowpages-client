@@ -7,16 +7,16 @@ export function Button(
     variant: 'primary' | 'secondary';
   }
 ) {
+  const { children, variant, ...buttonAttributes } = props;
+
   return (
     <button
-      {...props}
+      {...buttonAttributes}
       className={
-        props.variant === 'primary'
-          ? styles.primaryButton
-          : styles.secondaryButton
+        variant === 'primary' ? styles.primaryButton : styles.secondaryButton
       }
     >
-      {props.children}
+      {children}
     </button>
   );
 }
