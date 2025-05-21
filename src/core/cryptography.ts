@@ -551,6 +551,7 @@ const generateSignedMessages = (
  * @param mnemonic24 24-word BIP-39 phrase
  */
 const generateAddresses = (mnemonic24: Mnemonic24) => {
+  // Key pair generation
   const mldsa44KeyPair = generateKeypair(
     mnemonic24,
     PQ_SIGNATURE_ALGORITHM.ML_DSA_44
@@ -559,6 +560,10 @@ const generateAddresses = (mnemonic24: Mnemonic24) => {
     mnemonic24,
     PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
   );
+
+  // Best effort to zero out private keys
+  mldsa44KeyPair.privateKey.fill(0);
+  slhdsaSha2S128KeyPair.privateKey.fill(0);
 
   return {
     mldsa44Address: mldsa44KeyPair.address,
