@@ -472,8 +472,11 @@ const generateMessage = ({
   mldsa44Address: string;
   slhdsaSha2S128Address: string;
 }) => {
-  const message =
-    `I want to permanently link my Bitcoin address ${bitcoinAddress} with my post-quantum addresses: ML-DSA-44 – ${mldsa44Address}, SLH-DSA-SHA2-128 – ${slhdsaSha2S128Address}` as Message;
+  const message = ('yellowpages.xyz\n\n' +
+    'I want to permanently link my Bitcoin address with the following post-quantum addresses:\n\n' +
+    `Bitcoin address: ${bitcoinAddress}\n` +
+    `ML-DSA-44 address: ${mldsa44Address}\n` +
+    `SLH-DSA-SHA2-128s address: ${slhdsaSha2S128Address}`) as Message;
   return {
     message: message,
     messageBytes: new TextEncoder().encode(message)
