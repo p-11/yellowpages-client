@@ -95,6 +95,9 @@ test('successful registration and search result', async ({ page }) => {
     .fill(btcWallet.address);
   await page.getByRole('button', { name: 'Confirm' }).click();
 
+  await expect(
+    page.getByText('I want to permanently link my Bitcoin address')
+  ).toBeVisible();
   const signingMessage =
     (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
     ''; // find nearest text above the 'Copy' button
