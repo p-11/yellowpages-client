@@ -21,6 +21,7 @@ import {
   Version,
   PubKeyType
 } from '@project-eleven/pq-address';
+import { base64 } from '@scure/base';
 
 // Get Environment
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
@@ -480,6 +481,92 @@ const generateMessage = ({
 };
 
 /**
+ * Sign a UTF-8 string with every supported PQ_SIGNATURE_ALGORITHM,
+ * returning an object keyed by algorithm name.
+ *
+ * @param mnemonic24 24-word BIP-39 phrase
+ * @param message the UTF-8 string to sign
+ * @returns Record where each key is the enum name (e.g. "ML_DSA_44")
+ * @throws if any step fails for any algorithm
+ */
+const generateSignedMessages = (
+  mnemonic24: Mnemonic24,
+  bitcoinAddress: string
+): SignedMessages => {
+  try {
+    // Key pair generation
+    const mldsa44KeyPair = generateKeypair(
+      mnemonic24,
+      PQ_SIGNATURE_ALGORITHM.ML_DSA_44
+    );
+    const slhdsaSha2S128KeyPair = generateKeypair(
+      mnemonic24,
+      PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
+    );
+
+    // Create message
+    const { messageBytes } = generateMessage({
+      bitcoinAddress,
+      mldsa44Address: mldsa44KeyPair.address,
+      slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
+    });
+
+    // Signing
+    const mldsa44SignedMessage = ml_dsa44.sign(
+      mldsa44KeyPair.privateKey,
+      messageBytes
+    );
+    const slhdsaSha2S128SignedMessage = slh_dsa_sha2_128s.sign(
+      slhdsaSha2S128KeyPair.privateKey,
+      messageBytes
+    );
+    // Best effort to zero out private keys
+    mldsa44KeyPair.privateKey.fill(0);
+    slhdsaSha2S128KeyPair.privateKey.fill(0);
+
+    // Response
+    return {
+      ML_DSA_44: {
+        publicKey: base64.encode(mldsa44KeyPair.publicKey) as PQPublicKeyString,
+        signedMessage: base64.encode(mldsa44SignedMessage) as SignedMessage,
+        address: mldsa44KeyPair.address
+      },
+      SLH_DSA_SHA2_S_128: {
+        publicKey: base64.encode(
+          slhdsaSha2S128KeyPair.publicKey
+        ) as PQPublicKeyString,
+        signedMessage: base64.encode(
+          slhdsaSha2S128SignedMessage
+        ) as SignedMessage,
+        address: slhdsaSha2S128KeyPair.address
+      }
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    throw new Error(`Error signing: ${err.message || err}`);
+  }
+};
+
+/**
+ * @param mnemonic24 24-word BIP-39 phrase
+ */
+const generateAddresses = (mnemonic24: Mnemonic24) => {
+  const mldsa44KeyPair = generateKeypair(
+    mnemonic24,
+    PQ_SIGNATURE_ALGORITHM.ML_DSA_44
+  );
+  const slhdsaSha2S128KeyPair = generateKeypair(
+    mnemonic24,
+    PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
+  );
+
+  return {
+    mldsa44Address: mldsa44KeyPair.address,
+    slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
+  };
+};
+
+/**
  * Encrypts proof request data using ML-KEM-768 derived shared secret and AES-256-GCM
  * @param requestBytes The proof request data to encrypt
  * @param mlKem768Keypair The ML-KEM-768 keypair for deriving the shared secret
@@ -546,17 +633,18 @@ export {
   encryptProofRequestData,
   generatePQAddress,
   generateSeedPhrase,
+  generateSignedMessages,
   generateMessage,
   generateKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature,
+  generateAddresses,
   ML_KEM_768_CIPHERTEXT_SIZE,
   ML_KEM_768_DECAPSULATION_KEY_SIZE,
   ML_KEM_768_SHARED_SECRET_SIZE,
   AES_256_GCM_KEY_SIZE,
   AES_256_GCM_NONCE_SIZE,
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
-  PQ_SIGNATURE_ALGORITHM,
   type SignedMessages
 };

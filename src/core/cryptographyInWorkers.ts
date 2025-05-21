@@ -1,6 +1,6 @@
 import type { Mnemonic24, PQAddress, SignedMessages } from './cryptography';
 
-export const generateSignedMessagesInWorkers = async (
+export const generateSignedMessagesInWorker = async (
   mnemonic24: Mnemonic24,
   bitcoinAddress: string
 ) => {
@@ -29,7 +29,7 @@ export const generateSignedMessagesInWorkers = async (
   });
 };
 
-export const generateAddressesInWorkers = async (mnemonic24: Mnemonic24) => {
+export const generateAddressesInWorker = async (mnemonic24: Mnemonic24) => {
   return new Promise<{
     mldsa44Address: PQAddress;
     slhdsaSha2S128Address: PQAddress;

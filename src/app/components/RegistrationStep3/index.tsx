@@ -34,8 +34,8 @@ import {
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
 import {
-  generateAddressesInWorkers,
-  generateSignedMessagesInWorkers
+  generateAddressesInWorker,
+  generateSignedMessagesInWorker
 } from '@/core/cryptographyInWorkers';
 import styles from './styles.module.css';
 
@@ -105,7 +105,7 @@ export function RegistrationStep3() {
       setIsGeneratingSigningMessage(true);
 
       const { mldsa44Address, slhdsaSha2S128Address } =
-        await generateAddressesInWorkers(seedPhrase);
+        await generateAddressesInWorker(seedPhrase);
 
       const { message } = generateMessage({
         bitcoinAddress,
@@ -141,7 +141,7 @@ export function RegistrationStep3() {
       try {
         setIsSubmitting(true);
 
-        const signedMessages = await generateSignedMessagesInWorkers(
+        const signedMessages = await generateSignedMessagesInWorker(
           seedPhrase,
           bitcoinAddress
         );
