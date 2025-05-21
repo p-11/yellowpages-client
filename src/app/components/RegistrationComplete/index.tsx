@@ -47,9 +47,21 @@ export function RegistrationComplete() {
     [signedMessages]
   );
 
+  const encodedSlhdsaSha2S128Address = useMemo(
+    () =>
+      signedMessages
+        ? encodeURIComponent(signedMessages.SLH_DSA_SHA2_S_128.address)
+        : '',
+    [signedMessages]
+  );
+
   const shareLink = useMemo(() => {
-    return `https://yellowpages.xyz/share/?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}`;
-  }, [encodedBitcoinAddress, encodedMldsa44Address]);
+    return `https://yellowpages.xyz/share/?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}&slhdsaSha2S128=${encodedSlhdsaSha2S128Address}`;
+  }, [
+    encodedBitcoinAddress,
+    encodedMldsa44Address,
+    encodedSlhdsaSha2S128Address
+  ]);
 
   const copyShareLink = useCallback(() => {
     navigator.clipboard.writeText(shareLink);
@@ -116,7 +128,7 @@ export function RegistrationComplete() {
               width={702}
               height={368}
               alt='yellowpages entry'
-              src={`/og-image?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}`}
+              src={`/og-image?btc=${encodedBitcoinAddress}&mldsa44=${encodedMldsa44Address}&slhdsaSha2S128=${encodedSlhdsaSha2S128Address}`}
             />
           </div>
           <div className={styles.shareLinkBox}>
