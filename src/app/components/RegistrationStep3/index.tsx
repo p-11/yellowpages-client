@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
 import { RegistrationHeader } from '@/app/components/RegistrationHeader';
@@ -71,6 +72,7 @@ export function RegistrationStep3() {
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
   const isSignaturePopulated = signature && signature.length > 0;
@@ -290,6 +292,16 @@ export function RegistrationStep3() {
             <Alert>Verification failed. Please try again.</Alert>
           </div>
         </div>
+        <div
+          className={`${styles.captchaContainer} ${isSignaturePopulated ? styles.showCaptcha : ''}`}
+        >
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY!}
+            onSuccess={setCaptchaToken}
+            onExpire={() => setCaptchaToken(null)}
+            options={{ theme: 'dark' }}
+          />
+        </div>
         <RegistrationFooterActions>
           <Button variant='secondary' onClick={goBack}>
             <ArrowLeftIcon />
@@ -303,7 +315,7 @@ export function RegistrationStep3() {
             <Button
               variant='primary'
               onClick={completeRegistration}
-              disabled={!isSignaturePopulated || isSubmitting}
+              disabled={!isSignaturePopulated || !captchaToken || isSubmitting}
             >
               Complete{' '}
               {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}

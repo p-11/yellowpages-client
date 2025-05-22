@@ -145,3 +145,14 @@
     opacity: 1;
     pointer-events: auto;
 }
+
+.captchaContainer {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+    opacity: 0;
+}
+
+.captchaContainer.showCaptcha {
+    opacity: 1;
+}
