@@ -1,4 +1,4 @@
-name: CI
+name: CI Dev
 
 on:
   pull_request:
@@ -9,6 +9,7 @@ jobs:
   code_checks:
     name: Code Checks
     runs-on: ubuntu-latest
+    environment: development
 
     steps:
       - name: Checkout Repo
@@ -28,7 +29,7 @@ jobs:
       - name: Check formatting (Prettier)
         run: npm run p:c
 
-      - name: Run Tests
+      - name: Run Unit Tests
         run: npm run test
 
       - name: Create build for Playwright tests and typechecking

@@ -1,0 +1,54 @@
+name: E2E Tests
+
+on:
+  schedule:
+    # runs every 6 hours
+    - cron: '0 */6 * * *'
+
+jobs:
+  code_checks:
+    name: Code Checks
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout Repo (development)
+        uses: actions/checkout@v4
+        with:
+          ref: development
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint)
+        run: npm run l:c
+
+      - name: Check formatting (Prettier)
+        run: npm run p:c
+
+      - name: Run Unit Tests
+        run: npm run test
+
+      - name: Create build for Playwright tests and typechecking
+        run: npm run build:test
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        env:
+          BASE_URL: https://yellowpages-development.xyz
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 1
