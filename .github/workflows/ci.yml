@@ -1,8 +1,9 @@
-name: CI Dev
+name: CI
 
 on:
   pull_request:
     branches:
+      - main
       - development
 
 jobs:
