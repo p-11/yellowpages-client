@@ -56,10 +56,16 @@ describe('crypto module', () => {
         mldsa44Address: mldsa44Address,
         slhdsaSha2S128Address: slhdsaSha2S128Address
       });
-      expect(message).toEqual(
-        'I want to permanently link my Bitcoin address btc with my post-quantum addresses: ML-DSA-44 – mldsa44, SLH-DSA-SHA2-128 – slhdsaSha2S128'
-      );
-      expect(messageBytes.length).toEqual(140);
+      const expectedMessage = `yellowpages.xyz
+
+I want to permanently link my Bitcoin address with the following post-quantum addresses:
+
+Bitcoin address: btc
+ML-DSA-44 address: mldsa44
+SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
+
+      expect(message).toEqual(expectedMessage);
+      expect(messageBytes.length).toEqual(196);
     });
   });
 
