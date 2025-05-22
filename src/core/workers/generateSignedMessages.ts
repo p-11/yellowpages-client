@@ -8,6 +8,7 @@ addEventListener(
       input.mnemonic24,
       input.bitcoinAddress
     );
+    input.mnemonic24 = '' as Mnemonic24;
     postMessage(result);
   }
 );
