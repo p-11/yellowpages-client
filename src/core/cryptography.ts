@@ -553,6 +553,30 @@ const generateSignedMessages = (
 };
 
 /**
+ * @param mnemonic24 24-word BIP-39 phrase
+ */
+const generateAddresses = (mnemonic24: Mnemonic24) => {
+  // Key pair generation
+  const mldsa44KeyPair = generateKeypair(
+    mnemonic24,
+    PQ_SIGNATURE_ALGORITHM.ML_DSA_44
+  );
+  const slhdsaSha2S128KeyPair = generateKeypair(
+    mnemonic24,
+    PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
+  );
+
+  // Best effort to zero out private keys
+  mldsa44KeyPair.privateKey.fill(0);
+  slhdsaSha2S128KeyPair.privateKey.fill(0);
+
+  return {
+    mldsa44Address: mldsa44KeyPair.address,
+    slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
+  };
+};
+
+/**
  * Encrypts proof request data using ML-KEM-768 derived shared secret and AES-256-GCM
  * @param requestBytes The proof request data to encrypt
  * @param mlKem768Keypair The ML-KEM-768 keypair for deriving the shared secret
@@ -625,10 +649,12 @@ export {
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature,
+  generateAddresses,
   ML_KEM_768_CIPHERTEXT_SIZE,
   ML_KEM_768_DECAPSULATION_KEY_SIZE,
   ML_KEM_768_SHARED_SECRET_SIZE,
   AES_256_GCM_KEY_SIZE,
   AES_256_GCM_NONCE_SIZE,
-  MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
+  MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
+  type SignedMessages
 };
