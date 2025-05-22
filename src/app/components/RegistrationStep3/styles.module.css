@@ -150,9 +150,11 @@
     display: flex;
     justify-content: flex-end;
     opacity: 0;
+    height: 0;
 }
 
 .captchaContainer.showCaptcha {
     opacity: 1;
     margin-bottom: 20px;
+    height: auto;
 }
