@@ -15,6 +15,7 @@ jobs:
       - name: Checkout Repo (development)
         uses: actions/checkout@v4
         with:
+          # use development branch for testing
           ref: development
 
       - name: Setup node
@@ -41,8 +42,6 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        env:
-          BASE_URL: https://yellowpages-development.xyz
         run: npx playwright test
 
       - name: Upload Playwright report
