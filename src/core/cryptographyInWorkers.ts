@@ -17,20 +17,25 @@ export const generateSignedMessagesInWorker = async (
       }
     );
 
-    worker.addEventListener(
-      'message',
-      (event: MessageEvent<SignedMessages>) => {
-        resolve(event.data);
-        worker.terminate();
-      }
-    );
+    try {
+      worker.addEventListener(
+        'message',
+        (event: MessageEvent<SignedMessages>) => {
+          resolve(event.data);
+          worker.terminate();
+        }
+      );
 
-    worker.addEventListener('error', err => {
+      worker.addEventListener('error', err => {
+        reject(err);
+        worker.terminate();
+      });
+
+      worker.postMessage({ mnemonic24, bitcoinAddress });
+    } catch (err) {
       reject(err);
       worker.terminate();
-    });
-
-    worker.postMessage({ mnemonic24, bitcoinAddress });
+    }
   });
 };
 
@@ -46,24 +51,29 @@ export const generateAddressesInWorker = async (mnemonic24: Mnemonic24) => {
       }
     );
 
-    worker.addEventListener(
-      'message',
-      (
-        event: MessageEvent<{
-          mldsa44Address: PQAddress;
-          slhdsaSha2S128Address: PQAddress;
-        }>
-      ) => {
-        resolve(event.data);
-        worker.terminate();
-      }
-    );
+    try {
+      worker.addEventListener(
+        'message',
+        (
+          event: MessageEvent<{
+            mldsa44Address: PQAddress;
+            slhdsaSha2S128Address: PQAddress;
+          }>
+        ) => {
+          resolve(event.data);
+          worker.terminate();
+        }
+      );
 
-    worker.addEventListener('error', err => {
+      worker.addEventListener('error', err => {
+        reject(err);
+        worker.terminate();
+      });
+
+      worker.postMessage({ mnemonic24 });
+    } catch (err) {
       reject(err);
       worker.terminate();
-    });
-
-    worker.postMessage({ mnemonic24 });
+    }
   });
 };
