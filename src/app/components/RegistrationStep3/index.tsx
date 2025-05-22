@@ -72,7 +72,7 @@ export function RegistrationStep3() {
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [cfTurnstileToken, setCfTurnstileToken] = useState<string | null>(null);
 
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
   const isSignaturePopulated = signature && signature.length > 0;
@@ -138,6 +138,7 @@ export function RegistrationStep3() {
       signingMessage &&
       signature &&
       bitcoinAddress &&
+      cfTurnstileToken &&
       isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
     ) {
       try {
@@ -149,17 +150,21 @@ export function RegistrationStep3() {
         );
         setSignedMessages(signedMessages);
 
-        await createProof({
-          btcAddress: bitcoinAddress,
-          btcSignedMessage: signature,
-          mldsa44Address: signedMessages.ML_DSA_44.address,
-          mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
-          mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
-          slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
-          slhdsaSha2S128PublicKey: signedMessages.SLH_DSA_SHA2_S_128.publicKey,
-          slhdsaSha2S128SignedMessage:
-            signedMessages.SLH_DSA_SHA2_S_128.signedMessage
-        });
+        await createProof(
+          {
+            btcAddress: bitcoinAddress,
+            btcSignedMessage: signature,
+            mldsa44Address: signedMessages.ML_DSA_44.address,
+            mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
+            mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
+            slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
+            slhdsaSha2S128PublicKey:
+              signedMessages.SLH_DSA_SHA2_S_128.publicKey,
+            slhdsaSha2S128SignedMessage:
+              signedMessages.SLH_DSA_SHA2_S_128.signedMessage
+          },
+          cfTurnstileToken
+        );
 
         const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
 
@@ -179,6 +184,7 @@ export function RegistrationStep3() {
     bitcoinAddress,
     signingMessage,
     seedPhrase,
+    cfTurnstileToken,
     setProofData,
     setSignedMessages
   ]);
@@ -297,8 +303,8 @@ export function RegistrationStep3() {
         >
           <Turnstile
             siteKey={process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY!}
-            onSuccess={setCaptchaToken}
-            onExpire={() => setCaptchaToken(null)}
+            onSuccess={setCfTurnstileToken}
+            onExpire={() => setCfTurnstileToken(null)}
             options={{ theme: 'dark' }}
           />
         </div>
@@ -315,7 +321,9 @@ export function RegistrationStep3() {
             <Button
               variant='primary'
               onClick={completeRegistration}
-              disabled={!isSignaturePopulated || !captchaToken || isSubmitting}
+              disabled={
+                !isSignaturePopulated || !cfTurnstileToken || isSubmitting
+              }
             >
               Complete{' '}
               {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}

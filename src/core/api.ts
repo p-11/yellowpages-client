@@ -46,6 +46,7 @@ interface HandshakeResponse {
  */
 interface HandshakeMessage {
   ml_kem_768_encapsulation_key: string; // Base64-encoded ML-KEM encapsulation key
+  cf_turnstile_token: string; // Cloudflare Turnstile token
 }
 
 /**
@@ -144,16 +145,19 @@ export async function searchYellowpagesByBtcAddress(
 /**
  * Create proof
  */
-export async function createProof(body: {
-  btcAddress: string;
-  btcSignedMessage: string;
-  mldsa44Address: string;
-  mldsa44SignedMessage: string;
-  mldsa44PublicKey: string;
-  slhdsaSha2S128Address: string;
-  slhdsaSha2S128PublicKey: string;
-  slhdsaSha2S128SignedMessage: string;
-}): Promise<void> {
+export async function createProof(
+  body: {
+    btcAddress: string;
+    btcSignedMessage: string;
+    mldsa44Address: string;
+    mldsa44SignedMessage: string;
+    mldsa44PublicKey: string;
+    slhdsaSha2S128Address: string;
+    slhdsaSha2S128PublicKey: string;
+    slhdsaSha2S128SignedMessage: string;
+  },
+  cfTurnstileToken: string
+): Promise<void> {
   // Create WebSocket connection
   const ws = new WebSocket(`${domains.proofService}/prove`);
 
@@ -176,7 +180,8 @@ export async function createProof(body: {
 
     // Step 3: Send handshake with ML-KEM-768 public key
     const handshakeMessage: HandshakeMessage = {
-      ml_kem_768_encapsulation_key: mlKem768EncapsulationKeyBase64
+      ml_kem_768_encapsulation_key: mlKem768EncapsulationKeyBase64,
+      cf_turnstile_token: cfTurnstileToken
     };
     ws.send(JSON.stringify(handshakeMessage));
 
