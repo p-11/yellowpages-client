@@ -149,10 +149,10 @@
 .captchaContainer {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 20px;
     opacity: 0;
 }
 
 .captchaContainer.showCaptcha {
     opacity: 1;
+    margin-bottom: 20px;
 }
