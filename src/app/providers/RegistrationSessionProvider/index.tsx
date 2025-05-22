@@ -10,10 +10,10 @@ import React, {
   useState
 } from 'react';
 import {
-  BitcoinAddress,
+  type BitcoinAddress,
   generateSeedPhrase,
-  generateSignedMessages,
-  Mnemonic24
+  type Mnemonic24,
+  type SignedMessages
 } from '@/core/cryptography';
 
 type RegistrationSessionContextType = {
@@ -21,13 +21,11 @@ type RegistrationSessionContextType = {
   hasConfirmedSeedPhrase: boolean;
   seedPhrase?: Mnemonic24;
   bitcoinAddress?: BitcoinAddress;
-  signedMessages?: ReturnType<typeof generateSignedMessages>;
+  signedMessages?: SignedMessages;
   proofData?: string;
   setShowNewSessionAlert: (_value: boolean) => void;
   setBitcoinAddress: (_value: BitcoinAddress) => void;
-  setSignedMessages: (
-    _value: ReturnType<typeof generateSignedMessages>
-  ) => void;
+  setSignedMessages: (_value: SignedMessages) => void;
   setProofData: (_value: string) => void;
 };
 

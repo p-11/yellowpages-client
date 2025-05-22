@@ -26,7 +26,6 @@ import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessi
 import {
   BitcoinAddress,
   generateMessage,
-  generateSignedMessages,
   isValidBitcoinAddress,
   isValidBitcoinSignature,
   Message,
@@ -34,6 +33,10 @@ import {
 } from '@/core/cryptography';
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
+import {
+  generateAddressesInWorker,
+  generateSignedMessagesInWorker
+} from '@/core/cryptographyInWorkers';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -58,12 +61,13 @@ export function RegistrationStep3() {
   const {
     bitcoinAddress,
     seedPhrase,
-    signedMessages,
     setBitcoinAddress,
-    setSignedMessages,
-    setProofData
+    setProofData,
+    setSignedMessages
   } = useRegistrationSessionContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingSigningMessage, setIsGeneratingSigningMessage] =
+    useState(false);
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
@@ -94,23 +98,27 @@ export function RegistrationStep3() {
     setShowFailedRequestAlert(false);
   }, []);
 
-  const confirmBitcoinAddress = useCallback(() => {
-    if (bitcoinAddress && seedPhrase && isValidBitcoinAddress(bitcoinAddress)) {
-      const signedMessages = generateSignedMessages(seedPhrase, bitcoinAddress);
-      setSignedMessages(signedMessages);
+  const confirmBitcoinAddress = useCallback(async () => {
+    if (seedPhrase && bitcoinAddress && isValidBitcoinAddress(bitcoinAddress)) {
+      setIsBitcoinAddressConfirmed(true);
+
+      setIsGeneratingSigningMessage(true);
+
+      const { mldsa44Address, slhdsaSha2S128Address } =
+        await generateAddressesInWorker(seedPhrase);
 
       const { message } = generateMessage({
         bitcoinAddress,
-        mldsa44Address: signedMessages.ML_DSA_44.address,
-        slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address
+        mldsa44Address,
+        slhdsaSha2S128Address
       });
       setSigningMessage(message);
 
-      setIsBitcoinAddressConfirmed(true);
+      setIsGeneratingSigningMessage(false);
     } else {
       setShowInvalidBitcoinAddressAlert(true);
     }
-  }, [bitcoinAddress, seedPhrase, setSigningMessage, setSignedMessages]);
+  }, [bitcoinAddress, seedPhrase, setSigningMessage]);
 
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
@@ -124,7 +132,7 @@ export function RegistrationStep3() {
 
   const completeRegistration = useCallback(async () => {
     if (
-      signedMessages &&
+      seedPhrase &&
       signingMessage &&
       signature &&
       bitcoinAddress &&
@@ -132,6 +140,12 @@ export function RegistrationStep3() {
     ) {
       try {
         setIsSubmitting(true);
+
+        const signedMessages = await generateSignedMessagesInWorker(
+          seedPhrase,
+          bitcoinAddress
+        );
+        setSignedMessages(signedMessages);
 
         await createProof({
           btcAddress: bitcoinAddress,
@@ -162,8 +176,9 @@ export function RegistrationStep3() {
     signature,
     bitcoinAddress,
     signingMessage,
-    signedMessages,
-    setProofData
+    seedPhrase,
+    setProofData,
+    setSignedMessages
   ]);
 
   const tryAgain = useCallback(() => {
@@ -237,9 +252,13 @@ export function RegistrationStep3() {
             onClick={signingMessageClickHandler}
           >
             <HighlightedBox>
-              <span className={styles.signingMessage}>
-                {signingMessage ?? ''}
-              </span>
+              {isGeneratingSigningMessage ? (
+                <LoaderCircleIcon />
+              ) : (
+                <span className={styles.signingMessage}>
+                  {signingMessage ?? ''}
+                </span>
+              )}
             </HighlightedBox>
           </button>
           <Toolbar>

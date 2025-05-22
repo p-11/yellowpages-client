@@ -472,8 +472,13 @@ const generateMessage = ({
   mldsa44Address: string;
   slhdsaSha2S128Address: string;
 }) => {
-  const message =
-    `I want to permanently link my Bitcoin address ${bitcoinAddress} with my post-quantum addresses: ML-DSA-44 – ${mldsa44Address}, SLH-DSA-SHA2-128 – ${slhdsaSha2S128Address}` as Message;
+  const message = `yellowpages.xyz
+
+I want to permanently link my Bitcoin address with the following post-quantum addresses:
+
+Bitcoin address: ${bitcoinAddress}
+ML-DSA-44 address: ${mldsa44Address}
+SLH-DSA-SHA2-128s address: ${slhdsaSha2S128Address}` as Message;
   return {
     message: message,
     messageBytes: new TextEncoder().encode(message)
@@ -545,6 +550,30 @@ const generateSignedMessages = (
   } catch (err: any) {
     throw new Error(`Error signing: ${err.message || err}`);
   }
+};
+
+/**
+ * @param mnemonic24 24-word BIP-39 phrase
+ */
+const generateAddresses = (mnemonic24: Mnemonic24) => {
+  // Key pair generation
+  const mldsa44KeyPair = generateKeypair(
+    mnemonic24,
+    PQ_SIGNATURE_ALGORITHM.ML_DSA_44
+  );
+  const slhdsaSha2S128KeyPair = generateKeypair(
+    mnemonic24,
+    PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
+  );
+
+  // Best effort to zero out private keys
+  mldsa44KeyPair.privateKey.fill(0);
+  slhdsaSha2S128KeyPair.privateKey.fill(0);
+
+  return {
+    mldsa44Address: mldsa44KeyPair.address,
+    slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
+  };
 };
 
 /**
@@ -620,10 +649,12 @@ export {
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature,
+  generateAddresses,
   ML_KEM_768_CIPHERTEXT_SIZE,
   ML_KEM_768_DECAPSULATION_KEY_SIZE,
   ML_KEM_768_SHARED_SECRET_SIZE,
   AES_256_GCM_KEY_SIZE,
   AES_256_GCM_NONCE_SIZE,
-  MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE
+  MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
+  type SignedMessages
 };
