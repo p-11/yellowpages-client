@@ -6,10 +6,6 @@ on:
       - main
       - development
 
-  schedule:
-    # runs at 09:00 UTC every day
-    - cron: '0 9 * * *'
-
 jobs:
   code_checks:
     name: Code Checks
