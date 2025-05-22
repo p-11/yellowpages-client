@@ -1,8 +1,13 @@
-import type { Mnemonic24, PQAddress, SignedMessages } from './cryptography';
+import type {
+  BitcoinAddress,
+  Mnemonic24,
+  PQAddress,
+  SignedMessages
+} from './cryptography';
 
 export const generateSignedMessagesInWorker = async (
   mnemonic24: Mnemonic24,
-  bitcoinAddress: string
+  bitcoinAddress: BitcoinAddress
 ) => {
   return new Promise<SignedMessages>((resolve, reject) => {
     const worker = new Worker(
