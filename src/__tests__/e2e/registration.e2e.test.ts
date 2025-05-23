@@ -295,11 +295,13 @@ test('unsuccessful registration attempt when the order of the seed phrase select
 
   // ensure the seed words can be selected
   await expect(
-    page.getByRole('button', {
-      name: seedWords[0],
-      exact: true,
-      disabled: false
-    })
+    page
+      .getByRole('button', {
+        name: seedWords[0],
+        exact: true,
+        disabled: false
+      })
+      .first()
   ).toBeVisible();
 });
 
