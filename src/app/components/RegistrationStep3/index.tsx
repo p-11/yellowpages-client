@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
 import { RegistrationHeader } from '@/app/components/RegistrationHeader';
@@ -71,6 +72,7 @@ export function RegistrationStep3() {
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
+  const [cfTurnstileToken, setCfTurnstileToken] = useState<string | null>(null);
 
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
   const isSignaturePopulated = signature && signature.length > 0;
@@ -136,6 +138,7 @@ export function RegistrationStep3() {
       signingMessage &&
       signature &&
       bitcoinAddress &&
+      cfTurnstileToken &&
       isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
     ) {
       try {
@@ -147,17 +150,21 @@ export function RegistrationStep3() {
         );
         setSignedMessages(signedMessages);
 
-        await createProof({
-          btcAddress: bitcoinAddress,
-          btcSignedMessage: signature,
-          mldsa44Address: signedMessages.ML_DSA_44.address,
-          mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
-          mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
-          slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
-          slhdsaSha2S128PublicKey: signedMessages.SLH_DSA_SHA2_S_128.publicKey,
-          slhdsaSha2S128SignedMessage:
-            signedMessages.SLH_DSA_SHA2_S_128.signedMessage
-        });
+        await createProof(
+          {
+            btcAddress: bitcoinAddress,
+            btcSignedMessage: signature,
+            mldsa44Address: signedMessages.ML_DSA_44.address,
+            mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
+            mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
+            slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
+            slhdsaSha2S128PublicKey:
+              signedMessages.SLH_DSA_SHA2_S_128.publicKey,
+            slhdsaSha2S128SignedMessage:
+              signedMessages.SLH_DSA_SHA2_S_128.signedMessage
+          },
+          cfTurnstileToken
+        );
 
         const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
 
@@ -177,6 +184,7 @@ export function RegistrationStep3() {
     bitcoinAddress,
     signingMessage,
     seedPhrase,
+    cfTurnstileToken,
     setProofData,
     setSignedMessages
   ]);
@@ -290,6 +298,16 @@ export function RegistrationStep3() {
             <Alert>Verification failed. Please try again.</Alert>
           </div>
         </div>
+        <div
+          className={`${styles.captchaContainer} ${isSignaturePopulated ? styles.showCaptcha : ''}`}
+        >
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY!}
+            onSuccess={setCfTurnstileToken}
+            onExpire={() => setCfTurnstileToken(null)}
+            options={{ theme: 'dark' }}
+          />
+        </div>
         <RegistrationFooterActions>
           <Button variant='secondary' onClick={goBack}>
             <ArrowLeftIcon />
@@ -303,7 +321,9 @@ export function RegistrationStep3() {
             <Button
               variant='primary'
               onClick={completeRegistration}
-              disabled={!isSignaturePopulated || isSubmitting}
+              disabled={
+                !isSignaturePopulated || !cfTurnstileToken || isSubmitting
+              }
             >
               Complete{' '}
               {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}

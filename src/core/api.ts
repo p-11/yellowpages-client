@@ -144,29 +144,49 @@ export async function searchYellowpagesByBtcAddress(
 /**
  * Create proof
  */
-export async function createProof(body: {
-  btcAddress: string;
-  btcSignedMessage: string;
-  mldsa44Address: string;
-  mldsa44SignedMessage: string;
-  mldsa44PublicKey: string;
-  slhdsaSha2S128Address: string;
-  slhdsaSha2S128PublicKey: string;
-  slhdsaSha2S128SignedMessage: string;
-}): Promise<void> {
-  // Create WebSocket connection
-  const ws = new WebSocket(`${domains.proofService}/prove`);
-
-  // Set up event handlers
-  const { onHandshakeResponse, onSocketOpen, onSuccessClose, cleanup } =
-    setupWebSocketHandlers(ws);
-
-  // Initialize keypair outside try block so we can clean it up in finally
+export async function createProof(
+  body: {
+    btcAddress: string;
+    btcSignedMessage: string;
+    mldsa44Address: string;
+    mldsa44SignedMessage: string;
+    mldsa44PublicKey: string;
+    slhdsaSha2S128Address: string;
+    slhdsaSha2S128PublicKey: string;
+    slhdsaSha2S128SignedMessage: string;
+  },
+  cfTurnstileToken: string
+): Promise<void> {
+  // Initialize variables outside try block so we can clean them up in finally
   let mlKem768Keypair: MlKem768Keypair | undefined;
+  let cleanup: (() => void) | undefined;
+  let cleanupSocketOpen: (() => void) | undefined;
+  let cleanupHandshake: (() => void) | undefined;
+  let cleanupSuccessClose: (() => void) | undefined;
 
   try {
+    // Create WebSocket connection
+    const ws = new WebSocket(
+      `${domains.proofService}/prove?cf_turnstile_token=${cfTurnstileToken}`
+    );
+
+    // Set up event handlers
+    const handlers = setupWebSocketHandlers(ws);
+    cleanup = handlers.cleanup;
+    const {
+      onHandshakeResponse,
+      onSocketOpen,
+      onSuccessClose,
+      withAbortHandling
+    } = handlers;
+
     // Step 1: Wait for WebSocket to connect
-    await raceWithTimeout('Connection', onSocketOpen);
+    const {
+      wrappedPromise: onSocketOpenWithAbortHandling,
+      cleanup: cleanupSocketOpenFn
+    } = withAbortHandling(onSocketOpen, 'Connection aborted');
+    cleanupSocketOpen = cleanupSocketOpenFn;
+    await raceWithTimeout('Connection', onSocketOpenWithAbortHandling);
 
     // Step 2: Generate ML-KEM-768 key pair
     mlKem768Keypair = generateMlKem768Keypair();
@@ -181,9 +201,14 @@ export async function createProof(body: {
     ws.send(JSON.stringify(handshakeMessage));
 
     // Step 4: Wait for handshake acknowledgment
+    const {
+      wrappedPromise: onHandshakeResponseWithAbortHandling,
+      cleanup: cleanupHandshakeFn
+    } = withAbortHandling(onHandshakeResponse, 'Handshake aborted');
+    cleanupHandshake = cleanupHandshakeFn;
     const handshakeResponse = await raceWithTimeout<HandshakeResponse>(
       'Handshake',
-      onHandshakeResponse
+      onHandshakeResponseWithAbortHandling
     );
 
     // Step 5: Validate and decode the ciphertext
@@ -238,10 +263,25 @@ export async function createProof(body: {
     ws.send(aes256GcmEncryptedMessage);
 
     // Step 7: Wait for successful completion (normal close)
-    await raceWithTimeout('Proof verification', onSuccessClose);
+    const {
+      wrappedPromise: onSuccessCloseWithAbortHandling,
+      cleanup: cleanupSuccessCloseFn
+    } = withAbortHandling(onSuccessClose, 'Connection aborted');
+    cleanupSuccessClose = cleanupSuccessCloseFn;
+    await raceWithTimeout(
+      'Proof verification',
+      onSuccessCloseWithAbortHandling
+    );
   } finally {
+    // Clean up abort handlers
+    if (cleanupSocketOpen) cleanupSocketOpen();
+    if (cleanupHandshake) cleanupHandshake();
+    if (cleanupSuccessClose) cleanupSuccessClose();
+
     // Clean up WebSocket event listeners
-    cleanup();
+    if (cleanup) {
+      cleanup();
+    }
 
     // Clean up cryptographic material
     if (mlKem768Keypair) {
@@ -291,10 +331,7 @@ function setupWebSocketHandlers(ws: WebSocket) {
   const errorHandlers = setupWebSocketErrorHandlers(ws);
 
   // Then set up success handlers
-  const successHandlers = setupWebSocketSuccessHandlers(
-    ws,
-    errorHandlers.registerAbortHandler
-  );
+  const successHandlers = setupWebSocketSuccessHandlers(ws);
 
   // Function to clean up all listeners
   const cleanup = () => {
@@ -306,6 +343,7 @@ function setupWebSocketHandlers(ws: WebSocket) {
     onHandshakeResponse: successHandlers.onHandshakeResponse,
     onSocketOpen: successHandlers.onSocketOpen,
     onSuccessClose: successHandlers.onSuccessClose,
+    withAbortHandling: errorHandlers.withAbortHandling,
     cleanup
   };
 }
@@ -334,6 +372,42 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
     };
     signal.addEventListener('abort', abortHandler, { once: true });
     return () => signal.removeEventListener('abort', abortHandler);
+  };
+
+  // Function to wrap a promise with abort handling only when we're about to await it
+  const withAbortHandling = <T>(
+    promise: Promise<T>,
+    customMessage: string
+  ): {
+    wrappedPromise: Promise<T>;
+    cleanup: () => void;
+  } => {
+    let removeAbortHandler: (() => void) | undefined;
+
+    const wrappedPromise = new Promise<T>((resolve, reject) => {
+      // Register abort handler for this specific promise
+      removeAbortHandler = registerAbortHandler(reject, customMessage);
+
+      // Forward the original promise result
+      promise.then(resolve, reject);
+
+      // Clean up abort handler when promise settles
+      promise.finally(() => {
+        if (removeAbortHandler) {
+          removeAbortHandler();
+          removeAbortHandler = undefined;
+        }
+      });
+    });
+
+    const cleanup = () => {
+      if (removeAbortHandler) {
+        removeAbortHandler();
+        removeAbortHandler = undefined;
+      }
+    };
+
+    return { wrappedPromise, cleanup };
   };
 
   // Handle WebSocket network error events
@@ -378,6 +452,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
     abortController,
     signal,
     registerAbortHandler,
+    withAbortHandling,
     cleanupErrorHandlers
   };
 }
@@ -385,13 +460,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
 /**
  * Set up WebSocket success handlers
  */
-function setupWebSocketSuccessHandlers(
-  ws: WebSocket,
-  registerAbortHandler: (
-    _reject: (_reason: unknown) => void,
-    _customMessage: string
-  ) => () => void
-) {
+function setupWebSocketSuccessHandlers(ws: WebSocket) {
   // Store success listener references for cleanup
   const successListeners = {
     open: null as (() => void) | null,
@@ -399,17 +468,11 @@ function setupWebSocketSuccessHandlers(
     successClose: null as ((_event: CloseEvent) => void) | null
   };
 
-  // Store abort handlers for cleanup
-  const abortHandlers: Array<() => void> = [];
-
   // Promise that resolves when the socket connects
-  const onSocketOpen = new Promise<void>((resolve, reject) => {
+  const onSocketOpen = new Promise<void>(resolve => {
     const openHandler = () => {
       resolve();
     };
-
-    // Handle abort
-    abortHandlers.push(registerAbortHandler(reject, 'Connection aborted'));
 
     successListeners.open = openHandler;
     ws.addEventListener('open', openHandler);
@@ -438,24 +501,18 @@ function setupWebSocketSuccessHandlers(
         }
       };
 
-      // Handle abort
-      abortHandlers.push(registerAbortHandler(reject, 'Handshake aborted'));
-
       successListeners.message = messageHandler;
       ws.addEventListener('message', messageHandler);
     }
   );
 
   // Promise that resolves when the socket closes successfully
-  const onSuccessClose = new Promise<void>((resolve, reject) => {
+  const onSuccessClose = new Promise<void>(resolve => {
     const successCloseHandler = (event: CloseEvent) => {
       if (event.code === WebSocketCloseCode.Normal) {
         resolve();
       }
     };
-
-    // Handle abort
-    abortHandlers.push(registerAbortHandler(reject, 'Connection aborted'));
 
     successListeners.successClose = successCloseHandler;
     ws.addEventListener('close', successCloseHandler);
@@ -469,9 +526,6 @@ function setupWebSocketSuccessHandlers(
       ws.removeEventListener('message', successListeners.message);
     if (successListeners.successClose)
       ws.removeEventListener('close', successListeners.successClose);
-
-    // Clean up abort handlers
-    abortHandlers.forEach(removeHandler => removeHandler());
   };
 
   return {

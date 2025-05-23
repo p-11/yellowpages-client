@@ -26,8 +26,11 @@ export default function HomePage() {
         <p>Find yourself in the post quantum world - join the yellowpages.</p>
         <p>
           The yellowpages is the only public, anonymous post-quantum proof of
-          Bitcoin ownership.{' '}
-          <Link href='/faqs'>Read our FAQs to learn more</Link>.
+          Bitcoin ownership.
+        </p>
+        <p>
+          Read our <Link href='/faqs'>faqs</Link> or{' '}
+          <Link href='/changelog'>changelog</Link> to learn more.
         </p>
       </div>
       <div className={styles.links}>

@@ -104,7 +104,7 @@ test('successful registration and search result', async ({ page }) => {
   const signature = signMessage(btcWallet.mnemonic, signingMessage);
 
   await page.getByLabel('3. Enter the generated signature').fill(signature);
-  await page.getByRole('button', { name: 'Complete' }).click();
+  await page.getByRole('button', { name: 'Complete', disabled: false }).click();
 
   // Registration complete page
   await page.getByRole('button', { name: 'View and download proof' }).click();

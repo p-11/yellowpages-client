@@ -1,19 +1,22 @@
-name: CI
+name: E2E Tests
 
 on:
-  pull_request:
-    branches:
-      - main
-      - development
+  schedule:
+    # runs every 6 hours
+    - cron: '0 */6 * * *'
 
 jobs:
   code_checks:
     name: Code Checks
     runs-on: ubuntu-latest
+    environment: development
 
     steps:
-      - name: Checkout Repo
+      - name: Checkout Repo (development)
         uses: actions/checkout@v4
+        with:
+          # use development branch for testing
+          ref: development
 
       - name: Setup node
         uses: actions/setup-node@v4
