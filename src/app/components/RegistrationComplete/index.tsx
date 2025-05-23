@@ -17,7 +17,7 @@ import { ShareIcon } from '@/app/icons/ShareIcon';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
-  const { signedMessages, bitcoinAddress, proofData } =
+  const { pqAddresses, bitcoinAddress, proofData } =
     useRegistrationSessionContext();
   const router = useRouter();
   const [showProofDialog, setShowProofDialog] = useState(false);
@@ -40,19 +40,14 @@ export function RegistrationComplete() {
     [bitcoinAddress]
   );
   const encodedMldsa44Address = useMemo(
-    () =>
-      signedMessages
-        ? encodeURIComponent(signedMessages.ML_DSA_44.address)
-        : '',
-    [signedMessages]
+    () => (pqAddresses ? encodeURIComponent(pqAddresses.mldsa44Address) : ''),
+    [pqAddresses]
   );
 
   const encodedSlhdsaSha2S128Address = useMemo(
     () =>
-      signedMessages
-        ? encodeURIComponent(signedMessages.SLH_DSA_SHA2_S_128.address)
-        : '',
-    [signedMessages]
+      pqAddresses ? encodeURIComponent(pqAddresses.slhdsaSha2S128Address) : '',
+    [pqAddresses]
   );
 
   const shareLink = useMemo(() => {
@@ -67,7 +62,7 @@ export function RegistrationComplete() {
     navigator.clipboard.writeText(shareLink);
   }, [shareLink]);
 
-  if (!bitcoinAddress || !signedMessages) return null;
+  if (!bitcoinAddress || !pqAddresses) return null;
 
   return (
     <main>
@@ -83,8 +78,8 @@ export function RegistrationComplete() {
         <div className={styles.entrySection}>
           <DirectoryEntry
             bitcoinAddress={bitcoinAddress}
-            mldsa44Address={signedMessages.ML_DSA_44.address}
-            slhdsaSha2S128Address={signedMessages.SLH_DSA_SHA2_S_128.address}
+            mldsa44Address={pqAddresses.mldsa44Address}
+            slhdsaSha2S128Address={pqAddresses.slhdsaSha2S128Address}
             showCopyButton
           />
         </div>

@@ -29,14 +29,12 @@ import {
   isValidBitcoinAddress,
   isValidBitcoinSignature,
   Message,
+  Mnemonic24,
   SignedMessage
 } from '@/core/cryptography';
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
-import {
-  generateAddressesInWorker,
-  generateSignedMessagesInWorker
-} from '@/core/cryptographyInWorkers';
+import { createSignedMessagesWorker } from '@/core/cryptographyInWorkers';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -61,15 +59,18 @@ export function RegistrationStep3() {
   const {
     bitcoinAddress,
     seedPhrase,
+    pqAddresses,
     setBitcoinAddress,
-    setProofData,
-    setSignedMessages
+    setProofData
   } = useRegistrationSessionContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneratingSigningMessage, setIsGeneratingSigningMessage] =
-    useState(false);
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
+  );
+  const signedMessagesWorker = useRef(createSignedMessagesWorker());
+  const signedMessagesBackgroundTask = useBackgroundTask(
+    (input: { mnemonic24: Mnemonic24; bitcoinAddress: BitcoinAddress }) =>
+      signedMessagesWorker.current.run(input.mnemonic24, input.bitcoinAddress)
   );
 
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
@@ -99,31 +100,41 @@ export function RegistrationStep3() {
   }, []);
 
   const confirmBitcoinAddress = useCallback(async () => {
-    if (seedPhrase && bitcoinAddress && isValidBitcoinAddress(bitcoinAddress)) {
+    if (
+      pqAddresses &&
+      seedPhrase &&
+      bitcoinAddress &&
+      isValidBitcoinAddress(bitcoinAddress)
+    ) {
       setIsBitcoinAddressConfirmed(true);
-
-      setIsGeneratingSigningMessage(true);
-
-      const { mldsa44Address, slhdsaSha2S128Address } =
-        await generateAddressesInWorker(seedPhrase);
 
       const { message } = generateMessage({
         bitcoinAddress,
-        mldsa44Address,
-        slhdsaSha2S128Address
+        mldsa44Address: pqAddresses.mldsa44Address,
+        slhdsaSha2S128Address: pqAddresses.slhdsaSha2S128Address
       });
       setSigningMessage(message);
 
-      setIsGeneratingSigningMessage(false);
+      signedMessagesBackgroundTask.start({
+        mnemonic24: seedPhrase,
+        bitcoinAddress
+      });
     } else {
       setShowInvalidBitcoinAddressAlert(true);
     }
-  }, [bitcoinAddress, seedPhrase, setSigningMessage]);
+  }, [
+    pqAddresses,
+    bitcoinAddress,
+    seedPhrase,
+    signedMessagesBackgroundTask,
+    setSigningMessage
+  ]);
 
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
     setIsBitcoinAddressConfirmed(false);
     resetSignature();
+    signedMessagesWorker.current.terminate();
   }, [resetSignature]);
 
   const goBack = useCallback(() => {
@@ -138,14 +149,13 @@ export function RegistrationStep3() {
       bitcoinAddress &&
       isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
     ) {
-      try {
-        setIsSubmitting(true);
+      setIsSubmitting(true);
 
-        const signedMessages = await generateSignedMessagesInWorker(
-          seedPhrase,
-          bitcoinAddress
-        );
-        setSignedMessages(signedMessages);
+      try {
+        const signedMessages =
+          await signedMessagesBackgroundTask.waitForResult();
+
+        if (!signedMessages) throw new Error();
 
         await createProof({
           btcAddress: bitcoinAddress,
@@ -166,8 +176,9 @@ export function RegistrationStep3() {
         router.push('/registration-complete');
       } catch {
         setShowFailedRequestAlert(true);
-        setIsSubmitting(false);
       }
+
+      setIsSubmitting(false);
     } else {
       setShowInvalidSignatureAlert(true);
     }
@@ -177,8 +188,8 @@ export function RegistrationStep3() {
     bitcoinAddress,
     signingMessage,
     seedPhrase,
-    setProofData,
-    setSignedMessages
+    signedMessagesBackgroundTask,
+    setProofData
   ]);
 
   const tryAgain = useCallback(() => {
@@ -252,13 +263,9 @@ export function RegistrationStep3() {
             onClick={signingMessageClickHandler}
           >
             <HighlightedBox>
-              {isGeneratingSigningMessage ? (
-                <LoaderCircleIcon />
-              ) : (
-                <span className={styles.signingMessage}>
-                  {signingMessage ?? ''}
-                </span>
-              )}
+              <span className={styles.signingMessage}>
+                {signingMessage ?? ''}
+              </span>
             </HighlightedBox>
           </button>
           <Toolbar>
@@ -397,3 +404,34 @@ const useSensitiveState = () => {
     setSigningMessage
   };
 };
+
+function useBackgroundTask<TInput, TOutput>(
+  taskFn: (_input: TInput) => Promise<TOutput>
+) {
+  const resolveRef = useRef<(() => void) | null>(null);
+  const promiseRef = useRef<Promise<void> | null>(null);
+  const resultRef = useRef<TOutput | null>(null);
+
+  const start = (input: TInput) => {
+    promiseRef.current = new Promise<void>(resolve => {
+      resolveRef.current = resolve;
+    });
+
+    taskFn(input).then(output => {
+      resultRef.current = output;
+      resolveRef.current?.();
+      resolveRef.current = null;
+    });
+  };
+
+  const waitForResult = async (): Promise<TOutput | null> => {
+    if (promiseRef.current) {
+      await promiseRef.current;
+    }
+    const result = resultRef.current;
+    resultRef.current = null;
+    return result;
+  };
+
+  return { start, waitForResult };
+}

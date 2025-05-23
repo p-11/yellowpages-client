@@ -5,75 +5,107 @@ import type {
   SignedMessages
 } from './cryptography';
 
-export const generateSignedMessagesInWorker = async (
-  mnemonic24: Mnemonic24,
-  bitcoinAddress: BitcoinAddress
-) => {
-  return new Promise<SignedMessages>((resolve, reject) => {
-    const worker = new Worker(
-      new URL('./workers/generateSignedMessages.ts', import.meta.url),
-      {
-        type: 'module'
-      }
-    );
+export const createSignedMessagesWorker = () => {
+  let worker: Worker | null = null;
 
-    try {
-      worker.addEventListener(
-        'message',
-        (event: MessageEvent<SignedMessages>) => {
-          resolve(event.data);
-          worker.terminate();
+  const run = async (
+    mnemonic24: Mnemonic24,
+    bitcoinAddress: BitcoinAddress
+  ) => {
+    return new Promise<SignedMessages>((resolve, reject) => {
+      if (worker) terminate();
+
+      worker = new Worker(
+        new URL('./workers/generateSignedMessages.ts', import.meta.url),
+        {
+          type: 'module'
         }
       );
 
-      worker.addEventListener('error', err => {
-        reject(err);
-        worker.terminate();
-      });
+      try {
+        worker.addEventListener(
+          'message',
+          (event: MessageEvent<SignedMessages>) => {
+            resolve(event.data);
+            terminate();
+          }
+        );
 
-      worker.postMessage({ mnemonic24, bitcoinAddress });
-    } catch (err) {
-      reject(err);
-      worker.terminate();
-    }
-  });
+        worker.addEventListener('error', err => {
+          reject(err);
+          terminate();
+        });
+
+        worker.postMessage({ mnemonic24, bitcoinAddress });
+      } catch (err) {
+        reject(err);
+        terminate();
+      }
+    });
+  };
+
+  const terminate = () => {
+    worker?.terminate();
+    worker = null;
+  };
+
+  return {
+    run,
+    terminate
+  };
 };
 
-export const generateAddressesInWorker = async (mnemonic24: Mnemonic24) => {
-  return new Promise<{
-    mldsa44Address: PQAddress;
-    slhdsaSha2S128Address: PQAddress;
-  }>((resolve, reject) => {
-    const worker = new Worker(
-      new URL('./workers/generateAddresses.ts', import.meta.url),
-      {
-        type: 'module'
-      }
-    );
+export const createGenerateAddressesWorker = () => {
+  let worker: Worker | null = null;
 
-    try {
-      worker.addEventListener(
-        'message',
-        (
-          event: MessageEvent<{
-            mldsa44Address: PQAddress;
-            slhdsaSha2S128Address: PQAddress;
-          }>
-        ) => {
-          resolve(event.data);
-          worker.terminate();
+  const run = async (mnemonic24: Mnemonic24) => {
+    return new Promise<{
+      mldsa44Address: PQAddress;
+      slhdsaSha2S128Address: PQAddress;
+    }>((resolve, reject) => {
+      if (worker) terminate();
+
+      worker = new Worker(
+        new URL('./workers/generateAddresses.ts', import.meta.url),
+        {
+          type: 'module'
         }
       );
 
-      worker.addEventListener('error', err => {
-        reject(err);
-        worker.terminate();
-      });
+      try {
+        worker.addEventListener(
+          'message',
+          (
+            event: MessageEvent<{
+              mldsa44Address: PQAddress;
+              slhdsaSha2S128Address: PQAddress;
+            }>
+          ) => {
+            resolve(event.data);
+            terminate();
+          }
+        );
 
-      worker.postMessage({ mnemonic24 });
-    } catch (err) {
-      reject(err);
-      worker.terminate();
-    }
-  });
+        worker.addEventListener('error', err => {
+          reject(err);
+          terminate();
+        });
+
+        worker.postMessage({ mnemonic24 });
+      } catch (err) {
+        reject(err);
+        terminate();
+      }
+    });
+  };
+
+  const terminate = () => {
+    worker?.terminate();
+    worker = null;
+  };
+
+  return {
+    run,
+    terminate
+  };
 };

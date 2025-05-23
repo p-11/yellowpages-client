@@ -12,20 +12,21 @@ import React, {
 import {
   type BitcoinAddress,
   generateSeedPhrase,
-  type Mnemonic24,
-  type SignedMessages
+  type Mnemonic24
 } from '@/core/cryptography';
+import { createGenerateAddressesWorker } from '@/core/cryptographyInWorkers';
 
 type RegistrationSessionContextType = {
   showNewSessionAlert: boolean;
   hasConfirmedSeedPhrase: boolean;
   seedPhrase?: Mnemonic24;
   bitcoinAddress?: BitcoinAddress;
-  signedMessages?: SignedMessages;
   proofData?: string;
+  pqAddresses?: Awaited<
+    ReturnType<ReturnType<typeof createGenerateAddressesWorker>['run']>
+  >;
   setShowNewSessionAlert: (_value: boolean) => void;
   setBitcoinAddress: (_value: BitcoinAddress) => void;
-  setSignedMessages: (_value: SignedMessages) => void;
   setProofData: (_value: string) => void;
 };
 
@@ -43,23 +44,24 @@ export const RegistrationSessionProvider = ({
   const pathname = usePathname();
   const activeSession = useRef<ReturnType<typeof setTimeout>>(null);
   const router = useRouter();
+  const generateAddressesWorker = useRef(createGenerateAddressesWorker());
 
   const [showNewSessionAlert, setShowNewSessionAlert] = useState(false);
   const [hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase] = useState(false);
   const {
     seedPhrase,
     bitcoinAddress,
-    signedMessages,
     proofData,
-    setSignedMessages,
+    pqAddresses,
     clearSensitiveState,
     setSeedPhrase,
     setBitcoinAddress,
     clearSeedPhrase,
-    setProofData
+    setProofData,
+    setPqAddresses
   } = useSensitiveState();
 
-  const startRegistrationSession = useCallback(() => {
+  const startRegistrationSession = useCallback(async () => {
     activeSession.current = setTimeout(
       () => {
         clearSensitiveState();
@@ -70,8 +72,12 @@ export const RegistrationSessionProvider = ({
 
     sessionStorage.setItem(sessionStorageKey, '1');
 
-    setSeedPhrase(generateSeedPhrase());
-  }, [router, setSeedPhrase, clearSensitiveState]);
+    const seedPhrase = generateSeedPhrase();
+    setSeedPhrase(seedPhrase);
+
+    const pqAddresses = await generateAddressesWorker.current.run(seedPhrase);
+    setPqAddresses(pqAddresses);
+  }, [router, setSeedPhrase, clearSensitiveState, setPqAddresses]);
 
   const endRegistrationSession = useCallback(() => {
     if (activeSession.current) {
@@ -182,8 +188,6 @@ export const RegistrationSessionProvider = ({
   return (
     <RegistrationSessionContext.Provider
       value={{
-        signedMessages,
-        setSignedMessages,
         bitcoinAddress,
         setBitcoinAddress,
         seedPhrase,
@@ -191,6 +195,7 @@ export const RegistrationSessionProvider = ({
         hasConfirmedSeedPhrase,
         setShowNewSessionAlert,
         proofData,
+        pqAddresses,
         setProofData
       }}
     >
@@ -214,9 +219,9 @@ const useSensitiveState = () => {
     useState<RegistrationSessionContextType['seedPhrase']>();
   const [bitcoinAddress, setBitcoinAddress] =
     useState<RegistrationSessionContextType['bitcoinAddress']>();
-  const [signedMessages, setSignedMessages] =
-    useState<RegistrationSessionContextType['signedMessages']>();
   const [proofData, setProofData] = useState<string>();
+  const [pqAddresses, setPqAddresses] =
+    useState<RegistrationSessionContextType['pqAddresses']>();
 
   const clearSeedPhrase = useCallback(() => {
     setSeedPhrase(undefined);
@@ -225,8 +230,8 @@ const useSensitiveState = () => {
   const clearSensitiveState = useCallback(() => {
     setSeedPhrase(undefined);
     setBitcoinAddress(undefined);
-    setSignedMessages(undefined);
     setProofData(undefined);
+    setPqAddresses(undefined);
   }, []);
 
   useEffect(() => {
@@ -238,13 +243,13 @@ const useSensitiveState = () => {
   return {
     seedPhrase,
     bitcoinAddress,
-    signedMessages,
     proofData,
+    pqAddresses,
+    setPqAddresses,
     clearSensitiveState,
     clearSeedPhrase,
     setSeedPhrase,
     setBitcoinAddress,
-    setSignedMessages,
     setProofData
   };
 };
