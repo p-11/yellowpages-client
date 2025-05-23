@@ -30,12 +30,11 @@ import {
   isValidBitcoinAddress,
   isValidBitcoinSignature,
   Message,
-  Mnemonic24,
   SignedMessage
 } from '@/core/cryptography';
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
-import { createSignedMessagesWorker } from '@/core/cryptographyInWorkers';
+import { createGenerateSignedMessagesTask } from '@/core/cryptographyInWorkers';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -68,11 +67,10 @@ export function RegistrationStep3() {
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
-  const signedMessagesWorker = useRef(createSignedMessagesWorker());
-  const signedMessagesBackgroundTask = useBackgroundTask(
-    (input: { mnemonic24: Mnemonic24; bitcoinAddress: BitcoinAddress }) =>
-      signedMessagesWorker.current.run(input.mnemonic24, input.bitcoinAddress)
+  const generateSignedMessagesTaskRef = useRef(
+    createGenerateSignedMessagesTask()
   );
+
   const [cfTurnstileToken, setCfTurnstileToken] = useState<string | null>(null);
 
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
@@ -117,7 +115,7 @@ export function RegistrationStep3() {
       });
       setSigningMessage(message);
 
-      signedMessagesBackgroundTask.start({
+      generateSignedMessagesTaskRef.current.start({
         mnemonic24: seedPhrase,
         bitcoinAddress
       });
@@ -128,7 +126,7 @@ export function RegistrationStep3() {
     pqAddresses,
     bitcoinAddress,
     seedPhrase,
-    signedMessagesBackgroundTask,
+    generateSignedMessagesTaskRef,
     setSigningMessage
   ]);
 
@@ -136,7 +134,7 @@ export function RegistrationStep3() {
     setAutoFocusBitcoinAddressField(true);
     setIsBitcoinAddressConfirmed(false);
     resetSignature();
-    signedMessagesWorker.current.terminate();
+    generateSignedMessagesTaskRef.current.terminate();
   }, [resetSignature]);
 
   const goBack = useCallback(() => {
@@ -156,9 +154,9 @@ export function RegistrationStep3() {
 
       try {
         const signedMessages =
-          await signedMessagesBackgroundTask.waitForResult();
+          await generateSignedMessagesTaskRef.current.waitForResult();
 
-        if (!signedMessages) throw new Error();
+        if (!signedMessages) throw new Error('Invalid signedMessages result');
 
         await createProof(
           {
@@ -195,7 +193,7 @@ export function RegistrationStep3() {
     bitcoinAddress,
     signingMessage,
     seedPhrase,
-    signedMessagesBackgroundTask,
+    generateSignedMessagesTaskRef,
     cfTurnstileToken,
     setProofData
   ]);
@@ -424,34 +422,3 @@ const useSensitiveState = () => {
     setSigningMessage
   };
 };
-
-function useBackgroundTask<TInput, TOutput>(
-  taskFn: (_input: TInput) => Promise<TOutput>
-) {
-  const resolveRef = useRef<(() => void) | null>(null);
-  const promiseRef = useRef<Promise<void> | null>(null);
-  const resultRef = useRef<TOutput | null>(null);
-
-  const start = (input: TInput) => {
-    promiseRef.current = new Promise<void>(resolve => {
-      resolveRef.current = resolve;
-    });
-
-    taskFn(input).then(output => {
-      resultRef.current = output;
-      resolveRef.current?.();
-      resolveRef.current = null;
-    });
-  };
-
-  const waitForResult = async (): Promise<TOutput | null> => {
-    if (promiseRef.current) {
-      await promiseRef.current;
-    }
-    const result = resultRef.current;
-    resultRef.current = null;
-    return result;
-  };
-
-  return { start, waitForResult };
-}

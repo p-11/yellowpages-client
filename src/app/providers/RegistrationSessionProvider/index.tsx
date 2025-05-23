@@ -14,7 +14,7 @@ import {
   generateSeedPhrase,
   type Mnemonic24
 } from '@/core/cryptography';
-import { createGenerateAddressesWorker } from '@/core/cryptographyInWorkers';
+import { createGenerateAddressesTask } from '@/core/cryptographyInWorkers';
 
 type RegistrationSessionContextType = {
   showNewSessionAlert: boolean;
@@ -23,7 +23,7 @@ type RegistrationSessionContextType = {
   bitcoinAddress?: BitcoinAddress;
   proofData?: string;
   pqAddresses?: Awaited<
-    ReturnType<ReturnType<typeof createGenerateAddressesWorker>['run']>
+    ReturnType<ReturnType<typeof createGenerateAddressesTask>['waitForResult']>
   >;
   setShowNewSessionAlert: (_value: boolean) => void;
   setBitcoinAddress: (_value: BitcoinAddress) => void;
@@ -44,7 +44,6 @@ export const RegistrationSessionProvider = ({
   const pathname = usePathname();
   const activeSession = useRef<ReturnType<typeof setTimeout>>(null);
   const router = useRouter();
-  const generateAddressesWorker = useRef(createGenerateAddressesWorker());
 
   const [showNewSessionAlert, setShowNewSessionAlert] = useState(false);
   const [hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase] = useState(false);
@@ -60,6 +59,7 @@ export const RegistrationSessionProvider = ({
     setProofData,
     setPqAddresses
   } = useSensitiveState();
+  const generateAddressesTaskRef = useRef(createGenerateAddressesTask());
 
   const startRegistrationSession = useCallback(async () => {
     activeSession.current = setTimeout(
@@ -75,8 +75,13 @@ export const RegistrationSessionProvider = ({
     const seedPhrase = generateSeedPhrase();
     setSeedPhrase(seedPhrase);
 
-    const pqAddresses = await generateAddressesWorker.current.run(seedPhrase);
-    setPqAddresses(pqAddresses);
+    generateAddressesTaskRef.current.start({ mnemonic24: seedPhrase });
+
+    const pqAddresses = await generateAddressesTaskRef.current.waitForResult();
+
+    if (pqAddresses) {
+      setPqAddresses(pqAddresses);
+    }
   }, [router, setSeedPhrase, clearSensitiveState, setPqAddresses]);
 
   const endRegistrationSession = useCallback(() => {
@@ -84,6 +89,7 @@ export const RegistrationSessionProvider = ({
       clearTimeout(activeSession.current);
       activeSession.current = null;
     }
+    generateAddressesTaskRef.current.terminate();
     sessionStorage.removeItem(sessionStorageKey);
     setHasConfirmedSeedPhrase(false);
     setShowNewSessionAlert(false);
