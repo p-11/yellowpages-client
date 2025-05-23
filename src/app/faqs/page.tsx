@@ -21,7 +21,19 @@ export default function FaqsPage() {
             Bitcoin address and link it to a brand-new, quantum-safe
             (post-quantum, or “PQ”) address. The directory stores only a compact
             cryptographic proof, never your keys, so you stay private while
-            future-proofing your coins.
+            future-proofing your coins. More detail can be found in the{' '}
+            <Link href='/whitepaper/v0.0.1.pdf' target='_blank'>
+              whitepaper
+            </Link>
+            .
+          </p>
+        </AccordionItem>
+        <AccordionItem title='Is yellowpages associated with a token or cryptocurrency?'>
+          <p>
+            No. yellowpages and Project Eleven are not associated with any token
+            or cryptocurrency. The system links your existing Bitcoin address to
+            a new post-quantum (PQ) address. It does not replicate your holdings
+            or issue any new assets.
           </p>
         </AccordionItem>
         <AccordionItem title='What data will sharing my directory entry reveal?'>

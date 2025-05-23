@@ -24,7 +24,7 @@ export default function ChangelogPage() {
               Version: <span>{item.version}</span>
             </h2>
             <h3 className={styles.releaseHeading}>
-              Release date: <span>{item.releaseDate}</span>
+              Release date (ISO 8601): <span>{item.releaseDate}</span>
             </h3>
             <div className={styles.releaseChanges}>
               <h3 className={styles.releaseHeading}>Changes:</h3>
