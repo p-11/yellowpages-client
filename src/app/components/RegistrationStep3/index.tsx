@@ -67,14 +67,21 @@ export function RegistrationStep3() {
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
+  const [cfTurnstileToken, setCfTurnstileToken] = useState<string | null>(null);
   const generateSignedMessagesTaskRef = useRef(
     createGenerateSignedMessagesTask()
   );
 
-  const [cfTurnstileToken, setCfTurnstileToken] = useState<string | null>(null);
-
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
   const isSignaturePopulated = signature && signature.length > 0;
+
+  useEffect(() => {
+    const generateSignedMessagesTask = generateSignedMessagesTaskRef.current;
+
+    return function cleanup() {
+      generateSignedMessagesTask.terminate();
+    };
+  }, []);
 
   const copySigningMessage = useCallback(() => {
     if (signingMessage) {
