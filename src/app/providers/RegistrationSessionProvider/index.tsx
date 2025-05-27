@@ -25,9 +25,19 @@ type RegistrationSessionContextType = {
   seedPhrase?: Mnemonic24;
   bitcoinAddress?: BitcoinAddress;
   proofData?: string;
+  generateAddressesTaskRef: React.RefObject<
+    ReturnType<typeof createGenerateAddressesTask>
+  >;
   setShowNewSessionAlert: (_value: boolean) => void;
   setBitcoinAddress: (_value: BitcoinAddress) => void;
   setProofData: (_value: string) => void;
+  setPqAddresses: (
+    _value: Awaited<
+      ReturnType<
+        ReturnType<typeof createGenerateAddressesTask>['waitForResult']
+      >
+    >
+  ) => void;
 };
 
 const RegistrationSessionContext = createContext<
@@ -76,10 +86,7 @@ export const RegistrationSessionProvider = ({
     setSeedPhrase(seedPhrase);
 
     generateAddressesTaskRef.current.start({ mnemonic24: seedPhrase });
-
-    const pqAddresses = await generateAddressesTaskRef.current.waitForResult();
-    setPqAddresses(pqAddresses);
-  }, [router, setSeedPhrase, clearSensitiveState, setPqAddresses]);
+  }, [router, setSeedPhrase, clearSensitiveState]);
 
   const endRegistrationSession = useCallback(() => {
     if (activeSession.current) {
@@ -199,7 +206,9 @@ export const RegistrationSessionProvider = ({
         setShowNewSessionAlert,
         proofData,
         pqAddresses,
-        setProofData
+        setProofData,
+        generateAddressesTaskRef,
+        setPqAddresses
       }}
     >
       {children}

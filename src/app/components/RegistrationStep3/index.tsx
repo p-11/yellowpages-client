@@ -60,6 +60,8 @@ export function RegistrationStep3() {
     bitcoinAddress,
     seedPhrase,
     pqAddresses,
+    generateAddressesTaskRef,
+    setPqAddresses,
     setBitcoinAddress,
     setProofData
   } = useRegistrationSessionContext();
@@ -108,18 +110,27 @@ export function RegistrationStep3() {
 
   const confirmBitcoinAddress = useCallback(async () => {
     try {
-      if (!pqAddresses) throw new Error('Invalid PQ addresses');
-      if (!seedPhrase) throw new Error('Invalid seed phrase');
-
       if (bitcoinAddress && isValidBitcoinAddress(bitcoinAddress)) {
         setIsBitcoinAddressConfirmed(true);
 
+        const pqAddressesResult =
+          pqAddresses ??
+          (await generateAddressesTaskRef.current.waitForResult());
+
+        if (!pqAddressesResult) throw new Error('Invalid PQ addresses');
+
         const { message } = generateMessage({
           bitcoinAddress,
-          mldsa44Address: pqAddresses.mldsa44Address,
-          slhdsaSha2S128Address: pqAddresses.slhdsaSha2S128Address
+          mldsa44Address: pqAddressesResult.mldsa44Address,
+          slhdsaSha2S128Address: pqAddressesResult.slhdsaSha2S128Address
         });
         setSigningMessage(message);
+
+        if (!pqAddresses) {
+          setPqAddresses(pqAddressesResult);
+        }
+
+        if (!seedPhrase) throw new Error('Invalid seed phrase');
 
         generateSignedMessagesTaskRef.current.start({
           mnemonic24: seedPhrase,
@@ -136,7 +147,9 @@ export function RegistrationStep3() {
     bitcoinAddress,
     seedPhrase,
     generateSignedMessagesTaskRef,
-    setSigningMessage
+    generateAddressesTaskRef,
+    setSigningMessage,
+    setPqAddresses
   ]);
 
   const editBitcoinAddress = useCallback(() => {
