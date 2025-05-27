@@ -31,9 +31,21 @@ export const createGenerateSignedMessagesTask = () =>
     );
   });
 
-function createWorkerTask<TInput, TOutput>(createWorkerFn: () => Worker) {
+/**
+ * Helper function to manage the lifecycle of background tasks.
+ *
+ * Manages a Promise internally that resolves when the worker completes or fails.
+ * Uses a provided factory function (`createWorker`) to instantiate a new Worker.
+ * Each call to `start` restarts the task with new input, terminating any existing worker.
+ *
+ * Returns:
+ * - `start(input: TInput)`: Starts a new worker task with the specified input.
+ * - `waitForResult(): Promise<TOutput | null>`: Resolves with the result or null on error.
+ * - `terminate()`: Cancels any running worker task and releases resources.
+ */
+function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
   let worker: Worker | null = null;
-  let resolveFn: (() => void) | null = null;
+  let resolvePromise: (() => void) | null = null;
   let promise: Promise<void> | null = null;
   let result: TOutput | null = null;
 
@@ -42,9 +54,9 @@ function createWorkerTask<TInput, TOutput>(createWorkerFn: () => Worker) {
       worker.terminate();
       worker = null;
     }
-    if (resolveFn) {
-      resolveFn();
-      resolveFn = null;
+    if (resolvePromise) {
+      resolvePromise();
+      resolvePromise = null;
     }
   };
 
@@ -52,10 +64,10 @@ function createWorkerTask<TInput, TOutput>(createWorkerFn: () => Worker) {
     terminate();
 
     promise = new Promise<void>(resolve => {
-      resolveFn = resolve;
+      resolvePromise = resolve;
     });
 
-    worker = createWorkerFn();
+    worker = createWorker();
 
     const cleanup = () => {
       if (worker) {
@@ -64,8 +76,8 @@ function createWorkerTask<TInput, TOutput>(createWorkerFn: () => Worker) {
         worker.terminate();
         worker = null;
       }
-      resolveFn?.();
-      resolveFn = null;
+      resolvePromise?.();
+      resolvePromise = null;
     };
 
     const onMessage = (event: MessageEvent<TOutput>) => {
