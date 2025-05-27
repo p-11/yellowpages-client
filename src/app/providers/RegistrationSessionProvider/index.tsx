@@ -19,12 +19,12 @@ import { createGenerateAddressesTask } from '@/core/cryptographyInWorkers';
 type RegistrationSessionContextType = {
   showNewSessionAlert: boolean;
   hasConfirmedSeedPhrase: boolean;
+  pqAddresses: Awaited<
+    ReturnType<ReturnType<typeof createGenerateAddressesTask>['waitForResult']>
+  >;
   seedPhrase?: Mnemonic24;
   bitcoinAddress?: BitcoinAddress;
   proofData?: string;
-  pqAddresses?: Awaited<
-    ReturnType<ReturnType<typeof createGenerateAddressesTask>['waitForResult']>
-  >;
   setShowNewSessionAlert: (_value: boolean) => void;
   setBitcoinAddress: (_value: BitcoinAddress) => void;
   setProofData: (_value: string) => void;
@@ -78,10 +78,7 @@ export const RegistrationSessionProvider = ({
     generateAddressesTaskRef.current.start({ mnemonic24: seedPhrase });
 
     const pqAddresses = await generateAddressesTaskRef.current.waitForResult();
-
-    if (pqAddresses) {
-      setPqAddresses(pqAddresses);
-    }
+    setPqAddresses(pqAddresses);
   }, [router, setSeedPhrase, clearSensitiveState, setPqAddresses]);
 
   const endRegistrationSession = useCallback(() => {
@@ -227,7 +224,7 @@ const useSensitiveState = () => {
     useState<RegistrationSessionContextType['bitcoinAddress']>();
   const [proofData, setProofData] = useState<string>();
   const [pqAddresses, setPqAddresses] =
-    useState<RegistrationSessionContextType['pqAddresses']>();
+    useState<RegistrationSessionContextType['pqAddresses']>(null);
 
   const clearSeedPhrase = useCallback(() => {
     setSeedPhrase(undefined);
@@ -237,7 +234,7 @@ const useSensitiveState = () => {
     setSeedPhrase(undefined);
     setBitcoinAddress(undefined);
     setProofData(undefined);
-    setPqAddresses(undefined);
+    setPqAddresses(null);
   }, []);
 
   useEffect(() => {
