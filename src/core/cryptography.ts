@@ -457,6 +457,27 @@ const generatePQKeypair = (
 };
 
 /**
+ * Generate PQ keypairs from a mnemonic.
+ *
+ * @param mnemonic24 24-word BIP-39 phrase
+ */
+const generatePQKeypairs = (mnemonic24: Mnemonic24) => {
+  const mldsa44KeyPair = generatePQKeypair(
+    mnemonic24,
+    PQ_SIGNATURE_ALGORITHM.ML_DSA_44
+  );
+  const slhdsaSha2S128KeyPair = generatePQKeypair(
+    mnemonic24,
+    PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
+  );
+
+  return {
+    mldsa44KeyPair,
+    slhdsaSha2S128KeyPair
+  };
+};
+
+/**
  * Signed Message types
  */
 type SupportedSigningAlgos = Exclude<
@@ -515,14 +536,8 @@ const generatePQSignedMessages = (
 ): SignedMessages => {
   try {
     // Key pair generation
-    const mldsa44KeyPair = generatePQKeypair(
-      mnemonic24,
-      PQ_SIGNATURE_ALGORITHM.ML_DSA_44
-    );
-    const slhdsaSha2S128KeyPair = generatePQKeypair(
-      mnemonic24,
-      PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
-    );
+    const { mldsa44KeyPair, slhdsaSha2S128KeyPair } =
+      generatePQKeypairs(mnemonic24);
 
     // Create message
     const { messageBytes } = generateMessage({
@@ -575,14 +590,8 @@ const generatePQSignedMessages = (
 const generatePQAddresses = (mnemonic24: Mnemonic24) => {
   try {
     // Key pair generation
-    const mldsa44KeyPair = generatePQKeypair(
-      mnemonic24,
-      PQ_SIGNATURE_ALGORITHM.ML_DSA_44
-    );
-    const slhdsaSha2S128KeyPair = generatePQKeypair(
-      mnemonic24,
-      PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
-    );
+    const { mldsa44KeyPair, slhdsaSha2S128KeyPair } =
+      generatePQKeypairs(mnemonic24);
 
     // Best effort to zero out private keys
     mldsa44KeyPair.privateKey.fill(0);
