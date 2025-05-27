@@ -55,7 +55,7 @@ export function RegistrationStep3() {
     useState(false);
   const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
     useState(false);
-  const [showFailedRequestAlert, setShowFailedRequestAlert] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
   const {
     bitcoinAddress,
     seedPhrase,
@@ -103,31 +103,33 @@ export function RegistrationStep3() {
   }, []);
 
   const acknowledgeFailedRequestAlert = useCallback(() => {
-    setShowFailedRequestAlert(false);
+    setShowErrorDialog(false);
   }, []);
 
   const confirmBitcoinAddress = useCallback(async () => {
-    if (
-      pqAddresses &&
-      seedPhrase &&
-      bitcoinAddress &&
-      isValidBitcoinAddress(bitcoinAddress)
-    ) {
-      setIsBitcoinAddressConfirmed(true);
+    try {
+      if (!pqAddresses) throw new Error('Invalid PQ addresses');
+      if (!seedPhrase) throw new Error('Invalid seed phrase');
 
-      const { message } = generateMessage({
-        bitcoinAddress,
-        mldsa44Address: pqAddresses.mldsa44Address,
-        slhdsaSha2S128Address: pqAddresses.slhdsaSha2S128Address
-      });
-      setSigningMessage(message);
+      if (bitcoinAddress && isValidBitcoinAddress(bitcoinAddress)) {
+        setIsBitcoinAddressConfirmed(true);
 
-      generateSignedMessagesTaskRef.current.start({
-        mnemonic24: seedPhrase,
-        bitcoinAddress
-      });
-    } else {
-      setShowInvalidBitcoinAddressAlert(true);
+        const { message } = generateMessage({
+          bitcoinAddress,
+          mldsa44Address: pqAddresses.mldsa44Address,
+          slhdsaSha2S128Address: pqAddresses.slhdsaSha2S128Address
+        });
+        setSigningMessage(message);
+
+        generateSignedMessagesTaskRef.current.start({
+          mnemonic24: seedPhrase,
+          bitcoinAddress
+        });
+      } else {
+        setShowInvalidBitcoinAddressAlert(true);
+      }
+    } catch {
+      setShowErrorDialog(true);
     }
   }, [
     pqAddresses,
@@ -149,57 +151,60 @@ export function RegistrationStep3() {
   }, [router]);
 
   const completeRegistration = useCallback(async () => {
-    if (
-      seedPhrase &&
-      signingMessage &&
-      signature &&
-      bitcoinAddress &&
-      cfTurnstileToken &&
-      isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
-    ) {
-      setIsSubmitting(true);
+    try {
+      if (!signingMessage) throw new Error('Invalid signing message');
+      if (!bitcoinAddress) throw new Error('Invalid Bitcoin address');
+      if (!cfTurnstileToken) throw new Error('Invalid CF Turnstile token');
 
-      try {
-        const signedMessages =
-          await generateSignedMessagesTaskRef.current.waitForResult();
+      if (
+        signature &&
+        isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
+      ) {
+        setIsSubmitting(true);
 
-        if (!signedMessages) throw new Error('Invalid signedMessages result');
+        try {
+          const signedMessages =
+            await generateSignedMessagesTaskRef.current.waitForResult();
 
-        await createProof(
-          {
-            btcAddress: bitcoinAddress,
-            btcSignedMessage: signature,
-            mldsa44Address: signedMessages.ML_DSA_44.address,
-            mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
-            mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
-            slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
-            slhdsaSha2S128PublicKey:
-              signedMessages.SLH_DSA_SHA2_S_128.publicKey,
-            slhdsaSha2S128SignedMessage:
-              signedMessages.SLH_DSA_SHA2_S_128.signedMessage
-          },
-          cfTurnstileToken
-        );
+          if (!signedMessages) throw new Error('Invalid signedMessages result');
 
-        const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
+          await createProof(
+            {
+              btcAddress: bitcoinAddress,
+              btcSignedMessage: signature,
+              mldsa44Address: signedMessages.ML_DSA_44.address,
+              mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
+              mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
+              slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
+              slhdsaSha2S128PublicKey:
+                signedMessages.SLH_DSA_SHA2_S_128.publicKey,
+              slhdsaSha2S128SignedMessage:
+                signedMessages.SLH_DSA_SHA2_S_128.signedMessage
+            },
+            cfTurnstileToken
+          );
 
-        setProofData(JSON.stringify(proof, null, 2));
+          const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
 
-        router.push('/registration-complete');
-      } catch {
-        setShowFailedRequestAlert(true);
+          setProofData(JSON.stringify(proof, null, 2));
+
+          router.push('/registration-complete');
+        } catch {
+          setShowErrorDialog(true);
+        }
+
+        setIsSubmitting(false);
+      } else {
+        setShowInvalidSignatureAlert(true);
       }
-
-      setIsSubmitting(false);
-    } else {
-      setShowInvalidSignatureAlert(true);
+    } catch {
+      setShowErrorDialog(true);
     }
   }, [
     router,
     signature,
     bitcoinAddress,
     signingMessage,
-    seedPhrase,
     generateSignedMessagesTaskRef,
     cfTurnstileToken,
     setProofData
@@ -370,7 +375,7 @@ export function RegistrationStep3() {
           </DialogFooter>
         </Dialog>
       )}
-      {showFailedRequestAlert && (
+      {showErrorDialog && (
         <Dialog>
           <DialogTitle>Oops, something went wrong</DialogTitle>
           <DialogDescription>
