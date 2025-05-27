@@ -348,10 +348,14 @@ const deriveBip85Entropy = ({
   // Derivation path for BIP-85
   const path = `m/${BIP85_PURPOSE}'/${DEFAULT_APP_NO}'/${derIndex}'`;
   const node = root.derive(path);
-  const privKey = node.privateKey;
+  let privKey = node.privateKey;
   if (!privKey) throw new Error('No private key at this path');
   // Apply BIP-85 HMAC-SHA512
   const full = hmac(sha512, BIP85_HMAC_KEY, privKey);
+  // Zero out sensitive data
+  privKey = null;
+  node.wipePrivateData();
+  root.wipePrivateData();
   // Return specified number of bytes
   return full.slice(0, entropyLength);
 };
@@ -371,12 +375,16 @@ const deriveEntropyFromMnemonic = ({
   algorithm: PQ_SIGNATURE_ALGORITHM;
 }): Uint8Array => {
   // BIP-39 seed (64 bytes)
-  const m = ensure24WordMnemonic(mnemonic24);
+  let m = ensure24WordMnemonic(mnemonic24);
   const seed = mnemonicToSeedSync(m);
   // Master HDKey from that seed
   const masterNode = HDKey.fromMasterSeed(seed);
   // Get bytes length for PQ_SIGNATURE_ALGORITHM
   const length = derivePQEntropyLength(algorithm);
+  // Zero out sensitive data
+  mnemonic24 = '' as Mnemonic24;
+  m = '' as Mnemonic24;
+  seed.fill(0);
   // Use the algorithm's numeric value as the derive-index
   return deriveBip85Entropy({
     root: masterNode,
@@ -394,7 +402,7 @@ const deriveEntropyFromMnemonic = ({
  * @param mnemonic24 24-word BIP-39 phrase
  * @param algorithm  which PQ_SIGNATURE_ALGORITHM enum to use
  */
-const generateKeypair = (
+const generatePQKeypair = (
   mnemonic24: Mnemonic24,
   algorithm: PQ_SIGNATURE_ALGORITHM
 ) => {
@@ -409,6 +417,8 @@ const generateKeypair = (
           publicKey,
           algorithm
         });
+        // zero out sensitive data
+        entropy.fill(0);
         return {
           publicKey: publicKey,
           privateKey: privateKey,
@@ -424,6 +434,8 @@ const generateKeypair = (
           publicKey,
           algorithm
         });
+        // zero out sensitive data
+        entropy.fill(0);
         return {
           publicKey: publicKey,
           privateKey: privateKey,
@@ -438,6 +450,9 @@ const generateKeypair = (
   } catch (err: any) {
     const name = PQ_SIGNATURE_ALGORITHM[algorithm] ?? algorithm;
     throw new Error(`Error generating ${name} keypair: ${err.message || err}`);
+  } finally {
+    // zero out input data
+    mnemonic24 = '' as Mnemonic24;
   }
 };
 
@@ -468,9 +483,9 @@ const generateMessage = ({
   mldsa44Address,
   slhdsaSha2S128Address
 }: {
-  bitcoinAddress: string;
-  mldsa44Address: string;
-  slhdsaSha2S128Address: string;
+  bitcoinAddress: BitcoinAddress;
+  mldsa44Address: PQAddress;
+  slhdsaSha2S128Address: PQAddress;
 }) => {
   const message = `yellowpages.xyz
 
@@ -494,17 +509,17 @@ SLH-DSA-SHA2-128s address: ${slhdsaSha2S128Address}` as Message;
  * @returns Record where each key is the enum name (e.g. "ML_DSA_44")
  * @throws if any step fails for any algorithm
  */
-const generateSignedMessages = (
+const generatePQSignedMessages = (
   mnemonic24: Mnemonic24,
-  bitcoinAddress: string
+  bitcoinAddress: BitcoinAddress
 ): SignedMessages => {
   try {
     // Key pair generation
-    const mldsa44KeyPair = generateKeypair(
+    const mldsa44KeyPair = generatePQKeypair(
       mnemonic24,
       PQ_SIGNATURE_ALGORITHM.ML_DSA_44
     );
-    const slhdsaSha2S128KeyPair = generateKeypair(
+    const slhdsaSha2S128KeyPair = generatePQKeypair(
       mnemonic24,
       PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
     );
@@ -528,7 +543,6 @@ const generateSignedMessages = (
     // Best effort to zero out private keys
     mldsa44KeyPair.privateKey.fill(0);
     slhdsaSha2S128KeyPair.privateKey.fill(0);
-
     // Response
     return {
       ML_DSA_44: {
@@ -549,31 +563,39 @@ const generateSignedMessages = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     throw new Error(`Error signing: ${err.message || err}`);
+  } finally {
+    // zero out input data
+    mnemonic24 = '' as Mnemonic24;
   }
 };
 
 /**
  * @param mnemonic24 24-word BIP-39 phrase
  */
-const generateAddresses = (mnemonic24: Mnemonic24) => {
-  // Key pair generation
-  const mldsa44KeyPair = generateKeypair(
-    mnemonic24,
-    PQ_SIGNATURE_ALGORITHM.ML_DSA_44
-  );
-  const slhdsaSha2S128KeyPair = generateKeypair(
-    mnemonic24,
-    PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
-  );
+const generatePQAddresses = (mnemonic24: Mnemonic24) => {
+  try {
+    // Key pair generation
+    const mldsa44KeyPair = generatePQKeypair(
+      mnemonic24,
+      PQ_SIGNATURE_ALGORITHM.ML_DSA_44
+    );
+    const slhdsaSha2S128KeyPair = generatePQKeypair(
+      mnemonic24,
+      PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
+    );
 
-  // Best effort to zero out private keys
-  mldsa44KeyPair.privateKey.fill(0);
-  slhdsaSha2S128KeyPair.privateKey.fill(0);
+    // Best effort to zero out private keys
+    mldsa44KeyPair.privateKey.fill(0);
+    slhdsaSha2S128KeyPair.privateKey.fill(0);
 
-  return {
-    mldsa44Address: mldsa44KeyPair.address,
-    slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
-  };
+    return {
+      mldsa44Address: mldsa44KeyPair.address,
+      slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
+    };
+  } finally {
+    // zero out input data
+    mnemonic24 = '' as Mnemonic24;
+  }
 };
 
 /**
@@ -643,13 +665,13 @@ export {
   encryptProofRequestData,
   generatePQAddress,
   generateSeedPhrase,
-  generateSignedMessages,
+  generatePQSignedMessages,
   generateMessage,
-  generateKeypair,
+  generatePQKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature,
-  generateAddresses,
+  generatePQAddresses,
   ML_KEM_768_CIPHERTEXT_SIZE,
   ML_KEM_768_DECAPSULATION_KEY_SIZE,
   ML_KEM_768_SHARED_SECRET_SIZE,

@@ -1,8 +1,8 @@
 import {
   generateSeedPhrase,
   generateMessage,
-  generateSignedMessages,
-  generateKeypair,
+  generatePQSignedMessages,
+  generatePQKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature,
@@ -20,7 +20,8 @@ import {
   AES_256_GCM_KEY_SIZE,
   AES_256_GCM_NONCE_SIZE,
   MlKem768CiphertextBytes,
-  ProofRequestBytes
+  ProofRequestBytes,
+  PQAddress
 } from './../core/cryptography';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
@@ -48,9 +49,9 @@ describe('crypto module', () => {
 
   describe('message', () => {
     test('generation', () => {
-      const bitcoinAddress = 'btc';
-      const mldsa44Address = 'mldsa44';
-      const slhdsaSha2S128Address = 'slhdsaSha2S128';
+      const bitcoinAddress = 'btc' as BitcoinAddress;
+      const mldsa44Address = 'mldsa44' as PQAddress;
+      const slhdsaSha2S128Address = 'slhdsaSha2S128' as PQAddress;
       const { message, messageBytes } = generateMessage({
         bitcoinAddress: bitcoinAddress,
         mldsa44Address: mldsa44Address,
@@ -73,7 +74,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     test('key pair generation is deterministic', () => {
       const mnemonic =
         'abstract reform twelve inspire cry master vague skirt mention ill velvet nice limit input present old equip double best doctor decrease survey spray wife' as Mnemonic24;
-      const keyPair = generateKeypair(mnemonic, 0);
+      const keyPair = generatePQKeypair(mnemonic, 0);
       const privateKey =
         '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';
       const publicKey =
@@ -86,12 +87,13 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     });
 
     test('key pair signing is deterministic', () => {
-      const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
-      const signedMessagesOne = generateSignedMessages(
+      const bitcoinAddress =
+        '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm' as BitcoinAddress;
+      const signedMessagesOne = generatePQSignedMessages(
         mnemonic,
         bitcoinAddress
       );
-      const signedMessagesTwo = generateSignedMessages(
+      const signedMessagesTwo = generatePQSignedMessages(
         mnemonic,
         bitcoinAddress
       );
@@ -104,8 +106,9 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     });
 
     test('signed message is valid', () => {
-      const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
-      const signedMessages = generateSignedMessages(mnemonic, bitcoinAddress);
+      const bitcoinAddress =
+        '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm' as BitcoinAddress;
+      const signedMessages = generatePQSignedMessages(mnemonic, bitcoinAddress);
       // Convert base64 strings to byte arrays
       const { messageBytes } = generateMessage({
         bitcoinAddress: bitcoinAddress,
@@ -130,7 +133,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     test('key pair generation is deterministic', () => {
       const mnemonic =
         'abstract reform twelve inspire cry master vague skirt mention ill velvet nice limit input present old equip double best doctor decrease survey spray wife' as Mnemonic24;
-      const keyPair = generateKeypair(mnemonic, 2);
+      const keyPair = generatePQKeypair(mnemonic, 2);
       const privateKey =
         'V19bAFV8dqSlYNTbXu02JM0rEOK9L/eX0qWpIb8BLnhaLpYvA3f0FScrtfiCQgbXTUTbMxlY0BV06ysbz8jE3g==';
       const publicKey = 'Wi6WLwN39BUnK7X4gkIG101E2zMZWNAVdOsrG8/IxN4=';
@@ -142,12 +145,13 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     });
 
     test('key pair signing is deterministic', () => {
-      const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
-      const signedMessagesOne = generateSignedMessages(
+      const bitcoinAddress =
+        '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm' as BitcoinAddress;
+      const signedMessagesOne = generatePQSignedMessages(
         mnemonic,
         bitcoinAddress
       );
-      const signedMessagesTwo = generateSignedMessages(
+      const signedMessagesTwo = generatePQSignedMessages(
         mnemonic,
         bitcoinAddress
       );
@@ -160,8 +164,9 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     });
 
     test('signed message is valid', () => {
-      const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
-      const signedMessages = generateSignedMessages(mnemonic, bitcoinAddress);
+      const bitcoinAddress =
+        '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm' as BitcoinAddress;
+      const signedMessages = generatePQSignedMessages(mnemonic, bitcoinAddress);
       // Convert base64 strings to byte arrays
       const { messageBytes } = generateMessage({
         bitcoinAddress: bitcoinAddress,
