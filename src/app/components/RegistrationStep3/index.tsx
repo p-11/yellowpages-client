@@ -102,7 +102,7 @@ export function RegistrationStep3() {
     setShowInvalidSignatureAlert(false);
   }, []);
 
-  const acknowledgeFailedRequestAlert = useCallback(() => {
+  const acknowledgeErrorDialog = useCallback(() => {
     setShowErrorDialog(false);
   }, []);
 
@@ -392,7 +392,7 @@ export function RegistrationStep3() {
             </a>
           </Alert>
           <DialogFooter>
-            <Button variant='primary' onClick={acknowledgeFailedRequestAlert}>
+            <Button variant='primary' onClick={acknowledgeErrorDialog}>
               Continue
             </Button>
           </DialogFooter>
