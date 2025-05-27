@@ -48,6 +48,7 @@ function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
   let resolvePromise: (() => void) | null = null;
   let promise: Promise<void> | null = null;
   let result: TOutput | null = null;
+  let error: Error | null = null;
 
   const terminate = () => {
     result = null; // clear result
@@ -87,8 +88,8 @@ function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
       cleanup();
     };
 
-    const onError = () => {
-      result = null;
+    const onError = (event: ErrorEvent) => {
+      error = new Error(event.message);
       cleanup();
     };
 
@@ -102,6 +103,7 @@ function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
     if (promise) {
       await promise;
     }
+    if (error) throw error;
     const output = result;
     result = null; // clear result
     return output;
