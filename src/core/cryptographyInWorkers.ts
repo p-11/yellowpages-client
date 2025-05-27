@@ -101,7 +101,7 @@ function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
       await promise;
     }
     const output = result;
-    result = null;
+    result = null; // clear result
     return output;
   };
 
