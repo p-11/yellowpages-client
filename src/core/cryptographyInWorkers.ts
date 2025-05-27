@@ -50,6 +50,8 @@ function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
   let result: TOutput | null = null;
 
   const terminate = () => {
+    result = null; // clear result
+
     if (worker) {
       worker.terminate();
       worker = null;
