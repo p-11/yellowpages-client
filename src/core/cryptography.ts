@@ -462,19 +462,24 @@ const generatePQKeypair = (
  * @param mnemonic24 24-word BIP-39 phrase
  */
 const generatePQKeypairs = (mnemonic24: Mnemonic24) => {
-  const mldsa44KeyPair = generatePQKeypair(
-    mnemonic24,
-    PQ_SIGNATURE_ALGORITHM.ML_DSA_44
-  );
-  const slhdsaSha2S128KeyPair = generatePQKeypair(
-    mnemonic24,
-    PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
-  );
+  try {
+    const mldsa44KeyPair = generatePQKeypair(
+      mnemonic24,
+      PQ_SIGNATURE_ALGORITHM.ML_DSA_44
+    );
+    const slhdsaSha2S128KeyPair = generatePQKeypair(
+      mnemonic24,
+      PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
+    );
 
-  return {
-    mldsa44KeyPair,
-    slhdsaSha2S128KeyPair
-  };
+    return {
+      mldsa44KeyPair,
+      slhdsaSha2S128KeyPair
+    };
+  } finally {
+    // zero out input data
+    mnemonic24 = '' as Mnemonic24;
+  }
 };
 
 /**
