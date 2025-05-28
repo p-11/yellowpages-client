@@ -40,7 +40,7 @@ export const createGenerateSignedMessagesTask = () =>
  *
  * Returns:
  * - `start(input: TInput)`: Starts a new worker task with the specified input.
- * - `waitForResult(): Promise<TOutput | null>`: Resolves with the result or null on error.
+ * - `waitForResult(): Promise<TOutput | null>`: Resolves with the result or throws on error.
  * - `terminate()`: Cancels any running worker task and releases resources.
  */
 function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
