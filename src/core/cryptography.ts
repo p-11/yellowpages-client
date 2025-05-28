@@ -464,7 +464,7 @@ const generatePQKeypair = (
     const name = PQ_SIGNATURE_ALGORITHM[algorithm] ?? algorithm;
     throw new Error(`Error generating ${name} keypair: ${err.message || err}`);
   } finally {
-    // zero out input data
+    // zero out sensitive input data
     mnemonic24 = '' as Mnemonic24;
   }
 };
@@ -490,7 +490,7 @@ const generatePQKeypairs = (mnemonic24: Mnemonic24) => {
       slhdsaSha2S128KeyPair
     };
   } finally {
-    // zero out input data
+    // zero out sensitive input data
     mnemonic24 = '' as Mnemonic24;
   }
 };
@@ -607,7 +607,7 @@ const generatePQSignedMessages = (
   } catch (err: any) {
     throw new Error(`Error signing: ${err.message || err}`);
   } finally {
-    // zero out input data
+    // zero out sensitive input data
     mnemonic24 = '' as Mnemonic24;
   }
 };
@@ -632,7 +632,7 @@ const generatePQAddresses = (mnemonic24: Mnemonic24) => {
       slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
     };
   } finally {
-    // zero out input data
+    // zero out sensitive input data
     mnemonic24 = '' as Mnemonic24;
   }
 };
