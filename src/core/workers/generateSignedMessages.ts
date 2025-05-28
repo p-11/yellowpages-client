@@ -12,12 +12,11 @@ addEventListener(
       bitcoinAddress: BitcoinAddress;
     }>
   ) => {
-    const input = event.data;
     const result = generatePQSignedMessages(
-      input.mnemonic24,
-      input.bitcoinAddress
+      event.data.mnemonic24,
+      event.data.bitcoinAddress
     );
-    input.mnemonic24 = '' as Mnemonic24;
+    event.data.mnemonic24 = '' as Mnemonic24;
     postMessage(result);
   }
 );
