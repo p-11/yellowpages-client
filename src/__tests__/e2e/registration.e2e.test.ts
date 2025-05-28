@@ -338,7 +338,7 @@ test('unsuccessful registration attempt when an invalid Bitcoin address is enter
   await page
     .getByLabel('1. Enter your public Bitcoin address')
     .fill('invalid-bitcoin-address');
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Confirm', disabled: false }).click();
 
   await expect(page.getByText('Invalid Bitcoin address')).toBeVisible();
 });

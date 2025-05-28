@@ -5,75 +5,113 @@ import type {
   SignedMessages
 } from './cryptography';
 
-export const generateSignedMessagesInWorker = async (
-  mnemonic24: Mnemonic24,
-  bitcoinAddress: BitcoinAddress
-) => {
-  return new Promise<SignedMessages>((resolve, reject) => {
-    const worker = new Worker(
-      new URL('./workers/generateSignedMessages.ts', import.meta.url),
-      {
-        type: 'module'
-      }
-    );
-
-    try {
-      worker.addEventListener(
-        'message',
-        (event: MessageEvent<SignedMessages>) => {
-          resolve(event.data);
-          worker.terminate();
-        }
-      );
-
-      worker.addEventListener('error', err => {
-        reject(err);
-        worker.terminate();
-      });
-
-      worker.postMessage({ mnemonic24, bitcoinAddress });
-    } catch (err) {
-      reject(err);
-      worker.terminate();
-    }
-  });
-};
-
-export const generateAddressesInWorker = async (mnemonic24: Mnemonic24) => {
-  return new Promise<{
-    mldsa44Address: PQAddress;
-    slhdsaSha2S128Address: PQAddress;
-  }>((resolve, reject) => {
-    const worker = new Worker(
+export const createGenerateAddressesTask = () =>
+  createWorkerTask<
+    { mnemonic24: Mnemonic24 },
+    { mldsa44Address: PQAddress; slhdsaSha2S128Address: PQAddress }
+  >(() => {
+    return new Worker(
       new URL('./workers/generateAddresses.ts', import.meta.url),
       {
         type: 'module'
       }
     );
-
-    try {
-      worker.addEventListener(
-        'message',
-        (
-          event: MessageEvent<{
-            mldsa44Address: PQAddress;
-            slhdsaSha2S128Address: PQAddress;
-          }>
-        ) => {
-          resolve(event.data);
-          worker.terminate();
-        }
-      );
-
-      worker.addEventListener('error', err => {
-        reject(err);
-        worker.terminate();
-      });
-
-      worker.postMessage({ mnemonic24 });
-    } catch (err) {
-      reject(err);
-      worker.terminate();
-    }
   });
-};
+
+export const createGenerateSignedMessagesTask = () =>
+  createWorkerTask<
+    { mnemonic24: Mnemonic24; bitcoinAddress: BitcoinAddress },
+    SignedMessages
+  >(() => {
+    return new Worker(
+      new URL('./workers/generateSignedMessages.ts', import.meta.url),
+      {
+        type: 'module'
+      }
+    );
+  });
+
+/**
+ * Helper function to manage the lifecycle of background tasks.
+ *
+ * Manages a Promise internally that resolves when the worker completes or fails.
+ * Uses a provided factory function (`createWorker`) to instantiate a new Worker.
+ * Each call to `start` restarts the task with new input, terminating any existing worker.
+ *
+ * Returns:
+ * - `start(input: TInput)`: Starts a new worker task with the specified input.
+ * - `waitForResult(): Promise<TOutput | null>`: Resolves with the result or null on error.
+ * - `terminate()`: Cancels any running worker task and releases resources.
+ */
+function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
+  let worker: Worker | null = null;
+  let resolvePromise: (() => void) | null = null;
+  let promise: Promise<void> | null = null;
+  let result: TOutput | null = null;
+  let error: Error | null = null;
+
+  const terminate = () => {
+    result = null; // clear result
+
+    if (worker) {
+      worker.terminate();
+      worker = null;
+    }
+    if (resolvePromise) {
+      resolvePromise();
+      resolvePromise = null;
+    }
+  };
+
+  const start = (input: TInput) => {
+    terminate();
+
+    promise = new Promise<void>(resolve => {
+      resolvePromise = resolve;
+    });
+
+    worker = createWorker();
+
+    const cleanup = () => {
+      if (worker) {
+        worker.removeEventListener('message', onMessage);
+        worker.removeEventListener('error', onError);
+        worker.terminate();
+        worker = null;
+      }
+      resolvePromise?.();
+      resolvePromise = null;
+    };
+
+    const onMessage = (event: MessageEvent<TOutput>) => {
+      result = event.data;
+      cleanup();
+    };
+
+    const onError = (event: ErrorEvent) => {
+      error = new Error(event.message);
+      cleanup();
+    };
+
+    worker.addEventListener('message', onMessage);
+    worker.addEventListener('error', onError);
+
+    worker.postMessage(input);
+  };
+
+  const waitForResult = async (): Promise<TOutput | null> => {
+    if (promise) {
+      await promise;
+    }
+    if (error) throw error;
+    const output = result;
+    result = null; // clear result
+    return output;
+  };
+
+  return {
+    start,
+    waitForResult,
+    terminate
+  };
+}

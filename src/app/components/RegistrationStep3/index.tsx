@@ -34,10 +34,7 @@ import {
 } from '@/core/cryptography';
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
-import {
-  generateAddressesInWorker,
-  generateSignedMessagesInWorker
-} from '@/core/cryptographyInWorkers';
+import { createGenerateSignedMessagesTask } from '@/core/cryptographyInWorkers';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -58,24 +55,35 @@ export function RegistrationStep3() {
     useState(false);
   const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
     useState(false);
-  const [showFailedRequestAlert, setShowFailedRequestAlert] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
   const {
     bitcoinAddress,
     seedPhrase,
+    pqAddresses,
+    generateAddressesTaskRef,
+    setPqAddresses,
     setBitcoinAddress,
-    setProofData,
-    setSignedMessages
+    setProofData
   } = useRegistrationSessionContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneratingSigningMessage, setIsGeneratingSigningMessage] =
-    useState(false);
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
   const [cfTurnstileToken, setCfTurnstileToken] = useState<string | null>(null);
+  const generateSignedMessagesTaskRef = useRef(
+    createGenerateSignedMessagesTask()
+  );
 
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
   const isSignaturePopulated = signature && signature.length > 0;
+
+  useEffect(() => {
+    const generateSignedMessagesTask = generateSignedMessagesTaskRef.current;
+
+    return function cleanup() {
+      generateSignedMessagesTask.terminate();
+    };
+  }, []);
 
   const copySigningMessage = useCallback(() => {
     if (signingMessage) {
@@ -96,36 +104,59 @@ export function RegistrationStep3() {
     setShowInvalidSignatureAlert(false);
   }, []);
 
-  const acknowledgeFailedRequestAlert = useCallback(() => {
-    setShowFailedRequestAlert(false);
+  const acknowledgeErrorDialog = useCallback(() => {
+    setShowErrorDialog(false);
   }, []);
 
   const confirmBitcoinAddress = useCallback(async () => {
-    if (seedPhrase && bitcoinAddress && isValidBitcoinAddress(bitcoinAddress)) {
-      setIsBitcoinAddressConfirmed(true);
+    try {
+      if (bitcoinAddress && isValidBitcoinAddress(bitcoinAddress)) {
+        setIsBitcoinAddressConfirmed(true);
 
-      setIsGeneratingSigningMessage(true);
+        const pqAddressesResult =
+          pqAddresses ??
+          (await generateAddressesTaskRef.current.waitForResult());
 
-      const { mldsa44Address, slhdsaSha2S128Address } =
-        await generateAddressesInWorker(seedPhrase);
+        if (!pqAddressesResult) throw new Error('Invalid PQ addresses');
 
-      const { message } = generateMessage({
-        bitcoinAddress,
-        mldsa44Address,
-        slhdsaSha2S128Address
-      });
-      setSigningMessage(message);
+        const { message } = generateMessage({
+          bitcoinAddress,
+          mldsa44Address: pqAddressesResult.mldsa44Address,
+          slhdsaSha2S128Address: pqAddressesResult.slhdsaSha2S128Address
+        });
+        setSigningMessage(message);
 
-      setIsGeneratingSigningMessage(false);
-    } else {
-      setShowInvalidBitcoinAddressAlert(true);
+        if (!pqAddresses) {
+          setPqAddresses(pqAddressesResult);
+        }
+
+        if (!seedPhrase) throw new Error('Invalid seed phrase');
+
+        generateSignedMessagesTaskRef.current.start({
+          mnemonic24: seedPhrase,
+          bitcoinAddress
+        });
+      } else {
+        setShowInvalidBitcoinAddressAlert(true);
+      }
+    } catch {
+      setShowErrorDialog(true);
     }
-  }, [bitcoinAddress, seedPhrase, setSigningMessage]);
+  }, [
+    pqAddresses,
+    bitcoinAddress,
+    seedPhrase,
+    generateSignedMessagesTaskRef,
+    generateAddressesTaskRef,
+    setSigningMessage,
+    setPqAddresses
+  ]);
 
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
     setIsBitcoinAddressConfirmed(false);
     resetSignature();
+    generateSignedMessagesTaskRef.current.terminate();
   }, [resetSignature]);
 
   const goBack = useCallback(() => {
@@ -133,60 +164,63 @@ export function RegistrationStep3() {
   }, [router]);
 
   const completeRegistration = useCallback(async () => {
-    if (
-      seedPhrase &&
-      signingMessage &&
-      signature &&
-      bitcoinAddress &&
-      cfTurnstileToken &&
-      isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
-    ) {
-      try {
+    try {
+      if (!signingMessage) throw new Error('Invalid signing message');
+      if (!bitcoinAddress) throw new Error('Invalid Bitcoin address');
+      if (!cfTurnstileToken) throw new Error('Invalid CF Turnstile token');
+
+      if (
+        signature &&
+        isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
+      ) {
         setIsSubmitting(true);
 
-        const signedMessages = await generateSignedMessagesInWorker(
-          seedPhrase,
-          bitcoinAddress
-        );
-        setSignedMessages(signedMessages);
+        try {
+          const signedMessages =
+            await generateSignedMessagesTaskRef.current.waitForResult();
 
-        await createProof(
-          {
-            btcAddress: bitcoinAddress,
-            btcSignedMessage: signature,
-            mldsa44Address: signedMessages.ML_DSA_44.address,
-            mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
-            mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
-            slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
-            slhdsaSha2S128PublicKey:
-              signedMessages.SLH_DSA_SHA2_S_128.publicKey,
-            slhdsaSha2S128SignedMessage:
-              signedMessages.SLH_DSA_SHA2_S_128.signedMessage
-          },
-          cfTurnstileToken
-        );
+          if (!signedMessages) throw new Error('Invalid signedMessages result');
 
-        const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
+          await createProof(
+            {
+              btcAddress: bitcoinAddress,
+              btcSignedMessage: signature,
+              mldsa44Address: signedMessages.ML_DSA_44.address,
+              mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
+              mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
+              slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
+              slhdsaSha2S128PublicKey:
+                signedMessages.SLH_DSA_SHA2_S_128.publicKey,
+              slhdsaSha2S128SignedMessage:
+                signedMessages.SLH_DSA_SHA2_S_128.signedMessage
+            },
+            cfTurnstileToken
+          );
 
-        setProofData(JSON.stringify(proof, null, 2));
+          const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
 
-        router.push('/registration-complete');
-      } catch {
-        setShowFailedRequestAlert(true);
+          setProofData(JSON.stringify(proof, null, 2));
+
+          router.push('/registration-complete');
+        } catch {
+          setShowErrorDialog(true);
+        }
+
         setIsSubmitting(false);
+      } else {
+        setShowInvalidSignatureAlert(true);
       }
-    } else {
-      setShowInvalidSignatureAlert(true);
+    } catch {
+      setShowErrorDialog(true);
     }
   }, [
     router,
     signature,
     bitcoinAddress,
     signingMessage,
-    seedPhrase,
+    generateSignedMessagesTaskRef,
     cfTurnstileToken,
-    setProofData,
-    setSignedMessages
+    setProofData
   ]);
 
   const tryAgain = useCallback(() => {
@@ -260,13 +294,9 @@ export function RegistrationStep3() {
             onClick={signingMessageClickHandler}
           >
             <HighlightedBox>
-              {isGeneratingSigningMessage ? (
-                <LoaderCircleIcon />
-              ) : (
-                <span className={styles.signingMessage}>
-                  {signingMessage ?? ''}
-                </span>
-              )}
+              <span className={styles.signingMessage}>
+                {signingMessage ?? ''}
+              </span>
             </HighlightedBox>
           </button>
           <Toolbar>
@@ -358,7 +388,7 @@ export function RegistrationStep3() {
           </DialogFooter>
         </Dialog>
       )}
-      {showFailedRequestAlert && (
+      {showErrorDialog && (
         <Dialog>
           <DialogTitle>Oops, something went wrong</DialogTitle>
           <DialogDescription>
@@ -375,7 +405,7 @@ export function RegistrationStep3() {
             </a>
           </Alert>
           <DialogFooter>
-            <Button variant='primary' onClick={acknowledgeFailedRequestAlert}>
+            <Button variant='primary' onClick={acknowledgeErrorDialog}>
               Continue
             </Button>
           </DialogFooter>
