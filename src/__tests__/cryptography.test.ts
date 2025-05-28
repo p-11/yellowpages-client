@@ -81,7 +81,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
         'e+ffcul9XkuQCkiCEYX2ES6KMGJ9c7+Z0PFfhnJRckbaHzh4EH9hcEkUoFZ4gK2ta6/xPzgxB1yTT92wPZw8SmrK3DeLMz9mkst0IWkSzJ/TPPHRcSYJekO+CLV8k7uXsGSSoK4fbLqkX8leQFMCzjzRYg06zb3SD7iQwK3O8dP2WWLa9PkBMl1LECCBtTHrxoqyYtKopNbn3wICOOxI1jjTTL46AZnE6Vw2vQdLB/Qg59Pq6su8P3zEqBbsVPwPpT9ZbBNCHE+puWjdYnOfttj6DZ748CRHibQ9WTkH+VpxssIxU62nsYes/fV85nDozwddZggZoLfRsmSlG1Yz6h4m5hMMu9Nku9myTTw4UCiGSxZmad+yIjl7hh6J3wDaLMDA6SXajLSXTk2RwmnsEUlYs+uXS6Wj5wzg+bLQDQVMkU+doOf4vPTArf4uwzJdZ9Ghp8vjHd+rQgKjuo+Hy+HWz4JgvaQXlln+3yF0eY4/v01Bhe8BwVCbFZX8ts2Ay53gJmZEtsnXw3d5xedAMO9LJt4UqwovnmWCuApzAG9jyvG3Wxxe572E725S4vLtgnESzfrsD3wWo/A0oP+wk4oOFjhRDdVwHzwBDiHPhl43b/lt6omQuxK+xF0BJ77X/VhAoCx5zwIQ1GnmtXmP5xqx8f+e9ceFWNSxBPVKakKx/BveCxF1uOLc7DZUFLDVxRBURiF4BQX/670+FaYF2BWS3XtxfCqxaCz3F177qUev3pYuwpvSIj6WNSmU8uyxvibSzvYtA50gQtznTfteWja14B8AB+rgagz5nEzRzO7u1+QmxbdvEyBKvmWzNtnvsNqee4LhU9sl6rPdyUScmDrCPVLiPhrqY/sBVfxzX6z40suflYFPYU+fE6lApXnpyDB8he25DmnmPYTEsCq9d2uYaYTSBAgeir0qi9Jnjj/mcJ/3sNwwTlh7Tp6ahJlqWEUJ4myGxcHEesgWAeIrqJ6bhHTxP1n+do4ffry4CMcAjoAPAwYY0JUTYANy722LbOgiN+z5KUryC/MYjw/azOHFcpYjsGR60fARG03yVBgNBuD5okkmxtrAGdS4w85UDMAa/dwobUI5bdigFHP0Av6hHQ5uxeaxt1gAO53veGmA8aIOidhtZyHhlv+ANl9VYyZMOdPP1DjBTd8AQTIGR2JglmGzE8/00Ndx736MNdVzxNG0iKOvLlgl3cd1cEjW6hfC47juSDCgZTs9oPeo2mr1qvtak7zVd/yByjP9KHh0mjCi3cZDButaTe/oic4bdf24xQDtahSEJpAf49i9gzIpqxG92pyM7HRaVSvScFmCNnNKLJSDCeYw4+zlU+jawGKPjX6ebFDGFV1gNiPvkZdYd/5UXFwpHt5saj/Lgfoe/BtJWUx53TNkYlTNytflgV/ssFo8k9aYlIq2SDDKeZdlZexeNJOvhr8yntOQzLK6WWVONUgilTFNKX3+NQTmMR1LhA7VSP17+/3NjM0wEaz/JpKRoqMMvrgzl2A/6s019UMoT81hGXNtk9Ed8vxtdeNi1BC+SHWWyazundxXMQ4/gD7PnJXQJduz0QZ8quxRQZZTn+u+t1hKyMQikRKqephJaIQv9NLnKffPncEii9ukfRuLLCy7hPFuAho1Bfgi6rJMN0AxlX9URe6LB6vjLMNdTvWVqCHtBvay4scJg58my00razBF8BhQe7db+UJiv5JwADSJ2fwO/oooReksH3Sv1U4UOx5Y7kK8bbChFg==';
       const address =
         'rh1qpqg39uw700gcctpahe650p9zlzpnjt60cpz09m4kx7ncz8922635hsmmfzpd';
-      expect(base64.encode(keyPair.privateKey)).toEqual(privateKey);
+      expect(base64.encode(keyPair.privateKey!)).toEqual(privateKey);
       expect(base64.encode(keyPair.publicKey)).toEqual(publicKey);
       expect(keyPair.address).toEqual(address);
     });
@@ -139,7 +139,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       const publicKey = 'Wi6WLwN39BUnK7X4gkIG101E2zMZWNAVdOsrG8/IxN4=';
       const address =
         'rh1qpq3z7j5vfjd9y5vlc86al02ujud4tynj73rahcdaa9cdgu47matt5s5m48q0';
-      expect(base64.encode(keyPair.privateKey)).toEqual(privateKey);
+      expect(base64.encode(keyPair.privateKey!)).toEqual(privateKey);
       expect(base64.encode(keyPair.publicKey)).toEqual(publicKey);
       expect(keyPair.address).toEqual(address);
     });
@@ -323,29 +323,29 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       expect(keypair).toHaveProperty('decapsulationKey');
 
       // Check key sizes
-      expect(keypair.decapsulationKey.length).toBe(
+      expect(keypair.decapsulationKey?.length).toBe(
         ML_KEM_768_DECAPSULATION_KEY_SIZE
       );
-      expect(keypair.encapsulationKey.length).toBeGreaterThan(0);
+      expect(keypair.encapsulationKey?.length).toBeGreaterThan(0);
 
       // Check that keys contain data (not all zeros)
-      expect(keypair.encapsulationKey.some(byte => byte !== 0)).toBe(true);
-      expect(keypair.decapsulationKey.some(byte => byte !== 0)).toBe(true);
+      expect(keypair.encapsulationKey?.some(byte => byte !== 0)).toBe(true);
+      expect(keypair.decapsulationKey?.some(byte => byte !== 0)).toBe(true);
     });
 
     test('destroyMlKem768Keypair zeroes out key material', () => {
       const keypair = generateMlKem768Keypair();
 
       // Verify keys have data before destruction
-      expect(keypair.encapsulationKey.some(byte => byte !== 0)).toBe(true);
-      expect(keypair.decapsulationKey.some(byte => byte !== 0)).toBe(true);
+      expect(keypair.encapsulationKey?.some(byte => byte !== 0)).toBe(true);
+      expect(keypair.decapsulationKey?.some(byte => byte !== 0)).toBe(true);
 
       // Destroy the keypair
       destroyMlKem768Keypair(keypair);
 
-      // Verify all bytes are now zero
-      expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
-      expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
+      // Verify keys are now undefined
+      expect(keypair.encapsulationKey).toBeUndefined();
+      expect(keypair.decapsulationKey).toBeUndefined();
     });
 
     test('end-to-end ML-KEM-768 key exchange produces matching shared secrets', () => {
@@ -354,8 +354,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
 
       // Clone the keypair to test against (since the original will be destroyed)
       const aliceKeypairClone = {
-        encapsulationKey: new Uint8Array(aliceKeypair.encapsulationKey),
-        decapsulationKey: new Uint8Array(aliceKeypair.decapsulationKey)
+        encapsulationKey: new Uint8Array(aliceKeypair.encapsulationKey!),
+        decapsulationKey: new Uint8Array(aliceKeypair.decapsulationKey!)
       };
 
       // Bob uses Alice's encapsulation key to create a ciphertext and shared secret
@@ -381,12 +381,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       expect(aliceSharedSecret).toEqual(bobResult.sharedSecret);
 
       // Verify keypair was destroyed by deriveMlKem768SharedSecret
-      expect(aliceKeypair.encapsulationKey.every(byte => byte === 0)).toBe(
-        true
-      );
-      expect(aliceKeypair.decapsulationKey.every(byte => byte === 0)).toBe(
-        true
-      );
+      expect(aliceKeypair.encapsulationKey).toBeUndefined();
+      expect(aliceKeypair.decapsulationKey).toBeUndefined();
     });
 
     test('deriveMlKem768SharedSecret throws on invalid ciphertext size', () => {
@@ -400,8 +396,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       }).toThrow(/Invalid ML-KEM-768 ciphertext byte length/);
 
       // Keypair should still be destroyed even though an error was thrown
-      expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
-      expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
+      expect(keypair.encapsulationKey).toBeUndefined();
+      expect(keypair.decapsulationKey).toBeUndefined();
     });
   });
 
@@ -411,7 +407,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       const aliceKeypair = generateMlKem768Keypair();
 
       // Bob generates ciphertext and shared secret
-      const bobResult = ml_kem768.encapsulate(aliceKeypair.encapsulationKey);
+      const bobResult = ml_kem768.encapsulate(aliceKeypair.encapsulationKey!);
       const mlKemCiphertext = bobResult.cipherText as MlKem768CiphertextBytes;
       const bobSharedSecret = bobResult.sharedSecret;
 
@@ -448,12 +444,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       expect(decryptedRequest).toEqual(proofRequest);
 
       // Verify Alice's keypair was destroyed
-      expect(aliceKeypair.encapsulationKey.every(byte => byte === 0)).toBe(
-        true
-      );
-      expect(aliceKeypair.decapsulationKey.every(byte => byte === 0)).toBe(
-        true
-      );
+      expect(aliceKeypair.encapsulationKey).toBeUndefined();
+      expect(aliceKeypair.decapsulationKey).toBeUndefined();
     });
 
     test('encryptProofRequestData throws on invalid ML-KEM ciphertext', () => {
@@ -468,8 +460,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       }).toThrow(/Invalid ML-KEM-768 ciphertext byte length/);
 
       // Keypair should be destroyed even if encryption fails
-      expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
-      expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
+      expect(keypair.encapsulationKey).toBeUndefined();
+      expect(keypair.decapsulationKey).toBeUndefined();
     });
   });
 });

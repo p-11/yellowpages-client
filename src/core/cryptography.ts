@@ -69,8 +69,8 @@ const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
 ];
 
 export type MlKem768Keypair = {
-  encapsulationKey: Uint8Array; // Public key used for encapsulation (formerly publicKey)
-  decapsulationKey: Uint8Array; // Secret key used for decapsulation (formerly secretKey)
+  encapsulationKey?: Uint8Array; // Public key used for encapsulation (formerly publicKey)
+  decapsulationKey?: Uint8Array; // Secret key used for decapsulation (formerly secretKey)
 };
 
 /*
@@ -161,9 +161,11 @@ function deriveMlKem768SharedSecret(
     }
 
     // Validate decapsulation key length
-    if (keypair.decapsulationKey.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE) {
+    if (
+      keypair.decapsulationKey?.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE
+    ) {
       throw new Error(
-        `Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey.length}`
+        `Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey?.length}`
       );
     }
 
@@ -200,8 +202,10 @@ function deriveMlKem768SharedSecret(
  */
 function destroyMlKem768Keypair(keypair: MlKem768Keypair): void {
   // Zero out both keys
-  keypair.encapsulationKey.fill(0);
-  keypair.decapsulationKey.fill(0);
+  keypair.encapsulationKey?.fill(0);
+  keypair.encapsulationKey = undefined;
+  keypair.decapsulationKey?.fill(0);
+  keypair.decapsulationKey = undefined;
 }
 
 /*
@@ -376,7 +380,7 @@ const deriveEntropyFromMnemonic = ({
 }): Uint8Array => {
   // BIP-39 seed (64 bytes)
   let m = ensure24WordMnemonic(mnemonic24);
-  const seed = mnemonicToSeedSync(m);
+  let seed: Uint8Array | undefined = mnemonicToSeedSync(m);
   // Master HDKey from that seed
   const masterNode = HDKey.fromMasterSeed(seed);
   // Get bytes length for PQ_SIGNATURE_ALGORITHM
@@ -385,6 +389,7 @@ const deriveEntropyFromMnemonic = ({
   mnemonic24 = '' as Mnemonic24;
   m = '' as Mnemonic24;
   seed.fill(0);
+  seed = undefined;
   // Use the algorithm's numeric value as the derive-index
   return deriveBip85Entropy({
     root: masterNode,
@@ -409,7 +414,10 @@ const generatePQKeypair = (
   try {
     switch (algorithm) {
       case PQ_SIGNATURE_ALGORITHM.ML_DSA_44: {
-        const entropy = deriveEntropyFromMnemonic({ mnemonic24, algorithm });
+        let entropy: Uint8Array | undefined = deriveEntropyFromMnemonic({
+          mnemonic24,
+          algorithm
+        });
         const keypair = ml_dsa44.keygen(entropy);
         const publicKey = keypair.publicKey as PQPublicKey;
         const privateKey = keypair.secretKey as PQPrivateKey | undefined;
@@ -419,6 +427,7 @@ const generatePQKeypair = (
         });
         // zero out sensitive data
         entropy.fill(0);
+        entropy = undefined;
         return {
           publicKey: publicKey,
           privateKey: privateKey,
@@ -426,7 +435,10 @@ const generatePQKeypair = (
         };
       }
       case PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128: {
-        const entropy = deriveEntropyFromMnemonic({ mnemonic24, algorithm });
+        let entropy: Uint8Array | undefined = deriveEntropyFromMnemonic({
+          mnemonic24,
+          algorithm
+        });
         const keypair = slh_dsa_sha2_128s.keygen(entropy);
         const publicKey = keypair.publicKey as PQPublicKey;
         const privateKey = keypair.secretKey as PQPrivateKey | undefined;
@@ -436,6 +448,7 @@ const generatePQKeypair = (
         });
         // zero out sensitive data
         entropy.fill(0);
+        entropy = undefined;
         return {
           publicKey: publicKey,
           privateKey: privateKey,
@@ -551,31 +564,27 @@ const generatePQSignedMessages = (
       slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
     });
 
-    let mldsa44SignedMessage: Uint8Array<ArrayBufferLike> | null = null;
-    let slhdsaSha2S128SignedMessage: Uint8Array<ArrayBufferLike> | null = null;
+    if (!mldsa44KeyPair.privateKey)
+      throw new Error('Invalid ML-DSA-44 keypair');
+    if (!slhdsaSha2S128KeyPair.privateKey)
+      throw new Error('Invalid SLH-DSA-SHA2-S-128 keypair');
 
     // Signing
-    if (mldsa44KeyPair.privateKey) {
-      mldsa44SignedMessage = ml_dsa44.sign(
-        mldsa44KeyPair.privateKey,
-        messageBytes
-      );
-      // Best effort to zero out private key
-      mldsa44KeyPair.privateKey.fill(0);
-      mldsa44KeyPair.privateKey = undefined;
-    }
-    if (slhdsaSha2S128KeyPair.privateKey) {
-      slhdsaSha2S128SignedMessage = slh_dsa_sha2_128s.sign(
-        slhdsaSha2S128KeyPair.privateKey,
-        messageBytes
-      );
-      // Best effort to zero out private key
-      slhdsaSha2S128KeyPair.privateKey.fill(0);
-      slhdsaSha2S128KeyPair.privateKey = undefined;
-    }
+    const mldsa44SignedMessage = ml_dsa44.sign(
+      mldsa44KeyPair.privateKey,
+      messageBytes
+    );
+    // Best effort to zero out private key
+    mldsa44KeyPair.privateKey.fill(0);
+    mldsa44KeyPair.privateKey = undefined;
 
-    if (!mldsa44SignedMessage || !slhdsaSha2S128SignedMessage)
-      throw new Error();
+    const slhdsaSha2S128SignedMessage = slh_dsa_sha2_128s.sign(
+      slhdsaSha2S128KeyPair.privateKey,
+      messageBytes
+    );
+    // Best effort to zero out private key
+    slhdsaSha2S128KeyPair.privateKey.fill(0);
+    slhdsaSha2S128KeyPair.privateKey = undefined;
 
     // Response
     return {
@@ -680,9 +689,11 @@ function encryptProofRequestData(
     // Clean up all sensitive cryptographic material
     if (mlKemSharedSecret) {
       mlKemSharedSecret.fill(0);
+      mlKemSharedSecret = undefined;
     }
     if (aes256GcmNonce) {
       aes256GcmNonce.fill(0);
+      aes256GcmNonce = undefined;
     }
     destroyMlKem768Keypair(mlKem768Keypair);
   }
