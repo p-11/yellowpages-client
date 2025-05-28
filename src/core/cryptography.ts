@@ -412,7 +412,7 @@ const generatePQKeypair = (
         const entropy = deriveEntropyFromMnemonic({ mnemonic24, algorithm });
         const keypair = ml_dsa44.keygen(entropy);
         const publicKey = keypair.publicKey as PQPublicKey;
-        const privateKey = keypair.secretKey as PQPrivateKey;
+        const privateKey = keypair.secretKey as PQPrivateKey | undefined;
         const address = generatePQAddress({
           publicKey,
           algorithm
@@ -429,7 +429,7 @@ const generatePQKeypair = (
         const entropy = deriveEntropyFromMnemonic({ mnemonic24, algorithm });
         const keypair = slh_dsa_sha2_128s.keygen(entropy);
         const publicKey = keypair.publicKey as PQPublicKey;
-        const privateKey = keypair.secretKey as PQPrivateKey;
+        const privateKey = keypair.secretKey as PQPrivateKey | undefined;
         const address = generatePQAddress({
           publicKey,
           algorithm
@@ -551,18 +551,32 @@ const generatePQSignedMessages = (
       slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
     });
 
+    let mldsa44SignedMessage: Uint8Array<ArrayBufferLike> | null = null;
+    let slhdsaSha2S128SignedMessage: Uint8Array<ArrayBufferLike> | null = null;
+
     // Signing
-    const mldsa44SignedMessage = ml_dsa44.sign(
-      mldsa44KeyPair.privateKey,
-      messageBytes
-    );
-    const slhdsaSha2S128SignedMessage = slh_dsa_sha2_128s.sign(
-      slhdsaSha2S128KeyPair.privateKey,
-      messageBytes
-    );
-    // Best effort to zero out private keys
-    mldsa44KeyPair.privateKey.fill(0);
-    slhdsaSha2S128KeyPair.privateKey.fill(0);
+    if (mldsa44KeyPair.privateKey) {
+      mldsa44SignedMessage = ml_dsa44.sign(
+        mldsa44KeyPair.privateKey,
+        messageBytes
+      );
+      // Best effort to zero out private key
+      mldsa44KeyPair.privateKey.fill(0);
+      mldsa44KeyPair.privateKey = undefined;
+    }
+    if (slhdsaSha2S128KeyPair.privateKey) {
+      slhdsaSha2S128SignedMessage = slh_dsa_sha2_128s.sign(
+        slhdsaSha2S128KeyPair.privateKey,
+        messageBytes
+      );
+      // Best effort to zero out private key
+      slhdsaSha2S128KeyPair.privateKey.fill(0);
+      slhdsaSha2S128KeyPair.privateKey = undefined;
+    }
+
+    if (!mldsa44SignedMessage || !slhdsaSha2S128SignedMessage)
+      throw new Error();
+
     // Response
     return {
       ML_DSA_44: {
@@ -599,8 +613,10 @@ const generatePQAddresses = (mnemonic24: Mnemonic24) => {
       generatePQKeypairs(mnemonic24);
 
     // Best effort to zero out private keys
-    mldsa44KeyPair.privateKey.fill(0);
-    slhdsaSha2S128KeyPair.privateKey.fill(0);
+    mldsa44KeyPair.privateKey?.fill(0);
+    mldsa44KeyPair.privateKey = undefined;
+    slhdsaSha2S128KeyPair.privateKey?.fill(0);
+    slhdsaSha2S128KeyPair.privateKey = undefined;
 
     return {
       mldsa44Address: mldsa44KeyPair.address,
