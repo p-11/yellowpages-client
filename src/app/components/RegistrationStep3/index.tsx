@@ -48,7 +48,6 @@ export function RegistrationStep3() {
   } = useSensitiveState();
   const [isBitcoinAddressConfirmed, setIsBitcoinAddressConfirmed] =
     useState(false);
-  const [isFailedAttempt, setIsFailedAttempt] = useState(false);
   const [autoFocusBitcoinAddressField, setAutoFocusBitcoinAddressField] =
     useState(false);
   const [showInvalidBitcoinAddressAlert, setShowInvalidBitcoinAddressAlert] =
@@ -223,11 +222,6 @@ export function RegistrationStep3() {
     setProofData
   ]);
 
-  const tryAgain = useCallback(() => {
-    resetSignature();
-    setIsFailedAttempt(false);
-  }, [resetSignature]);
-
   const changeBitcoinAddress = useCallback(
     (value: string) => {
       setBitcoinAddress(value as BitcoinAddress);
@@ -236,9 +230,7 @@ export function RegistrationStep3() {
   );
 
   return (
-    <main
-      className={`${isBitcoinAddressConfirmed ? styles.confirmed : ''} ${isFailedAttempt ? styles.failedAttempt : ''}`}
-    >
+    <main className={isBitcoinAddressConfirmed ? styles.confirmed : undefined}>
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 3' />
         <RegistrationStepTitle>Generate your signature</RegistrationStepTitle>
@@ -323,11 +315,6 @@ export function RegistrationStep3() {
         </div>
       </div>
       <div className={styles.footer}>
-        <div className={styles.floatingFooter}>
-          <div className={styles.failedAttemptFooterOverlay}>
-            <Alert>Verification failed. Please try again.</Alert>
-          </div>
-        </div>
         <div
           className={`${styles.captchaContainer} ${isSignaturePopulated ? styles.showCaptcha : ''}`}
         >
@@ -343,22 +330,15 @@ export function RegistrationStep3() {
             <ArrowLeftIcon />
             Back
           </Button>
-          {isFailedAttempt ? (
-            <Button variant='primary' onClick={tryAgain}>
-              Try again
-            </Button>
-          ) : (
-            <Button
-              variant='primary'
-              onClick={completeRegistration}
-              disabled={
-                !isSignaturePopulated || !cfTurnstileToken || isSubmitting
-              }
-            >
-              Complete{' '}
-              {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}
-            </Button>
-          )}
+          <Button
+            variant='primary'
+            onClick={completeRegistration}
+            disabled={
+              !isSignaturePopulated || !cfTurnstileToken || isSubmitting
+            }
+          >
+            Complete {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}
+          </Button>
         </RegistrationFooterActions>
       </div>
       {showInvalidBitcoinAddressAlert && (

@@ -6,11 +6,6 @@
     transition: opacity 0.25s ease;
 }
 
-.failedAttempt .content {
-    opacity: 0.25;
-    pointer-events: none;
-}
-
 .warning {
     margin-top: 8px;
     margin-bottom: 16px;
@@ -121,29 +116,6 @@
     padding-bottom: 60px;
     display: flex;
     flex-direction: column;
-}
-
-.floatingFooter {
-    position: relative;
-}
-
-.failedAttemptFooterOverlay {
-    position: absolute;
-    background-color: #E8D674;
-    padding-top: 24px;
-    bottom: 24px;
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    opacity: 0;
-    pointer-events: none;
-    border-top: 1px solid #cfbf67;
-    transition: opacity 0.25s ease;
-}
-
-.failedAttempt .failedAttemptFooterOverlay {
-    opacity: 1;
-    pointer-events: auto;
 }
 
 .captchaContainer {
