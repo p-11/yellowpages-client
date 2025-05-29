@@ -28,7 +28,8 @@ export const RegistrationStep2 = () => {
     clearSelectedSeedWordIndices,
     clearSensitiveState
   } = useSensitiveState();
-  const { hasConfirmedSeedPhrase } = useRegistrationSessionContext();
+  const { hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase } =
+    useRegistrationSessionContext();
   const [showSeedWords, setShowSeedWords] = useState(false);
 
   const selectionCompleted =
@@ -40,12 +41,18 @@ export const RegistrationStep2 = () => {
     const isCorrect = verifySelectedSeedWords();
 
     if (isCorrect) {
+      setHasConfirmedSeedPhrase(true);
       router.push('/register/step-3');
     } else {
       clearSelectedSeedWordIndices();
       setIsFailedAttempt(true);
     }
-  }, [verifySelectedSeedWords, clearSelectedSeedWordIndices, router]);
+  }, [
+    verifySelectedSeedWords,
+    clearSelectedSeedWordIndices,
+    router,
+    setHasConfirmedSeedPhrase
+  ]);
 
   const tryAgain = useCallback(() => {
     window.scrollTo(0, 0);

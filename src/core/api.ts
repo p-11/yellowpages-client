@@ -14,7 +14,7 @@ import {
 import { base64 } from '@scure/base';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
 
-interface Proof {
+export interface Proof {
   id: string;
   btc_address: string;
   ml_dsa_44_address: string;
