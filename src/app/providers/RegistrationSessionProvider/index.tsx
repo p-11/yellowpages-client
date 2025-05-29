@@ -19,7 +19,7 @@ type RegistrationSessionContextType = {
     ReturnType<typeof createGenerateAddressesTask>
   >;
   seedPhrase?: Mnemonic24;
-  pqAddresses: Awaited<
+  pqAddresses?: Awaited<
     ReturnType<ReturnType<typeof createGenerateAddressesTask>['waitForResult']>
   >;
   setShowNewSessionAlert: (_value: boolean) => void;
@@ -144,11 +144,11 @@ const useSensitiveState = () => {
   const [seedPhrase, setSeedPhrase] =
     useState<RegistrationSessionContextType['seedPhrase']>();
   const [pqAddresses, setPqAddresses] =
-    useState<RegistrationSessionContextType['pqAddresses']>(null);
+    useState<RegistrationSessionContextType['pqAddresses']>();
 
   const clearSensitiveState = useCallback(() => {
     setSeedPhrase(undefined);
-    setPqAddresses(null);
+    setPqAddresses(undefined);
   }, []);
 
   useEffect(() => {
