@@ -125,7 +125,7 @@ test('successful registration and search result', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('successful registration when the bitcoin address is edited', async ({
+test('successful registration when the Bitcoin address is changed', async ({
   page
 }) => {
   const btcWallet = generateBtcWallet();
