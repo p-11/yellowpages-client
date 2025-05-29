@@ -39,6 +39,9 @@ const RegistrationSessionContext = createContext<
 
 const sessionStorageKey = 'activeRegistrationSession';
 
+/*
+ * Manages the lifecycle and data of a registration session.
+ */
 export const RegistrationSessionProvider = ({
   children
 }: {
@@ -76,6 +79,7 @@ export const RegistrationSessionProvider = ({
 
   useEffect(
     function startRegistrationSession() {
+      // redirect when step 2 or 3 are directly navigated to
       router.replace('/register/step-1');
 
       activeSession.current = setTimeout(

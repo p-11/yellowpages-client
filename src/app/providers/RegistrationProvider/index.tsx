@@ -18,6 +18,9 @@ const RegistrationContext = createContext<RegistrationContextType | undefined>(
   undefined
 );
 
+/*
+ * Manages data required for the '/registration-complete' route.
+ */
 export const RegistrationProvider = ({
   children
 }: {
