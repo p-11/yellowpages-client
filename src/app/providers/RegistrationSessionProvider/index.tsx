@@ -61,9 +61,10 @@ export const RegistrationSessionProvider = ({
   } = useSensitiveState();
 
   const endRegistrationSession = useCallback(() => {
-    if (!activeSession.current) throw new Error();
+    if (activeSession.current) {
+      clearTimeout(activeSession.current);
+    }
 
-    clearTimeout(activeSession.current);
     activeSession.current = null;
 
     clearSensitiveState();
@@ -78,7 +79,10 @@ export const RegistrationSessionProvider = ({
       router.replace('/register/step-1');
 
       activeSession.current = setTimeout(
-        endRegistrationSession,
+        () => {
+          endRegistrationSession();
+          router.replace('/session-expired');
+        },
         1000 * 60 * 30 // 30 minute session expiry
       );
 
