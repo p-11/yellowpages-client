@@ -553,11 +553,11 @@ const generatePQSignedMessages = (
   mnemonic24: Mnemonic24,
   bitcoinAddress: BitcoinAddress
 ): SignedMessages => {
-  try {
-    // Key pair generation
-    const { mldsa44KeyPair, slhdsaSha2S128KeyPair } =
-      generatePQKeypairs(mnemonic24);
+  // Key pair generation
+  const { mldsa44KeyPair, slhdsaSha2S128KeyPair } =
+    generatePQKeypairs(mnemonic24);
 
+  try {
     // Create message
     const { messageBytes } = generateMessage({
       bitcoinAddress,
@@ -575,17 +575,10 @@ const generatePQSignedMessages = (
       mldsa44KeyPair.privateKey,
       messageBytes
     );
-    // Best effort to zero out private key
-    mldsa44KeyPair.privateKey.fill(0);
-    mldsa44KeyPair.privateKey = undefined;
-
     const slhdsaSha2S128SignedMessage = slh_dsa_sha2_128s.sign(
       slhdsaSha2S128KeyPair.privateKey,
       messageBytes
     );
-    // Best effort to zero out private key
-    slhdsaSha2S128KeyPair.privateKey.fill(0);
-    slhdsaSha2S128KeyPair.privateKey = undefined;
 
     // Response
     return {
@@ -610,6 +603,12 @@ const generatePQSignedMessages = (
   } finally {
     // zero out sensitive input data
     mnemonic24 = '' as Mnemonic24;
+
+    // Best effort to zero out private keys
+    mldsa44KeyPair.privateKey?.fill(0);
+    mldsa44KeyPair.privateKey = undefined;
+    slhdsaSha2S128KeyPair.privateKey?.fill(0);
+    slhdsaSha2S128KeyPair.privateKey = undefined;
   }
 };
 
