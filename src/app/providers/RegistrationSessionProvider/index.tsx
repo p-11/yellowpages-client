@@ -66,9 +66,8 @@ export const RegistrationSessionProvider = ({
   const endRegistrationSession = useCallback(() => {
     if (activeSession.current) {
       clearTimeout(activeSession.current);
+      activeSession.current = null;
     }
-
-    activeSession.current = null;
 
     clearSensitiveState();
 
