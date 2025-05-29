@@ -357,6 +357,7 @@ const deriveBip85Entropy = ({
   // Apply BIP-85 HMAC-SHA512
   const full = hmac(sha512, BIP85_HMAC_KEY, privKey);
   // Zero out sensitive data
+  privKey.fill(0);
   privKey = null;
   node.wipePrivateData();
   root.wipePrivateData();
