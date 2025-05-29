@@ -258,7 +258,10 @@ export function RegistrationStep3() {
           </div>
           <Toolbar>
             {isBitcoinAddressConfirmed ? (
-              <ToolbarButton onClick={editBitcoinAddress}>
+              <ToolbarButton
+                disabled={!signingMessage}
+                onClick={editBitcoinAddress}
+              >
                 <SquarePenIcon />
                 Edit
               </ToolbarButton>

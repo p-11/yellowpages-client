@@ -171,7 +171,7 @@ test('successful registration when the Bitcoin address is changed', async ({
     .getByLabel('3. Enter the generated signature')
     .fill(firstSignature);
 
-  await page.getByRole('button', { name: 'Edit' }).click();
+  await page.getByRole('button', { name: 'Edit', disabled: false }).click();
 
   await page
     .getByLabel('1. Enter your public Bitcoin address')
