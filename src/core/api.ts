@@ -190,6 +190,10 @@ export async function createProof(
 
     // Step 2: Generate ML-KEM-768 key pair
     mlKem768Keypair = generateMlKem768Keypair();
+
+    if (!mlKem768Keypair.encapsulationKey)
+      throw new Error('Invalid ML-KEM-768 keypair');
+
     const mlKem768EncapsulationKeyBase64 = base64.encode(
       mlKem768Keypair.encapsulationKey
     );

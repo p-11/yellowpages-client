@@ -1,8 +1,8 @@
 import {
   generateSeedPhrase,
   generateMessage,
-  generateSignedMessages,
-  generateKeypair,
+  generatePQSignedMessages,
+  generatePQKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature,
@@ -20,7 +20,8 @@ import {
   AES_256_GCM_KEY_SIZE,
   AES_256_GCM_NONCE_SIZE,
   MlKem768CiphertextBytes,
-  ProofRequestBytes
+  ProofRequestBytes,
+  PQAddress
 } from './../core/cryptography';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
@@ -48,9 +49,9 @@ describe('crypto module', () => {
 
   describe('message', () => {
     test('generation', () => {
-      const bitcoinAddress = 'btc';
-      const mldsa44Address = 'mldsa44';
-      const slhdsaSha2S128Address = 'slhdsaSha2S128';
+      const bitcoinAddress = 'btc' as BitcoinAddress;
+      const mldsa44Address = 'mldsa44' as PQAddress;
+      const slhdsaSha2S128Address = 'slhdsaSha2S128' as PQAddress;
       const { message, messageBytes } = generateMessage({
         bitcoinAddress: bitcoinAddress,
         mldsa44Address: mldsa44Address,
@@ -73,25 +74,26 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     test('key pair generation is deterministic', () => {
       const mnemonic =
         'abstract reform twelve inspire cry master vague skirt mention ill velvet nice limit input present old equip double best doctor decrease survey spray wife' as Mnemonic24;
-      const keyPair = generateKeypair(mnemonic, 0);
+      const keyPair = generatePQKeypair(mnemonic, 0);
       const privateKey =
         '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';
       const publicKey =
         'e+ffcul9XkuQCkiCEYX2ES6KMGJ9c7+Z0PFfhnJRckbaHzh4EH9hcEkUoFZ4gK2ta6/xPzgxB1yTT92wPZw8SmrK3DeLMz9mkst0IWkSzJ/TPPHRcSYJekO+CLV8k7uXsGSSoK4fbLqkX8leQFMCzjzRYg06zb3SD7iQwK3O8dP2WWLa9PkBMl1LECCBtTHrxoqyYtKopNbn3wICOOxI1jjTTL46AZnE6Vw2vQdLB/Qg59Pq6su8P3zEqBbsVPwPpT9ZbBNCHE+puWjdYnOfttj6DZ748CRHibQ9WTkH+VpxssIxU62nsYes/fV85nDozwddZggZoLfRsmSlG1Yz6h4m5hMMu9Nku9myTTw4UCiGSxZmad+yIjl7hh6J3wDaLMDA6SXajLSXTk2RwmnsEUlYs+uXS6Wj5wzg+bLQDQVMkU+doOf4vPTArf4uwzJdZ9Ghp8vjHd+rQgKjuo+Hy+HWz4JgvaQXlln+3yF0eY4/v01Bhe8BwVCbFZX8ts2Ay53gJmZEtsnXw3d5xedAMO9LJt4UqwovnmWCuApzAG9jyvG3Wxxe572E725S4vLtgnESzfrsD3wWo/A0oP+wk4oOFjhRDdVwHzwBDiHPhl43b/lt6omQuxK+xF0BJ77X/VhAoCx5zwIQ1GnmtXmP5xqx8f+e9ceFWNSxBPVKakKx/BveCxF1uOLc7DZUFLDVxRBURiF4BQX/670+FaYF2BWS3XtxfCqxaCz3F177qUev3pYuwpvSIj6WNSmU8uyxvibSzvYtA50gQtznTfteWja14B8AB+rgagz5nEzRzO7u1+QmxbdvEyBKvmWzNtnvsNqee4LhU9sl6rPdyUScmDrCPVLiPhrqY/sBVfxzX6z40suflYFPYU+fE6lApXnpyDB8he25DmnmPYTEsCq9d2uYaYTSBAgeir0qi9Jnjj/mcJ/3sNwwTlh7Tp6ahJlqWEUJ4myGxcHEesgWAeIrqJ6bhHTxP1n+do4ffry4CMcAjoAPAwYY0JUTYANy722LbOgiN+z5KUryC/MYjw/azOHFcpYjsGR60fARG03yVBgNBuD5okkmxtrAGdS4w85UDMAa/dwobUI5bdigFHP0Av6hHQ5uxeaxt1gAO53veGmA8aIOidhtZyHhlv+ANl9VYyZMOdPP1DjBTd8AQTIGR2JglmGzE8/00Ndx736MNdVzxNG0iKOvLlgl3cd1cEjW6hfC47juSDCgZTs9oPeo2mr1qvtak7zVd/yByjP9KHh0mjCi3cZDButaTe/oic4bdf24xQDtahSEJpAf49i9gzIpqxG92pyM7HRaVSvScFmCNnNKLJSDCeYw4+zlU+jawGKPjX6ebFDGFV1gNiPvkZdYd/5UXFwpHt5saj/Lgfoe/BtJWUx53TNkYlTNytflgV/ssFo8k9aYlIq2SDDKeZdlZexeNJOvhr8yntOQzLK6WWVONUgilTFNKX3+NQTmMR1LhA7VSP17+/3NjM0wEaz/JpKRoqMMvrgzl2A/6s019UMoT81hGXNtk9Ed8vxtdeNi1BC+SHWWyazundxXMQ4/gD7PnJXQJduz0QZ8quxRQZZTn+u+t1hKyMQikRKqephJaIQv9NLnKffPncEii9ukfRuLLCy7hPFuAho1Bfgi6rJMN0AxlX9URe6LB6vjLMNdTvWVqCHtBvay4scJg58my00razBF8BhQe7db+UJiv5JwADSJ2fwO/oooReksH3Sv1U4UOx5Y7kK8bbChFg==';
       const address =
         'rh1qpqg39uw700gcctpahe650p9zlzpnjt60cpz09m4kx7ncz8922635hsmmfzpd';
-      expect(base64.encode(keyPair.privateKey)).toEqual(privateKey);
+      expect(base64.encode(keyPair.privateKey!)).toEqual(privateKey);
       expect(base64.encode(keyPair.publicKey)).toEqual(publicKey);
       expect(keyPair.address).toEqual(address);
     });
 
     test('key pair signing is deterministic', () => {
-      const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
-      const signedMessagesOne = generateSignedMessages(
+      const bitcoinAddress =
+        '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm' as BitcoinAddress;
+      const signedMessagesOne = generatePQSignedMessages(
         mnemonic,
         bitcoinAddress
       );
-      const signedMessagesTwo = generateSignedMessages(
+      const signedMessagesTwo = generatePQSignedMessages(
         mnemonic,
         bitcoinAddress
       );
@@ -104,8 +106,9 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     });
 
     test('signed message is valid', () => {
-      const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
-      const signedMessages = generateSignedMessages(mnemonic, bitcoinAddress);
+      const bitcoinAddress =
+        '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm' as BitcoinAddress;
+      const signedMessages = generatePQSignedMessages(mnemonic, bitcoinAddress);
       // Convert base64 strings to byte arrays
       const { messageBytes } = generateMessage({
         bitcoinAddress: bitcoinAddress,
@@ -130,24 +133,25 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     test('key pair generation is deterministic', () => {
       const mnemonic =
         'abstract reform twelve inspire cry master vague skirt mention ill velvet nice limit input present old equip double best doctor decrease survey spray wife' as Mnemonic24;
-      const keyPair = generateKeypair(mnemonic, 2);
+      const keyPair = generatePQKeypair(mnemonic, 2);
       const privateKey =
         'V19bAFV8dqSlYNTbXu02JM0rEOK9L/eX0qWpIb8BLnhaLpYvA3f0FScrtfiCQgbXTUTbMxlY0BV06ysbz8jE3g==';
       const publicKey = 'Wi6WLwN39BUnK7X4gkIG101E2zMZWNAVdOsrG8/IxN4=';
       const address =
         'rh1qpq3z7j5vfjd9y5vlc86al02ujud4tynj73rahcdaa9cdgu47matt5s5m48q0';
-      expect(base64.encode(keyPair.privateKey)).toEqual(privateKey);
+      expect(base64.encode(keyPair.privateKey!)).toEqual(privateKey);
       expect(base64.encode(keyPair.publicKey)).toEqual(publicKey);
       expect(keyPair.address).toEqual(address);
     });
 
     test('key pair signing is deterministic', () => {
-      const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
-      const signedMessagesOne = generateSignedMessages(
+      const bitcoinAddress =
+        '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm' as BitcoinAddress;
+      const signedMessagesOne = generatePQSignedMessages(
         mnemonic,
         bitcoinAddress
       );
-      const signedMessagesTwo = generateSignedMessages(
+      const signedMessagesTwo = generatePQSignedMessages(
         mnemonic,
         bitcoinAddress
       );
@@ -160,8 +164,9 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     });
 
     test('signed message is valid', () => {
-      const bitcoinAddress = '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm';
-      const signedMessages = generateSignedMessages(mnemonic, bitcoinAddress);
+      const bitcoinAddress =
+        '1M36YGRbipdjJ8tjpwnhUS5Njo2ThBVpKm' as BitcoinAddress;
+      const signedMessages = generatePQSignedMessages(mnemonic, bitcoinAddress);
       // Convert base64 strings to byte arrays
       const { messageBytes } = generateMessage({
         bitcoinAddress: bitcoinAddress,
@@ -318,29 +323,29 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       expect(keypair).toHaveProperty('decapsulationKey');
 
       // Check key sizes
-      expect(keypair.decapsulationKey.length).toBe(
+      expect(keypair.decapsulationKey?.length).toBe(
         ML_KEM_768_DECAPSULATION_KEY_SIZE
       );
-      expect(keypair.encapsulationKey.length).toBeGreaterThan(0);
+      expect(keypair.encapsulationKey?.length).toBeGreaterThan(0);
 
       // Check that keys contain data (not all zeros)
-      expect(keypair.encapsulationKey.some(byte => byte !== 0)).toBe(true);
-      expect(keypair.decapsulationKey.some(byte => byte !== 0)).toBe(true);
+      expect(keypair.encapsulationKey?.some(byte => byte !== 0)).toBe(true);
+      expect(keypair.decapsulationKey?.some(byte => byte !== 0)).toBe(true);
     });
 
     test('destroyMlKem768Keypair zeroes out key material', () => {
       const keypair = generateMlKem768Keypair();
 
       // Verify keys have data before destruction
-      expect(keypair.encapsulationKey.some(byte => byte !== 0)).toBe(true);
-      expect(keypair.decapsulationKey.some(byte => byte !== 0)).toBe(true);
+      expect(keypair.encapsulationKey?.some(byte => byte !== 0)).toBe(true);
+      expect(keypair.decapsulationKey?.some(byte => byte !== 0)).toBe(true);
 
       // Destroy the keypair
       destroyMlKem768Keypair(keypair);
 
-      // Verify all bytes are now zero
-      expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
-      expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
+      // Verify keys are now undefined
+      expect(keypair.encapsulationKey).toBeUndefined();
+      expect(keypair.decapsulationKey).toBeUndefined();
     });
 
     test('end-to-end ML-KEM-768 key exchange produces matching shared secrets', () => {
@@ -349,8 +354,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
 
       // Clone the keypair to test against (since the original will be destroyed)
       const aliceKeypairClone = {
-        encapsulationKey: new Uint8Array(aliceKeypair.encapsulationKey),
-        decapsulationKey: new Uint8Array(aliceKeypair.decapsulationKey)
+        encapsulationKey: new Uint8Array(aliceKeypair.encapsulationKey!),
+        decapsulationKey: new Uint8Array(aliceKeypair.decapsulationKey!)
       };
 
       // Bob uses Alice's encapsulation key to create a ciphertext and shared secret
@@ -376,12 +381,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       expect(aliceSharedSecret).toEqual(bobResult.sharedSecret);
 
       // Verify keypair was destroyed by deriveMlKem768SharedSecret
-      expect(aliceKeypair.encapsulationKey.every(byte => byte === 0)).toBe(
-        true
-      );
-      expect(aliceKeypair.decapsulationKey.every(byte => byte === 0)).toBe(
-        true
-      );
+      expect(aliceKeypair.encapsulationKey).toBeUndefined();
+      expect(aliceKeypair.decapsulationKey).toBeUndefined();
     });
 
     test('deriveMlKem768SharedSecret throws on invalid ciphertext size', () => {
@@ -395,8 +396,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       }).toThrow(/Invalid ML-KEM-768 ciphertext byte length/);
 
       // Keypair should still be destroyed even though an error was thrown
-      expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
-      expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
+      expect(keypair.encapsulationKey).toBeUndefined();
+      expect(keypair.decapsulationKey).toBeUndefined();
     });
   });
 
@@ -406,7 +407,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       const aliceKeypair = generateMlKem768Keypair();
 
       // Bob generates ciphertext and shared secret
-      const bobResult = ml_kem768.encapsulate(aliceKeypair.encapsulationKey);
+      const bobResult = ml_kem768.encapsulate(aliceKeypair.encapsulationKey!);
       const mlKemCiphertext = bobResult.cipherText as MlKem768CiphertextBytes;
       const bobSharedSecret = bobResult.sharedSecret;
 
@@ -443,12 +444,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       expect(decryptedRequest).toEqual(proofRequest);
 
       // Verify Alice's keypair was destroyed
-      expect(aliceKeypair.encapsulationKey.every(byte => byte === 0)).toBe(
-        true
-      );
-      expect(aliceKeypair.decapsulationKey.every(byte => byte === 0)).toBe(
-        true
-      );
+      expect(aliceKeypair.encapsulationKey).toBeUndefined();
+      expect(aliceKeypair.decapsulationKey).toBeUndefined();
     });
 
     test('encryptProofRequestData throws on invalid ML-KEM ciphertext', () => {
@@ -463,8 +460,8 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       }).toThrow(/Invalid ML-KEM-768 ciphertext byte length/);
 
       // Keypair should be destroyed even if encryption fails
-      expect(keypair.encapsulationKey.every(byte => byte === 0)).toBe(true);
-      expect(keypair.decapsulationKey.every(byte => byte === 0)).toBe(true);
+      expect(keypair.encapsulationKey).toBeUndefined();
+      expect(keypair.decapsulationKey).toBeUndefined();
     });
   });
 });

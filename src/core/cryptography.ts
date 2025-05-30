@@ -69,8 +69,8 @@ const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
 ];
 
 export type MlKem768Keypair = {
-  encapsulationKey: Uint8Array; // Public key used for encapsulation (formerly publicKey)
-  decapsulationKey: Uint8Array; // Secret key used for decapsulation (formerly secretKey)
+  encapsulationKey?: Uint8Array; // Public key used for encapsulation (formerly publicKey)
+  decapsulationKey?: Uint8Array; // Secret key used for decapsulation (formerly secretKey)
 };
 
 /*
@@ -161,9 +161,11 @@ function deriveMlKem768SharedSecret(
     }
 
     // Validate decapsulation key length
-    if (keypair.decapsulationKey.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE) {
+    if (
+      keypair.decapsulationKey?.length !== ML_KEM_768_DECAPSULATION_KEY_SIZE
+    ) {
       throw new Error(
-        `Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey.length}`
+        `Invalid ML-KEM-768 decapsulation key length: expected ${ML_KEM_768_DECAPSULATION_KEY_SIZE}, got ${keypair.decapsulationKey?.length}`
       );
     }
 
@@ -200,8 +202,10 @@ function deriveMlKem768SharedSecret(
  */
 function destroyMlKem768Keypair(keypair: MlKem768Keypair): void {
   // Zero out both keys
-  keypair.encapsulationKey.fill(0);
-  keypair.decapsulationKey.fill(0);
+  keypair.encapsulationKey?.fill(0);
+  keypair.encapsulationKey = undefined;
+  keypair.decapsulationKey?.fill(0);
+  keypair.decapsulationKey = undefined;
 }
 
 /*
@@ -348,10 +352,15 @@ const deriveBip85Entropy = ({
   // Derivation path for BIP-85
   const path = `m/${BIP85_PURPOSE}'/${DEFAULT_APP_NO}'/${derIndex}'`;
   const node = root.derive(path);
-  const privKey = node.privateKey;
+  let privKey = node.privateKey;
   if (!privKey) throw new Error('No private key at this path');
   // Apply BIP-85 HMAC-SHA512
   const full = hmac(sha512, BIP85_HMAC_KEY, privKey);
+  // Zero out sensitive data
+  privKey.fill(0);
+  privKey = null;
+  node.wipePrivateData();
+  root.wipePrivateData();
   // Return specified number of bytes
   return full.slice(0, entropyLength);
 };
@@ -371,12 +380,17 @@ const deriveEntropyFromMnemonic = ({
   algorithm: PQ_SIGNATURE_ALGORITHM;
 }): Uint8Array => {
   // BIP-39 seed (64 bytes)
-  const m = ensure24WordMnemonic(mnemonic24);
-  const seed = mnemonicToSeedSync(m);
+  let m = ensure24WordMnemonic(mnemonic24);
+  let seed: Uint8Array | undefined = mnemonicToSeedSync(m);
   // Master HDKey from that seed
   const masterNode = HDKey.fromMasterSeed(seed);
   // Get bytes length for PQ_SIGNATURE_ALGORITHM
   const length = derivePQEntropyLength(algorithm);
+  // Zero out sensitive data
+  mnemonic24 = '' as Mnemonic24;
+  m = '' as Mnemonic24;
+  seed.fill(0);
+  seed = undefined;
   // Use the algorithm's numeric value as the derive-index
   return deriveBip85Entropy({
     root: masterNode,
@@ -394,21 +408,27 @@ const deriveEntropyFromMnemonic = ({
  * @param mnemonic24 24-word BIP-39 phrase
  * @param algorithm  which PQ_SIGNATURE_ALGORITHM enum to use
  */
-const generateKeypair = (
+const generatePQKeypair = (
   mnemonic24: Mnemonic24,
   algorithm: PQ_SIGNATURE_ALGORITHM
 ) => {
   try {
     switch (algorithm) {
       case PQ_SIGNATURE_ALGORITHM.ML_DSA_44: {
-        const entropy = deriveEntropyFromMnemonic({ mnemonic24, algorithm });
+        let entropy: Uint8Array | undefined = deriveEntropyFromMnemonic({
+          mnemonic24,
+          algorithm
+        });
         const keypair = ml_dsa44.keygen(entropy);
         const publicKey = keypair.publicKey as PQPublicKey;
-        const privateKey = keypair.secretKey as PQPrivateKey;
+        const privateKey = keypair.secretKey as PQPrivateKey | undefined;
         const address = generatePQAddress({
           publicKey,
           algorithm
         });
+        // zero out sensitive data
+        entropy.fill(0);
+        entropy = undefined;
         return {
           publicKey: publicKey,
           privateKey: privateKey,
@@ -416,14 +436,20 @@ const generateKeypair = (
         };
       }
       case PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128: {
-        const entropy = deriveEntropyFromMnemonic({ mnemonic24, algorithm });
+        let entropy: Uint8Array | undefined = deriveEntropyFromMnemonic({
+          mnemonic24,
+          algorithm
+        });
         const keypair = slh_dsa_sha2_128s.keygen(entropy);
         const publicKey = keypair.publicKey as PQPublicKey;
-        const privateKey = keypair.secretKey as PQPrivateKey;
+        const privateKey = keypair.secretKey as PQPrivateKey | undefined;
         const address = generatePQAddress({
           publicKey,
           algorithm
         });
+        // zero out sensitive data
+        entropy.fill(0);
+        entropy = undefined;
         return {
           publicKey: publicKey,
           privateKey: privateKey,
@@ -438,6 +464,35 @@ const generateKeypair = (
   } catch (err: any) {
     const name = PQ_SIGNATURE_ALGORITHM[algorithm] ?? algorithm;
     throw new Error(`Error generating ${name} keypair: ${err.message || err}`);
+  } finally {
+    // zero out sensitive input data
+    mnemonic24 = '' as Mnemonic24;
+  }
+};
+
+/**
+ * Generate PQ keypairs from a mnemonic.
+ *
+ * @param mnemonic24 24-word BIP-39 phrase
+ */
+const generatePQKeypairs = (mnemonic24: Mnemonic24) => {
+  try {
+    const mldsa44KeyPair = generatePQKeypair(
+      mnemonic24,
+      PQ_SIGNATURE_ALGORITHM.ML_DSA_44
+    );
+    const slhdsaSha2S128KeyPair = generatePQKeypair(
+      mnemonic24,
+      PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
+    );
+
+    return {
+      mldsa44KeyPair,
+      slhdsaSha2S128KeyPair
+    };
+  } finally {
+    // zero out sensitive input data
+    mnemonic24 = '' as Mnemonic24;
   }
 };
 
@@ -468,9 +523,9 @@ const generateMessage = ({
   mldsa44Address,
   slhdsaSha2S128Address
 }: {
-  bitcoinAddress: string;
-  mldsa44Address: string;
-  slhdsaSha2S128Address: string;
+  bitcoinAddress: BitcoinAddress;
+  mldsa44Address: PQAddress;
+  slhdsaSha2S128Address: PQAddress;
 }) => {
   const message = `yellowpages.xyz
 
@@ -494,27 +549,26 @@ SLH-DSA-SHA2-128s address: ${slhdsaSha2S128Address}` as Message;
  * @returns Record where each key is the enum name (e.g. "ML_DSA_44")
  * @throws if any step fails for any algorithm
  */
-const generateSignedMessages = (
+const generatePQSignedMessages = (
   mnemonic24: Mnemonic24,
-  bitcoinAddress: string
+  bitcoinAddress: BitcoinAddress
 ): SignedMessages => {
-  try {
-    // Key pair generation
-    const mldsa44KeyPair = generateKeypair(
-      mnemonic24,
-      PQ_SIGNATURE_ALGORITHM.ML_DSA_44
-    );
-    const slhdsaSha2S128KeyPair = generateKeypair(
-      mnemonic24,
-      PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
-    );
+  // Key pair generation
+  const { mldsa44KeyPair, slhdsaSha2S128KeyPair } =
+    generatePQKeypairs(mnemonic24);
 
+  try {
     // Create message
     const { messageBytes } = generateMessage({
       bitcoinAddress,
       mldsa44Address: mldsa44KeyPair.address,
       slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
     });
+
+    if (!mldsa44KeyPair.privateKey)
+      throw new Error('Invalid ML-DSA-44 keypair');
+    if (!slhdsaSha2S128KeyPair.privateKey)
+      throw new Error('Invalid SLH-DSA-SHA2-S-128 keypair');
 
     // Signing
     const mldsa44SignedMessage = ml_dsa44.sign(
@@ -525,9 +579,6 @@ const generateSignedMessages = (
       slhdsaSha2S128KeyPair.privateKey,
       messageBytes
     );
-    // Best effort to zero out private keys
-    mldsa44KeyPair.privateKey.fill(0);
-    slhdsaSha2S128KeyPair.privateKey.fill(0);
 
     // Response
     return {
@@ -549,31 +600,41 @@ const generateSignedMessages = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     throw new Error(`Error signing: ${err.message || err}`);
+  } finally {
+    // zero out sensitive input data
+    mnemonic24 = '' as Mnemonic24;
+
+    // Best effort to zero out private keys
+    mldsa44KeyPair.privateKey?.fill(0);
+    mldsa44KeyPair.privateKey = undefined;
+    slhdsaSha2S128KeyPair.privateKey?.fill(0);
+    slhdsaSha2S128KeyPair.privateKey = undefined;
   }
 };
 
 /**
  * @param mnemonic24 24-word BIP-39 phrase
  */
-const generateAddresses = (mnemonic24: Mnemonic24) => {
-  // Key pair generation
-  const mldsa44KeyPair = generateKeypair(
-    mnemonic24,
-    PQ_SIGNATURE_ALGORITHM.ML_DSA_44
-  );
-  const slhdsaSha2S128KeyPair = generateKeypair(
-    mnemonic24,
-    PQ_SIGNATURE_ALGORITHM.SLH_DSA_SHA2_S_128
-  );
+const generatePQAddresses = (mnemonic24: Mnemonic24) => {
+  try {
+    // Key pair generation
+    const { mldsa44KeyPair, slhdsaSha2S128KeyPair } =
+      generatePQKeypairs(mnemonic24);
 
-  // Best effort to zero out private keys
-  mldsa44KeyPair.privateKey.fill(0);
-  slhdsaSha2S128KeyPair.privateKey.fill(0);
+    // Best effort to zero out private keys
+    mldsa44KeyPair.privateKey?.fill(0);
+    mldsa44KeyPair.privateKey = undefined;
+    slhdsaSha2S128KeyPair.privateKey?.fill(0);
+    slhdsaSha2S128KeyPair.privateKey = undefined;
 
-  return {
-    mldsa44Address: mldsa44KeyPair.address,
-    slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
-  };
+    return {
+      mldsa44Address: mldsa44KeyPair.address,
+      slhdsaSha2S128Address: slhdsaSha2S128KeyPair.address
+    };
+  } finally {
+    // zero out sensitive input data
+    mnemonic24 = '' as Mnemonic24;
+  }
 };
 
 /**
@@ -628,9 +689,11 @@ function encryptProofRequestData(
     // Clean up all sensitive cryptographic material
     if (mlKemSharedSecret) {
       mlKemSharedSecret.fill(0);
+      mlKemSharedSecret = undefined;
     }
     if (aes256GcmNonce) {
       aes256GcmNonce.fill(0);
+      aes256GcmNonce = undefined;
     }
     destroyMlKem768Keypair(mlKem768Keypair);
   }
@@ -643,13 +706,13 @@ export {
   encryptProofRequestData,
   generatePQAddress,
   generateSeedPhrase,
-  generateSignedMessages,
+  generatePQSignedMessages,
   generateMessage,
-  generateKeypair,
+  generatePQKeypair,
   deriveBip85Entropy,
   isValidBitcoinAddress,
   isValidBitcoinSignature,
-  generateAddresses,
+  generatePQAddresses,
   ML_KEM_768_CIPHERTEXT_SIZE,
   ML_KEM_768_DECAPSULATION_KEY_SIZE,
   ML_KEM_768_SHARED_SECRET_SIZE,
