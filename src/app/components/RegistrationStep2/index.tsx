@@ -194,8 +194,10 @@ const useSensitiveState = () => {
 
   useEffect(() => {
     if (seedPhrase) {
-      const seedWords = seedPhrase.split(' ');
+      let seedWords: Array<string> | undefined = seedPhrase.split(' ');
       setShuffledSeedWords(shuffleSeedWords(seedWords));
+      seedWords.fill('');
+      seedWords = undefined;
     }
 
     return function cleanup() {
