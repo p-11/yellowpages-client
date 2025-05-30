@@ -19,6 +19,64 @@ import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
   const router = useRouter();
+  const { hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase } =
+    useRegistrationSessionContext();
+  const [isNavigating, startNavigating] = useTransition();
+
+  const shouldShowConfirmedState = !isNavigating && hasConfirmedSeedPhrase;
+
+  const goBack = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  const continueToNextStep = useCallback(() => {
+    router.push('/register/step-3');
+  }, [router]);
+
+  const onSeedPhraseConfirmed = useCallback(() => {
+    setHasConfirmedSeedPhrase(true);
+
+    startNavigating(() => {
+      router.push('/register/step-3');
+    });
+  }, [router, setHasConfirmedSeedPhrase]);
+
+  if (shouldShowConfirmedState) {
+    return (
+      <main>
+        <RegistrationHeader>
+          <RegistrationProgressIndicator activeStep='Step 2' />
+          <RegistrationStepTitle>
+            Confirm your seed phrase
+          </RegistrationStepTitle>
+        </RegistrationHeader>
+        <Alert className={styles.confirmedAlert} type='success'>
+          Seed phrase confirmed
+        </Alert>
+        <div className={styles.registrationFooter}>
+          <RegistrationFooterActions>
+            <Button variant='secondary' onClick={goBack}>
+              <ArrowLeftIcon />
+              Back
+            </Button>
+            <Button variant='primary' onClick={continueToNextStep}>
+              Continue <ArrowRightIcon />
+            </Button>
+          </RegistrationFooterActions>
+        </div>
+      </main>
+    );
+  } else {
+    return <SeedPhraseConfirmationStep onSuccess={onSeedPhraseConfirmed} />;
+  }
+};
+
+const SeedPhraseConfirmationStep = ({
+  onSuccess
+}: {
+  onSuccess: () => void;
+}) => {
+  const router = useRouter();
   const [isFailedAttempt, setIsFailedAttempt] = useState(false);
   const {
     shuffledSeedWords,
@@ -28,12 +86,7 @@ export const RegistrationStep2 = () => {
     clearSelectedSeedWordIndices,
     clearSensitiveState
   } = useSensitiveState();
-  const { hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase } =
-    useRegistrationSessionContext();
   const [showSeedWords, setShowSeedWords] = useState(false);
-  const [isNavigating, startNavigating] = useTransition();
-
-  const showCompletedState = !isNavigating && hasConfirmedSeedPhrase;
 
   const selectionCompleted =
     shuffledSeedWords.length > 0 &&
@@ -44,21 +97,12 @@ export const RegistrationStep2 = () => {
     const isCorrect = verifySelectedSeedWords();
 
     if (isCorrect) {
-      setHasConfirmedSeedPhrase(true);
-
-      startNavigating(() => {
-        router.push('/register/step-3');
-      });
+      onSuccess();
     } else {
       clearSelectedSeedWordIndices();
       setIsFailedAttempt(true);
     }
-  }, [
-    verifySelectedSeedWords,
-    clearSelectedSeedWordIndices,
-    router,
-    setHasConfirmedSeedPhrase
-  ]);
+  }, [verifySelectedSeedWords, clearSelectedSeedWordIndices, onSuccess]);
 
   const tryAgain = useCallback(() => {
     window.scrollTo(0, 0);
@@ -75,10 +119,6 @@ export const RegistrationStep2 = () => {
     router.back();
   }, [router, clearSensitiveState]);
 
-  const continueToNextStep = useCallback(() => {
-    router.push('/register/step-3');
-  }, [router]);
-
   const toggleSeedWordsVisibility = useCallback(
     () => setShowSeedWords(!showSeedWords),
     [showSeedWords]
@@ -91,57 +131,45 @@ export const RegistrationStep2 = () => {
       <RegistrationHeader>
         <RegistrationProgressIndicator activeStep='Step 2' />
         <RegistrationStepTitle>Confirm your seed phrase</RegistrationStepTitle>
-        {!showCompletedState && (
-          <p>Select each word in the correct order to continue.</p>
-        )}
+        <p>Select each word in the correct order to continue.</p>
       </RegistrationHeader>
-      {showCompletedState ? (
-        <Alert className={styles.confirmedAlert} type='success'>
-          Seed phrase confirmed
-        </Alert>
-      ) : (
-        <>
-          <ToolbarButton onClick={toggleSeedWordsVisibility}>
-            {showSeedWords ? (
-              <>
-                <EyeOffIcon />
-                Hide words
-              </>
-            ) : (
-              <>
-                <EyeIcon />
-                Reveal words
-              </>
-            )}
-          </ToolbarButton>
-          <div className={styles.grid}>
-            {shuffledSeedWords.map((seedWord, index) => {
-              const isSelected = selectedSeedWordIndices.includes(index);
+      <ToolbarButton onClick={toggleSeedWordsVisibility}>
+        {showSeedWords ? (
+          <>
+            <EyeOffIcon />
+            Hide words
+          </>
+        ) : (
+          <>
+            <EyeIcon />
+            Reveal words
+          </>
+        )}
+      </ToolbarButton>
+      <div className={styles.grid}>
+        {shuffledSeedWords.map((seedWord, index) => {
+          const isSelected = selectedSeedWordIndices.includes(index);
 
-              return (
-                <button
-                  key={index}
-                  onClick={() => addSelectedSeedWordIndex(index)}
-                  disabled={isSelected}
-                  className={styles.gridButton}
-                >
-                  <span className={styles.gridButtonIndicator}>
-                    {isSelected
-                      ? selectedSeedWordIndices.indexOf(index) + 1
-                      : ''}
-                  </span>
-                  {seedWord}
-                </button>
-              );
-            })}
-          </div>
-          <div className={styles.toolbar}>
-            <ToolbarButton onClick={restart}>
-              <RefreshIcon /> Start again
-            </ToolbarButton>
-          </div>
-        </>
-      )}
+          return (
+            <button
+              key={index}
+              onClick={() => addSelectedSeedWordIndex(index)}
+              disabled={isSelected}
+              className={styles.gridButton}
+            >
+              <span className={styles.gridButtonIndicator}>
+                {isSelected ? selectedSeedWordIndices.indexOf(index) + 1 : ''}
+              </span>
+              {seedWord}
+            </button>
+          );
+        })}
+      </div>
+      <div className={styles.toolbar}>
+        <ToolbarButton onClick={restart}>
+          <RefreshIcon /> Start again
+        </ToolbarButton>
+      </div>
       <div className={styles.registrationFooter}>
         <div className={styles.warningOverlay}>
           <div className={styles.warningMessage}>
@@ -159,19 +187,13 @@ export const RegistrationStep2 = () => {
                 <ArrowLeftIcon />
                 Back
               </Button>
-              {showCompletedState ? (
-                <Button variant='primary' onClick={continueToNextStep}>
-                  Continue <ArrowRightIcon />
-                </Button>
-              ) : (
-                <Button
-                  variant='primary'
-                  onClick={confirmSelection}
-                  disabled={!selectionCompleted}
-                >
-                  Confirm <ArrowRightIcon />
-                </Button>
-              )}
+              <Button
+                variant='primary'
+                onClick={confirmSelection}
+                disabled={!selectionCompleted}
+              >
+                Confirm <ArrowRightIcon />
+              </Button>
             </>
           )}
         </RegistrationFooterActions>
