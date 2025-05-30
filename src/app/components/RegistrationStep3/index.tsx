@@ -35,6 +35,7 @@ import {
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
 import { createGenerateSignedMessagesTask } from '@/core/cryptographyInWorkers';
+import { useRegistrationContext } from '@/app/providers/RegistrationProvider';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -42,8 +43,9 @@ export function RegistrationStep3() {
   const {
     signingMessage,
     signature,
-    changeSignature,
-    resetSignature,
+    bitcoinAddress,
+    setSignature,
+    setBitcoinAddress,
     setSigningMessage
   } = useSensitiveState();
   const [isBitcoinAddressConfirmed, setIsBitcoinAddressConfirmed] =
@@ -55,15 +57,9 @@ export function RegistrationStep3() {
   const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
     useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
-  const {
-    bitcoinAddress,
-    seedPhrase,
-    pqAddresses,
-    generateAddressesTaskRef,
-    setPqAddresses,
-    setBitcoinAddress,
-    setProofData
-  } = useRegistrationSessionContext();
+  const { seedPhrase, pqAddresses, generateAddressesTaskRef, setPqAddresses } =
+    useRegistrationSessionContext();
+  const { setProof } = useRegistrationContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
@@ -154,9 +150,9 @@ export function RegistrationStep3() {
   const editBitcoinAddress = useCallback(() => {
     setAutoFocusBitcoinAddressField(true);
     setIsBitcoinAddressConfirmed(false);
-    resetSignature();
+    setSignature(undefined);
     generateSignedMessagesTaskRef.current.terminate();
-  }, [resetSignature]);
+  }, [setSignature]);
 
   const goBack = useCallback(() => {
     router.back();
@@ -198,7 +194,7 @@ export function RegistrationStep3() {
 
           const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
 
-          setProofData(JSON.stringify(proof, null, 2));
+          setProof(proof);
 
           router.push('/registration-complete');
         } catch {
@@ -219,7 +215,7 @@ export function RegistrationStep3() {
     signingMessage,
     generateSignedMessagesTaskRef,
     cfTurnstileToken,
-    setProofData
+    setProof
   ]);
 
   const changeBitcoinAddress = useCallback(
@@ -262,7 +258,10 @@ export function RegistrationStep3() {
           </div>
           <Toolbar>
             {isBitcoinAddressConfirmed ? (
-              <ToolbarButton onClick={editBitcoinAddress}>
+              <ToolbarButton
+                disabled={!signingMessage}
+                onClick={editBitcoinAddress}
+              >
                 <SquarePenIcon />
                 Edit
               </ToolbarButton>
@@ -309,7 +308,11 @@ export function RegistrationStep3() {
               autoComplete='off'
               autoCorrect='off'
               autoCapitalize='off'
-              onChange={e => changeSignature(e.target.value)}
+              onChange={e =>
+                setSignature(
+                  e.target.value ? (e.target.value as SignedMessage) : undefined
+                )
+              }
             />
           </div>
         </div>
@@ -398,10 +401,12 @@ export function RegistrationStep3() {
 const useSensitiveState = () => {
   const [signingMessage, setSigningMessage] = useState<Message>();
   const [signature, setSignature] = useState<SignedMessage>();
+  const [bitcoinAddress, setBitcoinAddress] = useState<BitcoinAddress>();
 
   const clearSensitiveState = useCallback(() => {
     setSigningMessage(undefined);
     setSignature(undefined);
+    setBitcoinAddress(undefined);
   }, []);
 
   useEffect(() => {
@@ -410,20 +415,13 @@ const useSensitiveState = () => {
     };
   }, [clearSensitiveState]);
 
-  const changeSignature = useCallback((value: string) => {
-    setSignature(value as SignedMessage);
-  }, []);
-
-  const resetSignature = useCallback(() => {
-    setSignature(undefined);
-  }, []);
-
   return {
     signingMessage,
     signature,
-    changeSignature,
-    resetSignature,
+    bitcoinAddress,
     clearSensitiveState,
-    setSigningMessage
+    setSigningMessage,
+    setSignature,
+    setBitcoinAddress
   };
 };

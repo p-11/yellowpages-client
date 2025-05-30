@@ -125,6 +125,84 @@ test('successful registration and search result', async ({ page }) => {
   ).toBeVisible();
 });
 
+test('successful registration when the Bitcoin address is changed', async ({
+  page
+}) => {
+  const btcWallet = generateBtcWallet();
+  const btcWallet2 = generateBtcWallet();
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await page
+    .getByLabel('1. Enter your public Bitcoin address')
+    .fill(btcWallet.address);
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  const firstSigningMessage =
+    (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
+    ''; // find nearest text above the 'Copy' button
+  const firstSignature = signMessage(btcWallet.mnemonic, firstSigningMessage);
+  await page
+    .getByLabel('3. Enter the generated signature')
+    .fill(firstSignature);
+
+  await page.getByRole('button', { name: 'Edit', disabled: false }).click();
+
+  await page
+    .getByLabel('1. Enter your public Bitcoin address')
+    .fill(btcWallet2.address);
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  await expect(
+    page.getByText(`Bitcoin address: ${btcWallet2.address}`)
+  ).toBeVisible();
+  await expect(page.getByLabel('3. Enter the generated signature')).toBeEmpty();
+
+  const secondSigningMessage =
+    (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
+    ''; // find nearest text above the 'Copy' button
+  const secondSignature = signMessage(
+    btcWallet2.mnemonic,
+    secondSigningMessage
+  );
+  await page
+    .getByLabel('3. Enter the generated signature')
+    .fill(secondSignature);
+
+  await page.getByRole('button', { name: 'Complete', disabled: false }).click();
+
+  // Registration complete page
+  await expect(page.getByText('Registration Complete!')).toBeVisible({
+    timeout: 30000
+  });
+  await expect(page.getByText(btcWallet2.address)).toBeVisible();
+});
+
 test('step 2 should show a confirmed state when completed', async ({
   page
 }) => {
@@ -253,6 +331,113 @@ test('step 2 should not show a confirmed state when the previous session has exp
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
   await expect(page.getByText('Seed phrase confirmed')).not.toBeVisible();
+});
+
+test('step 2 should not show a confirmed state when the previous session was cancelled', async ({
+  page
+}) => {
+  await page.clock.install({ time: new Date() });
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await expect(page.getByText('Register: Step 3')).toBeVisible();
+  await page.getByRole('button', { name: 'Back' }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Register: Step 2')).toBeVisible();
+  await page.getByRole('button', { name: 'Back' }).click();
+
+  // Step 1 page
+  await expect(page.getByText('Register: Step 1')).toBeVisible();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+
+  // Homepage
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Register: Step 2')).toBeVisible();
+  await expect(page.getByText('Seed phrase confirmed')).not.toBeVisible();
+});
+
+test('step 3 should reset when navigated away from', async ({ page }) => {
+  const btcWallet = generateBtcWallet();
+
+  await page.clock.install({ time: new Date() });
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await page
+    .getByLabel('1. Enter your public Bitcoin address')
+    .fill(btcWallet.address);
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  await expect(
+    page.getByText('I want to permanently link my Bitcoin address')
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'Back' }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Register: Step 2')).toBeVisible();
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  // Step 3 page
+  await expect(
+    page.getByText('I want to permanently link my Bitcoin address')
+  ).not.toBeVisible();
 });
 
 test('unsuccessful registration attempt when the order of the seed phrase selected is incorrect', async ({
