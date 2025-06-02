@@ -213,8 +213,10 @@ function destroyMlKem768Keypair(keypair: MlKem768Keypair): void {
  *
  * @param address The Bitcoin address to validate
  * @returns {boolean} True if the address is valid and supported, false otherwise
+ *
+ * Acts as a type guard refining the type to BitcoinAddress when true
  */
-const isValidBitcoinAddress = (address: string): boolean => {
+const isValidBitcoinAddress = (address: string): address is BitcoinAddress => {
   const isValid = validate(address, Network.mainnet);
 
   if (!isValid) {

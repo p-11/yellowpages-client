@@ -9,7 +9,11 @@ import {
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
   MlKem768Keypair,
   MlKem768CiphertextBytes,
-  ProofRequestBytes
+  ProofRequestBytes,
+  BitcoinAddress,
+  SignedMessage,
+  PQAddress,
+  PQPublicKeyString
 } from './cryptography';
 import { base64 } from '@scure/base';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
@@ -135,7 +139,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
  * Search yellowpages by BTC address
  */
 export async function searchYellowpagesByBtcAddress(
-  btcAddress: string
+  btcAddress: BitcoinAddress
 ): Promise<Proof> {
   const url = `${domains.verificationService}/v1/proofs/by-btc-address/${encodeURIComponent(btcAddress)}`;
   return await request(url, { method: 'GET' });
@@ -146,14 +150,14 @@ export async function searchYellowpagesByBtcAddress(
  */
 export async function createProof(
   body: {
-    btcAddress: string;
-    btcSignedMessage: string;
-    mldsa44Address: string;
-    mldsa44SignedMessage: string;
-    mldsa44PublicKey: string;
-    slhdsaSha2S128Address: string;
-    slhdsaSha2S128PublicKey: string;
-    slhdsaSha2S128SignedMessage: string;
+    btcAddress: BitcoinAddress;
+    btcSignedMessage: SignedMessage;
+    mldsa44Address: PQAddress;
+    mldsa44SignedMessage: SignedMessage;
+    mldsa44PublicKey: PQPublicKeyString;
+    slhdsaSha2S128Address: PQAddress;
+    slhdsaSha2S128PublicKey: PQPublicKeyString;
+    slhdsaSha2S128SignedMessage: SignedMessage;
   },
   cfTurnstileToken: string
 ): Promise<void> {
