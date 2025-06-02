@@ -139,7 +139,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
  * Search yellowpages by BTC address
  */
 export async function searchYellowpagesByBtcAddress(
-  btcAddress: string
+  btcAddress: BitcoinAddress
 ): Promise<Proof> {
   const url = `${domains.verificationService}/v1/proofs/by-btc-address/${encodeURIComponent(btcAddress)}`;
   return await request(url, { method: 'GET' });
