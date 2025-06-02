@@ -71,7 +71,7 @@ test('successful registration and search result', async ({ page }) => {
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -139,7 +139,7 @@ test('successful registration when the Bitcoin address is changed', async ({
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -214,7 +214,7 @@ test('step 2 should show a confirmed state when completed', async ({
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -250,7 +250,7 @@ test('step 2 should not show a confirmed state when the session has refreshed', 
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -280,7 +280,7 @@ test('step 2 should not show a confirmed state when the session has refreshed', 
     )
     .first()
     .click();
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
@@ -300,7 +300,7 @@ test('step 2 should not show a confirmed state when the previous session has exp
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -326,7 +326,7 @@ test('step 2 should not show a confirmed state when the previous session has exp
   await page.getByRole('button', { name: 'Start again' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
@@ -346,7 +346,7 @@ test('step 2 should not show a confirmed state when the previous session was can
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -374,13 +374,13 @@ test('step 2 should not show a confirmed state when the previous session was can
 
   // Step 1 page
   await expect(page.getByText('Register: Step 1')).toBeVisible();
-  await page.getByRole('button', { name: 'Cancel' }).click();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
 
   // Homepage
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
@@ -400,7 +400,7 @@ test('step 3 should reset when navigated away from', async ({ page }) => {
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -432,7 +432,7 @@ test('step 3 should reset when navigated away from', async ({ page }) => {
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 3 page
   await expect(
@@ -451,7 +451,7 @@ test('unsuccessful registration attempt when the order of the seed phrase select
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -501,7 +501,7 @@ test('unsuccessful registration attempt when an invalid Bitcoin address is enter
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -557,7 +557,7 @@ test('unsuccessful registration attempt when the session expires on step 2', asy
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
@@ -582,7 +582,7 @@ test('unsuccessful registration attempt when the session expires on step 3', asy
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -633,7 +633,7 @@ test('unsuccessful registration attempt when the session is refreshed on step 2'
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
@@ -654,7 +654,7 @@ test('unsuccessful registration attempt when the session is refreshed on step 3'
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
