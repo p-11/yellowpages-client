@@ -1,5 +1,6 @@
 import localFont from 'next/font/local';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
+import { ConsoleWarning } from './components/ConsoleWarning';
 import './globals.css';
 
 const geistMono = localFont({
@@ -22,6 +23,7 @@ export default function RootLayout({
           <DevelopmentBanner />
         )}
         {children}
+        <ConsoleWarning />
       </body>
     </html>
   );
