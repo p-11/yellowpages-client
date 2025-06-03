@@ -680,6 +680,24 @@ test('unsuccessful registration attempt when the session is refreshed on step 3'
   await expect(page.getByText('Your session has refreshed')).toBeVisible();
 });
 
+test('seed phrase visibility on step 1 should reset after 30 seconds', async ({
+  page
+}) => {
+  await page.clock.install({ time: new Date() });
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Show' }).click();
+  await expect(page.getByRole('button', { name: 'Hide' })).toBeVisible();
+
+  await page.clock.fastForward('30');
+
+  await expect(page.getByRole('button', { name: 'Show' })).toBeVisible();
+});
+
 test('unsuccessful search attempt when an invalid Bitcoin address is entered', async ({
   page
 }) => {
