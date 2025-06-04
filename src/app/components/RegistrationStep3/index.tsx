@@ -285,9 +285,11 @@ export function RegistrationStep3() {
             onClick={signingMessageClickHandler}
           >
             <HighlightedBox>
-              <span className={styles.signingMessage}>
-                {signingMessage ?? ''}
-              </span>
+              {signingMessage ? (
+                <span className={styles.signingMessage}>{signingMessage}</span>
+              ) : (
+                <LoaderCircleIcon />
+              )}
             </HighlightedBox>
           </button>
           <Toolbar>
