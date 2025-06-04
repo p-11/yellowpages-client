@@ -16,3 +16,11 @@
     font-weight: 400;
     color: #E8D674;
 }
+
+.skipStepButton {
+    color: #E8D674;
+}
+
+.skipStepButton:hover {
+    color: #E8D674;
+}
