@@ -15,6 +15,7 @@ import { Alert } from '@/app/components/Alert';
 import { EyeOffIcon } from '@/app/icons/EyeOffIcon';
 import { EyeIcon } from '@/app/icons/EyeIcon';
 import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
+import { UndoIcon } from '@/app/icons/UndoIcon';
 import styles from './styles.module.css';
 
 export const RegistrationStep2 = () => {
@@ -84,7 +85,8 @@ const SeedPhraseConfirmationStep = ({
     addSelectedSeedWordIndex,
     verifySelectedSeedWords,
     clearSelectedSeedWordIndices,
-    clearSensitiveState
+    clearSensitiveState,
+    removeLastSeedWordIndex
   } = useSensitiveState();
   const [showSeedWords, setShowSeedWords] = useState(false);
 
@@ -169,6 +171,9 @@ const SeedPhraseConfirmationStep = ({
         <ToolbarButton onClick={restart}>
           <RefreshIcon /> Start again
         </ToolbarButton>
+        <ToolbarButton onClick={removeLastSeedWordIndex}>
+          <UndoIcon /> Undo selection
+        </ToolbarButton>
       </div>
       <div className={styles.registrationFooter}>
         <div className={styles.warningOverlay}>
@@ -237,6 +242,10 @@ const useSensitiveState = () => {
     [selectedSeedWordIndices]
   );
 
+  const removeLastSeedWordIndex = useCallback(() => {
+    setSelectedSeedWordIndices(current => current.slice(0, -1));
+  }, []);
+
   const clearSelectedSeedWordIndices = useCallback(
     () => setSelectedSeedWordIndices([]),
     []
@@ -257,7 +266,8 @@ const useSensitiveState = () => {
     addSelectedSeedWordIndex,
     clearSensitiveState,
     clearSelectedSeedWordIndices,
-    verifySelectedSeedWords
+    verifySelectedSeedWords,
+    removeLastSeedWordIndex
   };
 };
 
