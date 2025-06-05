@@ -440,6 +440,67 @@ test('step 3 should reset when navigated away from', async ({ page }) => {
   ).not.toBeVisible();
 });
 
+test('confirm seed phrase successfully after undoing a selection', async ({
+  page
+}) => {
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+
+  // Step 2 page
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (let i = 0; i < seedWords.length - 2; i++) {
+    await page
+      .getByRole('button', { name: seedWords[i], exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  // incorrect order
+  await page
+    .getByRole('button', {
+      name: seedWords[seedWords.length - 1],
+      exact: true,
+      disabled: false
+    })
+    .first()
+    .click();
+
+  await page
+    .getByRole('button', { name: 'Undo selection', exact: true })
+    .click();
+
+  // correct order
+  await page
+    .getByRole('button', {
+      name: seedWords[seedWords.length - 2],
+      exact: true,
+      disabled: false
+    })
+    .first()
+    .click();
+
+  await page
+    .getByRole('button', {
+      name: seedWords[seedWords.length - 1],
+      exact: true,
+      disabled: false
+    })
+    .first()
+    .click();
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await expect(page.getByText('Register: Step 3')).toBeVisible();
+});
+
 test('unsuccessful registration attempt when the order of the seed phrase selected is incorrect', async ({
   page
 }) => {

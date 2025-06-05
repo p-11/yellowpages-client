@@ -73,6 +73,8 @@
     pointer-events: none;
     margin-top: 22px;
     transition: opacity 0.25s ease;
+    display: flex;
+    gap: 22px;
 }
 
 .selectionStarted .toolbar {
