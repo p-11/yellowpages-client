@@ -1,4 +1,7 @@
 import { ImageResponse } from 'next/og';
+import { NextResponse } from 'next/server';
+import { Network, validate } from 'bitcoin-address-validation';
+import { decodeAddress } from '@project-eleven/pq-address';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -8,6 +11,33 @@ export async function GET(request: Request) {
   const slhdsaSha2S128 = decodeURIComponent(
     searchParams.get('slhdsaSha2S128') ?? ''
   );
+
+  const isBitcoinAddressValid = validate(btc, Network.mainnet);
+
+  if (!isBitcoinAddressValid) {
+    return NextResponse.json(
+      {},
+      { status: 400, statusText: 'Invalid Bitcoin address' }
+    );
+  }
+
+  try {
+    decodeAddress(mldsa44);
+  } catch {
+    return NextResponse.json(
+      {},
+      { status: 400, statusText: 'Invalid ML-DSA-44 address' }
+    );
+  }
+
+  try {
+    decodeAddress(slhdsaSha2S128);
+  } catch {
+    return NextResponse.json(
+      {},
+      { status: 400, statusText: 'Invalid SLH-DSA-SHA2-128s address' }
+    );
+  }
 
   return new ImageResponse(
     (
