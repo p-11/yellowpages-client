@@ -383,10 +383,10 @@ export function RegistrationStep3() {
           <Alert>
             If the error persists, please reach out to{' '}
             <a
-              href='mailto:team@projecteleven.com'
+              href='mailto:support@projecteleven.com'
               className={styles.contactLink}
             >
-              team@projecteleven.com
+              support@projecteleven.com
             </a>
           </Alert>
           <DialogFooter>
