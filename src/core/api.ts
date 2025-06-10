@@ -445,7 +445,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
         errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
       }
 
-      const error = new Error(errorMessage);
+      const error = new ErrorWithCode(errorMessage, event.code);
       abortController.abort(error);
     }
   };
