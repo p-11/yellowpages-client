@@ -17,6 +17,7 @@ import {
 } from './cryptography';
 import { base64 } from '@scure/base';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
+import { ErrorWithCode } from '@/utils/errorWithCode';
 
 export interface Proof {
   id: string;
@@ -103,7 +104,10 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
     response = await fetch(url, options);
   } catch (e) {
     // networkError is e.g. DNS failure, offline, CORS issues, etc.
-    throw new Error(`Network error while fetching ${url}: ${e}`);
+    throw new ErrorWithCode(
+      `Network error while fetching ${url}: ${e}`,
+      'YP-005'
+    );
   }
 
   // HTTP-level error
@@ -314,8 +318,9 @@ async function raceWithTimeout<T>(
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
       reject(
-        new Error(
-          `Operation "${operation}" timed out after ${timeoutMs / 1000} seconds`
+        new ErrorWithCode(
+          `Operation "${operation}" timed out after ${timeoutMs / 1000} seconds`,
+          'YP-006'
         )
       );
     }, timeoutMs);
@@ -440,7 +445,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
         errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
       }
 
-      const error = new Error(errorMessage);
+      const error = new ErrorWithCode(errorMessage, event.code);
       abortController.abort(error);
     }
   };
