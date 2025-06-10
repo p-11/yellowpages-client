@@ -1,20 +1,10 @@
 import type { NextConfig } from 'next';
-
-const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
-
-const connectSrcValue = IS_PROD
-  ? "'self' wss://yellowpages-proof-service.app-d1312b66384d.enclave.evervault.com https://verification-api.yellowpages.xyz"
-  : "'self' wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com https://verification-api.yellowpages-development.xyz";
-
-const scriptSrcValue =
-  process.env.NODE_ENV === 'production'
-    ? "'self' 'unsafe-inline' https://challenges.cloudflare.com"
-    : "'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com";
+import { domains } from './src/core/api';
 
 const contentSecurityPolicyValue = `
 default-src 'self';
-connect-src ${connectSrcValue};
-script-src ${scriptSrcValue};
+connect-src 'self' ${domains.proofService} ${domains.verificationService};
+script-src 'self' https://challenges.cloudflare.com 'unsafe-inline'${process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"};
 style-src 'self' 'unsafe-inline';
 frame-src https://challenges.cloudflare.com;
 img-src 'self' blob: data:;

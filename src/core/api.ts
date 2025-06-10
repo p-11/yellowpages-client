@@ -17,7 +17,7 @@ import {
 } from './cryptography';
 import { base64 } from '@scure/base';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
-import { ErrorWithCode } from '@/utils/errorWithCode';
+import { ErrorWithCode } from '../utils/errorWithCode';
 
 export interface Proof {
   id: string;
@@ -73,7 +73,7 @@ enum WebSocketCloseCode {
  * Base domains per service and environment.
  */
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
-const domains = {
+export const domains = {
   verificationService: IS_PROD
     ? 'https://verification-api.yellowpages.xyz'
     : 'https://verification-api.yellowpages-development.xyz',
