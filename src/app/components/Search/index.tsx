@@ -64,7 +64,7 @@ export function Search() {
   return (
     <main>
       <h1 className={styles.title}>Check the directory</h1>
-      <p>Enter a Bitcoin address to check if it&apos;s post-quantum secure.</p>
+      <p>Enter a Bitcoin address to check if it&apos;s in the yellowpages.</p>
       <form className={styles.searchArea} onSubmit={onSubmit}>
         <div className={styles.inputBox}>
           <label htmlFor='publicBitcoinAddress' className={styles.inputLabel}>
