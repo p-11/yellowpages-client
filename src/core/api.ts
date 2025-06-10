@@ -106,7 +106,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
     // networkError is e.g. DNS failure, offline, CORS issues, etc.
     throw new ErrorWithCode(
       `Network error while fetching ${url}: ${e}`,
-      'P11-005'
+      'YP-005'
     );
   }
 
@@ -320,7 +320,7 @@ async function raceWithTimeout<T>(
       reject(
         new ErrorWithCode(
           `Operation "${operation}" timed out after ${timeoutMs / 1000} seconds`,
-          'P11-006'
+          'YP-006'
         )
       );
     }, timeoutMs);
