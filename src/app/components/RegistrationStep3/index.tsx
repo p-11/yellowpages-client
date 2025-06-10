@@ -36,6 +36,8 @@ import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
 import { createGenerateSignedMessagesTask } from '@/core/cryptographyInWorkers';
 import { useRegistrationContext } from '@/app/providers/RegistrationProvider';
+import { ErrorWithCode } from '@/utils/errorWithCode';
+import { hasErrorCode } from '@/utils/hasErrorCode';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -57,6 +59,7 @@ export function RegistrationStep3() {
   const [showInvalidSignatureAlert, setShowInvalidSignatureAlert] =
     useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorCode, setErrorCode] = useState<string | number>();
   const { seedPhrase, pqAddresses, generateAddressesTaskRef, setPqAddresses } =
     useRegistrationSessionContext();
   const { setProof } = useRegistrationContext();
@@ -101,6 +104,7 @@ export function RegistrationStep3() {
 
   const acknowledgeErrorDialog = useCallback(() => {
     setShowErrorDialog(false);
+    setErrorCode(undefined);
   }, []);
 
   const confirmBitcoinAddress = useCallback(async () => {
@@ -160,9 +164,12 @@ export function RegistrationStep3() {
 
   const completeRegistration = useCallback(async () => {
     try {
-      if (!signingMessage) throw new Error('Invalid signing message');
-      if (!bitcoinAddress) throw new Error('Invalid Bitcoin address');
-      if (!cfTurnstileToken) throw new Error('Invalid CF Turnstile token');
+      if (!signingMessage)
+        throw new ErrorWithCode('Invalid signing message', 'P11-001');
+      if (!bitcoinAddress)
+        throw new ErrorWithCode('Invalid Bitcoin address', 'P11-002');
+      if (!cfTurnstileToken)
+        throw new ErrorWithCode('Invalid CF Turnstile token', 'P11-003');
 
       if (
         signature &&
@@ -174,7 +181,8 @@ export function RegistrationStep3() {
           const signedMessages =
             await generateSignedMessagesTaskRef.current.waitForResult();
 
-          if (!signedMessages) throw new Error('Invalid signedMessages result');
+          if (!signedMessages)
+            throw new ErrorWithCode('Invalid signedMessages result', 'P11-004');
 
           await createProof(
             {
@@ -197,16 +205,24 @@ export function RegistrationStep3() {
           setProof(proof);
 
           router.push('/registration-complete');
-        } catch {
+        } catch (e) {
           setShowErrorDialog(true);
+
+          if (hasErrorCode(e)) {
+            setErrorCode(e.code);
+          }
         }
 
         setIsSubmitting(false);
       } else {
         setShowInvalidSignatureAlert(true);
       }
-    } catch {
+    } catch (e) {
       setShowErrorDialog(true);
+
+      if (hasErrorCode(e)) {
+        setErrorCode(e.code);
+      }
     }
   }, [
     router,
@@ -388,6 +404,9 @@ export function RegistrationStep3() {
             >
               team@projecteleven.com
             </a>
+            {errorCode && (
+              <span className={styles.errorCode}>Error code: {errorCode}</span>
+            )}
           </Alert>
           <DialogFooter>
             <Button variant='primary' onClick={acknowledgeErrorDialog}>
