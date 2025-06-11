@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next';
-import { domains } from './src/core/api';
+import { domains } from '@/lib/domains';
 
 const contentSecurityPolicyValue = `
 default-src 'self';
