@@ -201,7 +201,14 @@ function deriveMlKem768SharedSecret(
  * @param keypair The keypair to destroy - both keys will be zeroed out
  */
 function destroyMlKem768Keypair(keypair: MlKem768Keypair): void {
-  // Zero out both keys
+  /**
+   * Best-effort memory zeroing
+   *
+   * Note: JavaScript engines may optimize away this call
+   * or copy key material during garbage collection.
+   * This does not guarantee immediate or complete removal
+   * of sensitive data from memory—use.
+   */
   keypair.encapsulationKey?.fill(0);
   keypair.encapsulationKey = undefined;
   keypair.decapsulationKey?.fill(0);
@@ -358,7 +365,14 @@ const deriveBip85Entropy = ({
   if (!privKey) throw new Error('No private key at this path');
   // Apply BIP-85 HMAC-SHA512
   const full = hmac(sha512, BIP85_HMAC_KEY, privKey);
-  // Zero out sensitive data
+  /**
+   * Best-effort memory zeroing
+   *
+   * Note: JavaScript engines may optimize away this call
+   * or copy key material during garbage collection.
+   * This does not guarantee immediate or complete removal
+   * of sensitive data from memory—use.
+   */
   privKey.fill(0);
   privKey = null;
   node.wipePrivateData();
@@ -388,7 +402,14 @@ const deriveEntropyFromMnemonic = ({
   const masterNode = HDKey.fromMasterSeed(seed);
   // Get bytes length for PQ_SIGNATURE_ALGORITHM
   const length = derivePQEntropyLength(algorithm);
-  // Zero out sensitive data
+  /**
+   * Best-effort memory zeroing
+   *
+   * Note: JavaScript engines may optimize away this call
+   * or copy key material during garbage collection.
+   * This does not guarantee immediate or complete removal
+   * of sensitive data from memory—use.
+   */
   mnemonic24 = '' as Mnemonic24;
   m = '' as Mnemonic24;
   seed.fill(0);
@@ -428,7 +449,14 @@ const generatePQKeypair = (
           publicKey,
           algorithm
         });
-        // zero out sensitive data
+        /**
+         * Best-effort memory zeroing
+         *
+         * Note: JavaScript engines may optimize away this call
+         * or copy key material during garbage collection.
+         * This does not guarantee immediate or complete removal
+         * of sensitive data from memory—use.
+         */
         entropy.fill(0);
         entropy = undefined;
         return {
@@ -449,7 +477,14 @@ const generatePQKeypair = (
           publicKey,
           algorithm
         });
-        // zero out sensitive data
+        /**
+         * Best-effort memory zeroing
+         *
+         * Note: JavaScript engines may optimize away this call
+         * or copy key material during garbage collection.
+         * This does not guarantee immediate or complete removal
+         * of sensitive data from memory—use.
+         */
         entropy.fill(0);
         entropy = undefined;
         return {
@@ -606,7 +641,14 @@ const generatePQSignedMessages = (
     // zero out sensitive input data
     mnemonic24 = '' as Mnemonic24;
 
-    // Best effort to zero out private keys
+    /**
+     * Best-effort memory zeroing
+     *
+     * Note: JavaScript engines may optimize away this call
+     * or copy key material during garbage collection.
+     * This does not guarantee immediate or complete removal
+     * of sensitive data from memory—use.
+     */
     mldsa44KeyPair.privateKey?.fill(0);
     mldsa44KeyPair.privateKey = undefined;
     slhdsaSha2S128KeyPair.privateKey?.fill(0);
@@ -623,7 +665,14 @@ const generatePQAddresses = (mnemonic24: Mnemonic24) => {
     const { mldsa44KeyPair, slhdsaSha2S128KeyPair } =
       generatePQKeypairs(mnemonic24);
 
-    // Best effort to zero out private keys
+    /**
+     * Best-effort memory zeroing
+     *
+     * Note: JavaScript engines may optimize away this call
+     * or copy key material during garbage collection.
+     * This does not guarantee immediate or complete removal
+     * of sensitive data from memory—use.
+     */
     mldsa44KeyPair.privateKey?.fill(0);
     mldsa44KeyPair.privateKey = undefined;
     slhdsaSha2S128KeyPair.privateKey?.fill(0);
@@ -688,7 +737,14 @@ function encryptProofRequestData(
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to encrypt proof request: ${errorMessage}`);
   } finally {
-    // Clean up all sensitive cryptographic material
+    /**
+     * Best-effort memory zeroing
+     *
+     * Note: JavaScript engines may optimize away this call
+     * or copy key material during garbage collection.
+     * This does not guarantee immediate or complete removal
+     * of sensitive data from memory—use.
+     */
     if (mlKemSharedSecret) {
       mlKemSharedSecret.fill(0);
       mlKemSharedSecret = undefined;
