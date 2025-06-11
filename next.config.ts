@@ -6,7 +6,7 @@ default-src 'self';
 connect-src 'self' ${domains.proofService} ${domains.verificationService};
 script-src 'self' https://challenges.cloudflare.com 'unsafe-inline'${process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"};
 style-src 'self' 'unsafe-inline';
-frame-src https://challenges.cloudflare.com;
+frame-src https://challenges.cloudflare.com https://status.projecteleven.com;
 img-src 'self' blob: data:;
 font-src 'self';
 object-src 'none';
