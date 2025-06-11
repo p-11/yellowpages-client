@@ -9,12 +9,18 @@ import {
   MAX_BASE64_ML_KEM_768_CIPHERTEXT_SIZE,
   MlKem768Keypair,
   MlKem768CiphertextBytes,
-  ProofRequestBytes
+  ProofRequestBytes,
+  BitcoinAddress,
+  SignedMessage,
+  PQAddress,
+  PQPublicKeyString
 } from './cryptography';
 import { base64 } from '@scure/base';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
+import { ErrorWithCode } from '@/utils/errorWithCode';
+import { domains } from '@/lib/domains';
 
-interface Proof {
+export interface Proof {
   id: string;
   btc_address: string;
   ml_dsa_44_address: string;
@@ -65,19 +71,6 @@ enum WebSocketCloseCode {
 }
 
 /**
- * Base domains per service and environment.
- */
-const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
-const domains = {
-  verificationService: IS_PROD
-    ? 'https://verification-api.yellowpages.xyz'
-    : 'https://verification-api.yellowpages-development.xyz',
-  proofService: IS_PROD
-    ? 'wss://yellowpages-proof-service.app-d1312b66384d.enclave.evervault.com'
-    : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
-};
-
-/**
  * Low-level wrapper around fetch.
  * - Throws on network errors.
  * - Throws on HTTP errors (non-2xx), including response text.
@@ -99,7 +92,10 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
     response = await fetch(url, options);
   } catch (e) {
     // networkError is e.g. DNS failure, offline, CORS issues, etc.
-    throw new Error(`Network error while fetching ${url}: ${e}`);
+    throw new ErrorWithCode(
+      `Network error while fetching ${url}: ${e}`,
+      'YP-005'
+    );
   }
 
   // HTTP-level error
@@ -135,7 +131,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
  * Search yellowpages by BTC address
  */
 export async function searchYellowpagesByBtcAddress(
-  btcAddress: string
+  btcAddress: BitcoinAddress
 ): Promise<Proof> {
   const url = `${domains.verificationService}/v1/proofs/by-btc-address/${encodeURIComponent(btcAddress)}`;
   return await request(url, { method: 'GET' });
@@ -146,14 +142,14 @@ export async function searchYellowpagesByBtcAddress(
  */
 export async function createProof(
   body: {
-    btcAddress: string;
-    btcSignedMessage: string;
-    mldsa44Address: string;
-    mldsa44SignedMessage: string;
-    mldsa44PublicKey: string;
-    slhdsaSha2S128Address: string;
-    slhdsaSha2S128PublicKey: string;
-    slhdsaSha2S128SignedMessage: string;
+    btcAddress: BitcoinAddress;
+    btcSignedMessage: SignedMessage;
+    mldsa44Address: PQAddress;
+    mldsa44SignedMessage: SignedMessage;
+    mldsa44PublicKey: PQPublicKeyString;
+    slhdsaSha2S128Address: PQAddress;
+    slhdsaSha2S128PublicKey: PQPublicKeyString;
+    slhdsaSha2S128SignedMessage: SignedMessage;
   },
   cfTurnstileToken: string
 ): Promise<void> {
@@ -190,6 +186,10 @@ export async function createProof(
 
     // Step 2: Generate ML-KEM-768 key pair
     mlKem768Keypair = generateMlKem768Keypair();
+
+    if (!mlKem768Keypair.encapsulationKey)
+      throw new Error('Invalid ML-KEM-768 keypair');
+
     const mlKem768EncapsulationKeyBase64 = base64.encode(
       mlKem768Keypair.encapsulationKey
     );
@@ -306,8 +306,9 @@ async function raceWithTimeout<T>(
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
       reject(
-        new Error(
-          `Operation "${operation}" timed out after ${timeoutMs / 1000} seconds`
+        new ErrorWithCode(
+          `Operation "${operation}" timed out after ${timeoutMs / 1000} seconds`,
+          'YP-006'
         )
       );
     }, timeoutMs);
@@ -432,7 +433,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
         errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
       }
 
-      const error = new Error(errorMessage);
+      const error = new ErrorWithCode(errorMessage, event.code);
       abortController.abort(error);
     }
   };

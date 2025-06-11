@@ -209,7 +209,9 @@ export default function FaqsPage() {
         <AccordionItem title='Found a bug or got feedback?'>
           <p>
             Please email{' '}
-            <a href='mailto:team@projecteleven.com'>team@projecteleven.com</a>
+            <a href='mailto:support@projecteleven.com'>
+              support@projecteleven.com
+            </a>
           </p>
         </AccordionItem>
       </div>

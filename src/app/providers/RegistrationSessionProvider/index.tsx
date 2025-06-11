@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React, {
   createContext,
   useCallback,
@@ -9,24 +9,28 @@ import React, {
   useRef,
   useState
 } from 'react';
-import {
-  type BitcoinAddress,
-  generateSeedPhrase,
-  type Mnemonic24,
-  type SignedMessages
-} from '@/core/cryptography';
+import { generateSeedPhrase, type Mnemonic24 } from '@/core/cryptography';
+import { createGenerateAddressesTask } from '@/core/cryptographyInWorkers';
 
 type RegistrationSessionContextType = {
   showNewSessionAlert: boolean;
   hasConfirmedSeedPhrase: boolean;
+  generateAddressesTaskRef: React.RefObject<
+    ReturnType<typeof createGenerateAddressesTask>
+  >;
   seedPhrase?: Mnemonic24;
-  bitcoinAddress?: BitcoinAddress;
-  signedMessages?: SignedMessages;
-  proofData?: string;
+  pqAddresses?: Awaited<
+    ReturnType<ReturnType<typeof createGenerateAddressesTask>['waitForResult']>
+  >;
   setShowNewSessionAlert: (_value: boolean) => void;
-  setBitcoinAddress: (_value: BitcoinAddress) => void;
-  setSignedMessages: (_value: SignedMessages) => void;
-  setProofData: (_value: string) => void;
+  setHasConfirmedSeedPhrase: (_value: boolean) => void;
+  setPqAddresses: (
+    _value: Awaited<
+      ReturnType<
+        ReturnType<typeof createGenerateAddressesTask>['waitForResult']
+      >
+    >
+  ) => void;
 };
 
 const RegistrationSessionContext = createContext<
@@ -35,69 +39,55 @@ const RegistrationSessionContext = createContext<
 
 const sessionStorageKey = 'activeRegistrationSession';
 
+/*
+ * Manages the lifecycle and data of a registration session.
+ */
 export const RegistrationSessionProvider = ({
   children
 }: {
   children: React.ReactNode;
 }) => {
-  const pathname = usePathname();
-  const activeSession = useRef<ReturnType<typeof setTimeout>>(null);
   const router = useRouter();
+
+  const activeSession = useRef<ReturnType<typeof setTimeout>>(null);
+  const generateAddressesTaskRef = useRef(createGenerateAddressesTask());
 
   const [showNewSessionAlert, setShowNewSessionAlert] = useState(false);
   const [hasConfirmedSeedPhrase, setHasConfirmedSeedPhrase] = useState(false);
+
   const {
     seedPhrase,
-    bitcoinAddress,
-    signedMessages,
-    proofData,
-    setSignedMessages,
-    clearSensitiveState,
+    pqAddresses,
     setSeedPhrase,
-    setBitcoinAddress,
-    clearSeedPhrase,
-    setProofData
+    setPqAddresses,
+    clearSensitiveState
   } = useSensitiveState();
-
-  const startRegistrationSession = useCallback(() => {
-    activeSession.current = setTimeout(
-      () => {
-        clearSensitiveState();
-        router.replace('/session-expired');
-      },
-      1000 * 60 * 30 // 30 minute session expiry
-    );
-
-    sessionStorage.setItem(sessionStorageKey, '1');
-
-    setSeedPhrase(generateSeedPhrase());
-  }, [router, setSeedPhrase, clearSensitiveState]);
 
   const endRegistrationSession = useCallback(() => {
     if (activeSession.current) {
       clearTimeout(activeSession.current);
       activeSession.current = null;
     }
-    sessionStorage.removeItem(sessionStorageKey);
-    setHasConfirmedSeedPhrase(false);
-    setShowNewSessionAlert(false);
-  }, []);
 
-  const handleSessionRedirects = useCallback(() => {
-    if (activeSession.current) return;
+    clearSensitiveState();
 
-    const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
+    generateAddressesTaskRef.current.terminate();
 
-    if (hasPreviousSession) {
+    window.removeEventListener('beforeunload', endRegistrationSession);
+  }, [clearSensitiveState]);
+
+  useEffect(
+    function startRegistrationSession() {
+      // redirect when step 2 or 3 are directly navigated to
       router.replace('/register/step-1');
-    } else {
-      router.replace('/');
-    }
-  }, [router]);
 
-  const onLoadStep1Route = useCallback(() => {
-    if (!activeSession.current) {
-      clearSensitiveState();
+      activeSession.current = setTimeout(
+        () => {
+          endRegistrationSession();
+          router.replace('/session-expired');
+        },
+        1000 * 60 * 30 // 30 minute session expiry
+      );
 
       const hasPreviousSession = !!sessionStorage.getItem(sessionStorageKey);
 
@@ -105,93 +95,37 @@ export const RegistrationSessionProvider = ({
         setShowNewSessionAlert(true);
       }
 
-      startRegistrationSession();
-    }
-  }, [clearSensitiveState, startRegistrationSession]);
+      sessionStorage.setItem(sessionStorageKey, '1');
 
-  const onLoadStep2Route = useCallback(() => {
-    handleSessionRedirects();
-  }, [handleSessionRedirects]);
+      const seedPhrase = generateSeedPhrase();
+      setSeedPhrase(seedPhrase);
 
-  const onLoadStep3Route = useCallback(() => {
-    handleSessionRedirects();
+      generateAddressesTaskRef.current.start({
+        mnemonic24: seedPhrase
+      });
 
-    if (activeSession.current) {
-      setHasConfirmedSeedPhrase(true);
-    }
-  }, [handleSessionRedirects]);
+      window.addEventListener('beforeunload', endRegistrationSession);
 
-  const onLoadCompletionRoute = useCallback(() => {
-    handleSessionRedirects();
-    endRegistrationSession();
-    clearSeedPhrase();
-  }, [handleSessionRedirects, endRegistrationSession, clearSeedPhrase]);
+      return function cleanup() {
+        sessionStorage.removeItem(sessionStorageKey);
 
-  const onLoadNonRegistrationRoute = useCallback(() => {
-    endRegistrationSession();
-    clearSensitiveState();
-  }, [endRegistrationSession, clearSensitiveState]);
-
-  const onLoadSessionExpiredRoute = useCallback(() => {
-    if (!activeSession.current) {
-      router.replace('/');
-    }
-
-    endRegistrationSession();
-    clearSensitiveState();
-  }, [endRegistrationSession, clearSensitiveState, router]);
-
-  useEffect(() => {
-    window.addEventListener('beforeunload', clearSensitiveState);
-
-    return function cleanup() {
-      window.removeEventListener('beforeunload', clearSensitiveState);
-    };
-  }, [clearSensitiveState]);
-
-  useEffect(() => {
-    switch (pathname) {
-      case '/register/step-1':
-        onLoadStep1Route();
-        break;
-      case '/register/step-2':
-        onLoadStep2Route();
-        break;
-      case '/register/step-3':
-        onLoadStep3Route();
-        break;
-      case '/registration-complete':
-        onLoadCompletionRoute();
-        break;
-      case '/session-expired':
-        onLoadSessionExpiredRoute();
-        break;
-      default:
-        onLoadNonRegistrationRoute();
-    }
-  }, [
-    pathname,
-    onLoadStep1Route,
-    onLoadStep2Route,
-    onLoadStep3Route,
-    onLoadCompletionRoute,
-    onLoadSessionExpiredRoute,
-    onLoadNonRegistrationRoute
-  ]);
+        endRegistrationSession();
+      };
+    },
+    [router, setSeedPhrase, endRegistrationSession]
+  );
 
   return (
     <RegistrationSessionContext.Provider
       value={{
-        signedMessages,
-        setSignedMessages,
-        bitcoinAddress,
-        setBitcoinAddress,
         seedPhrase,
+        pqAddresses,
         showNewSessionAlert,
         hasConfirmedSeedPhrase,
+        generateAddressesTaskRef,
         setShowNewSessionAlert,
-        proofData,
-        setProofData
+        setHasConfirmedSeedPhrase,
+        setPqAddresses
       }}
     >
       {children}
@@ -212,21 +146,12 @@ export const useRegistrationSessionContext = () => {
 const useSensitiveState = () => {
   const [seedPhrase, setSeedPhrase] =
     useState<RegistrationSessionContextType['seedPhrase']>();
-  const [bitcoinAddress, setBitcoinAddress] =
-    useState<RegistrationSessionContextType['bitcoinAddress']>();
-  const [signedMessages, setSignedMessages] =
-    useState<RegistrationSessionContextType['signedMessages']>();
-  const [proofData, setProofData] = useState<string>();
-
-  const clearSeedPhrase = useCallback(() => {
-    setSeedPhrase(undefined);
-  }, []);
+  const [pqAddresses, setPqAddresses] =
+    useState<RegistrationSessionContextType['pqAddresses']>();
 
   const clearSensitiveState = useCallback(() => {
     setSeedPhrase(undefined);
-    setBitcoinAddress(undefined);
-    setSignedMessages(undefined);
-    setProofData(undefined);
+    setPqAddresses(undefined);
   }, []);
 
   useEffect(() => {
@@ -237,14 +162,9 @@ const useSensitiveState = () => {
 
   return {
     seedPhrase,
-    bitcoinAddress,
-    signedMessages,
-    proofData,
-    clearSensitiveState,
-    clearSeedPhrase,
+    pqAddresses,
     setSeedPhrase,
-    setBitcoinAddress,
-    setSignedMessages,
-    setProofData
+    setPqAddresses,
+    clearSensitiveState
   };
 };

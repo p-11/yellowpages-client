@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/app/components/Button';
 import { Alert } from '@/app/components/Alert';
-import { useRegistrationSessionContext } from '@/app/providers/RegistrationSessionProvider';
+import { useRegistrationContext } from '@/app/providers/RegistrationProvider';
 import { DirectoryEntry } from '@/app/components/DirectoryEntry';
 import { CopyTextToolbarButton } from '@/app/components/CopyTextToolbarButton';
 import { ToolbarButton } from '@/app/components/ToolbarButton';
@@ -17,11 +17,19 @@ import { ShareIcon } from '@/app/icons/ShareIcon';
 import styles from './styles.module.css';
 
 export function RegistrationComplete() {
-  const { signedMessages, bitcoinAddress, proofData } =
-    useRegistrationSessionContext();
+  const { proof } = useRegistrationContext();
   const router = useRouter();
   const [showProofDialog, setShowProofDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+
+  useEffect(
+    function handleRedirection() {
+      if (!proof) {
+        router.push('/');
+      }
+    },
+    [router, proof]
+  );
 
   const navigateToHomepage = useCallback(() => {
     router.push('/');
@@ -36,23 +44,16 @@ export function RegistrationComplete() {
   }, [showShareDialog]);
 
   const encodedBitcoinAddress = useMemo(
-    () => (bitcoinAddress ? encodeURIComponent(bitcoinAddress) : ''),
-    [bitcoinAddress]
+    () => (proof ? encodeURIComponent(proof.btc_address) : ''),
+    [proof]
   );
   const encodedMldsa44Address = useMemo(
-    () =>
-      signedMessages
-        ? encodeURIComponent(signedMessages.ML_DSA_44.address)
-        : '',
-    [signedMessages]
+    () => (proof ? encodeURIComponent(proof.ml_dsa_44_address) : ''),
+    [proof]
   );
-
   const encodedSlhdsaSha2S128Address = useMemo(
-    () =>
-      signedMessages
-        ? encodeURIComponent(signedMessages.SLH_DSA_SHA2_S_128.address)
-        : '',
-    [signedMessages]
+    () => (proof ? encodeURIComponent(proof.slh_dsa_sha2_s_128_address) : ''),
+    [proof]
   );
 
   const shareLink = useMemo(() => {
@@ -67,7 +68,7 @@ export function RegistrationComplete() {
     navigator.clipboard.writeText(shareLink);
   }, [shareLink]);
 
-  if (!bitcoinAddress || !signedMessages) return null;
+  if (!proof) return null;
 
   return (
     <main>
@@ -82,9 +83,9 @@ export function RegistrationComplete() {
         </div>
         <div className={styles.entrySection}>
           <DirectoryEntry
-            bitcoinAddress={bitcoinAddress}
-            mldsa44Address={signedMessages.ML_DSA_44.address}
-            slhdsaSha2S128Address={signedMessages.SLH_DSA_SHA2_S_128.address}
+            bitcoinAddress={proof.btc_address}
+            mldsa44Address={proof.ml_dsa_44_address}
+            slhdsaSha2S128Address={proof.slh_dsa_sha2_s_128_address}
             showCopyButton
           />
         </div>
@@ -116,8 +117,11 @@ export function RegistrationComplete() {
           </Button>
         </div>
       </div>
-      {showProofDialog && proofData && (
-        <ProofDialog proofData={proofData} onExit={toggleProofDialog} />
+      {showProofDialog && (
+        <ProofDialog
+          proofData={JSON.stringify(proof, null, 2)}
+          onExit={toggleProofDialog}
+        />
       )}
       {showShareDialog && (
         <Dialog large>

@@ -1,7 +1,7 @@
 import localFont from 'next/font/local';
-import './globals.css';
-import { RegistrationSessionProvider } from '@/app/providers/RegistrationSessionProvider';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
+import { ConsoleWarning } from './components/ConsoleWarning';
+import './globals.css';
 
 const geistMono = localFont({
   src: './fonts/GeistMonoVF.woff',
@@ -22,7 +22,8 @@ export default function RootLayout({
         {process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production' && (
           <DevelopmentBanner />
         )}
-        <RegistrationSessionProvider>{children}</RegistrationSessionProvider>
+        {children}
+        <ConsoleWarning />
       </body>
     </html>
   );

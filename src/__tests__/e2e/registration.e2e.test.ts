@@ -71,7 +71,7 @@ test('successful registration and search result', async ({ page }) => {
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -125,6 +125,84 @@ test('successful registration and search result', async ({ page }) => {
   ).toBeVisible();
 });
 
+test('successful registration when the Bitcoin address is changed', async ({
+  page
+}) => {
+  const btcWallet = generateBtcWallet();
+  const btcWallet2 = generateBtcWallet();
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await page
+    .getByLabel('1. Enter your public Bitcoin address')
+    .fill(btcWallet.address);
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  const firstSigningMessage =
+    (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
+    ''; // find nearest text above the 'Copy' button
+  const firstSignature = signMessage(btcWallet.mnemonic, firstSigningMessage);
+  await page
+    .getByLabel('3. Enter the generated signature')
+    .fill(firstSignature);
+
+  await page.getByRole('button', { name: 'Edit', disabled: false }).click();
+
+  await page
+    .getByLabel('1. Enter your public Bitcoin address')
+    .fill(btcWallet2.address);
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  await expect(
+    page.getByText(`Bitcoin address: ${btcWallet2.address}`)
+  ).toBeVisible();
+  await expect(page.getByLabel('3. Enter the generated signature')).toBeEmpty();
+
+  const secondSigningMessage =
+    (await page.locator('span:above(:text("Copy"))').first().textContent()) ??
+    ''; // find nearest text above the 'Copy' button
+  const secondSignature = signMessage(
+    btcWallet2.mnemonic,
+    secondSigningMessage
+  );
+  await page
+    .getByLabel('3. Enter the generated signature')
+    .fill(secondSignature);
+
+  await page.getByRole('button', { name: 'Complete', disabled: false }).click();
+
+  // Registration complete page
+  await expect(page.getByText('Registration Complete!')).toBeVisible({
+    timeout: 60000
+  });
+  await expect(page.getByText(btcWallet2.address)).toBeVisible();
+});
+
 test('step 2 should show a confirmed state when completed', async ({
   page
 }) => {
@@ -136,7 +214,7 @@ test('step 2 should show a confirmed state when completed', async ({
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -172,7 +250,7 @@ test('step 2 should not show a confirmed state when the session has refreshed', 
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -202,7 +280,7 @@ test('step 2 should not show a confirmed state when the session has refreshed', 
     )
     .first()
     .click();
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
@@ -222,7 +300,7 @@ test('step 2 should not show a confirmed state when the previous session has exp
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -248,11 +326,179 @@ test('step 2 should not show a confirmed state when the previous session has exp
   await page.getByRole('button', { name: 'Start again' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
   await expect(page.getByText('Seed phrase confirmed')).not.toBeVisible();
+});
+
+test('step 2 should not show a confirmed state when the previous session was cancelled', async ({
+  page
+}) => {
+  await page.clock.install({ time: new Date() });
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await expect(page.getByText('Register: Step 3')).toBeVisible();
+  await page.getByRole('button', { name: 'Back' }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Register: Step 2')).toBeVisible();
+  await page.getByRole('button', { name: 'Back' }).click();
+
+  // Step 1 page
+  await expect(page.getByText('Register: Step 1')).toBeVisible();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+
+  // Homepage
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Register: Step 2')).toBeVisible();
+  await expect(page.getByText('Seed phrase confirmed')).not.toBeVisible();
+});
+
+test('step 3 should reset when navigated away from', async ({ page }) => {
+  const btcWallet = generateBtcWallet();
+
+  await page.clock.install({ time: new Date() });
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+  expect(seedWords).toHaveLength(24);
+
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+
+  // Step 2 page
+  await expect(
+    page.getByRole('button', { name: 'Confirm', exact: true })
+  ).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (const seedWord of seedWords) {
+    await page
+      .getByRole('button', { name: seedWord, exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await page
+    .getByLabel('1. Enter your public Bitcoin address')
+    .fill(btcWallet.address);
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  await expect(
+    page.getByText('I want to permanently link my Bitcoin address')
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'Back' }).click();
+
+  // Step 2 page
+  await expect(page.getByText('Register: Step 2')).toBeVisible();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+
+  // Step 3 page
+  await expect(
+    page.getByText('I want to permanently link my Bitcoin address')
+  ).not.toBeVisible();
+});
+
+test('confirm seed phrase successfully after undoing a selection', async ({
+  page
+}) => {
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  const seedWords = await getSeedWords(page);
+
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+
+  // Step 2 page
+  await page.getByRole('button', { name: 'Reveal words' }).click();
+
+  for (let i = 0; i < seedWords.length - 2; i++) {
+    await page
+      .getByRole('button', { name: seedWords[i], exact: true, disabled: false })
+      .first()
+      .click();
+  }
+
+  // incorrect order
+  await page
+    .getByRole('button', {
+      name: seedWords[seedWords.length - 1],
+      exact: true,
+      disabled: false
+    })
+    .first()
+    .click();
+
+  await page
+    .getByRole('button', { name: 'Undo selection', exact: true })
+    .click();
+
+  // correct order
+  await page
+    .getByRole('button', {
+      name: seedWords[seedWords.length - 2],
+      exact: true,
+      disabled: false
+    })
+    .first()
+    .click();
+
+  await page
+    .getByRole('button', {
+      name: seedWords[seedWords.length - 1],
+      exact: true,
+      disabled: false
+    })
+    .first()
+    .click();
+
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+  // Step 3 page
+  await expect(page.getByText('Register: Step 3')).toBeVisible();
 });
 
 test('unsuccessful registration attempt when the order of the seed phrase selected is incorrect', async ({
@@ -266,7 +512,7 @@ test('unsuccessful registration attempt when the order of the seed phrase select
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -316,7 +562,7 @@ test('unsuccessful registration attempt when an invalid Bitcoin address is enter
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -338,7 +584,7 @@ test('unsuccessful registration attempt when an invalid Bitcoin address is enter
   await page
     .getByLabel('1. Enter your public Bitcoin address')
     .fill('invalid-bitcoin-address');
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Confirm', disabled: false }).click();
 
   await expect(page.getByText('Invalid Bitcoin address')).toBeVisible();
 });
@@ -372,7 +618,7 @@ test('unsuccessful registration attempt when the session expires on step 2', asy
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
@@ -397,7 +643,7 @@ test('unsuccessful registration attempt when the session expires on step 3', asy
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -448,7 +694,7 @@ test('unsuccessful registration attempt when the session is refreshed on step 2'
   await page.getByRole('link', { name: 'Register' }).click();
 
   // Step 1 page
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(page.getByText('Register: Step 2')).toBeVisible();
@@ -469,7 +715,7 @@ test('unsuccessful registration attempt when the session is refreshed on step 3'
   const seedWords = await getSeedWords(page);
   expect(seedWords).toHaveLength(24);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
   // Step 2 page
   await expect(
@@ -493,6 +739,24 @@ test('unsuccessful registration attempt when the session is refreshed on step 3'
   await page.reload();
 
   await expect(page.getByText('Your session has refreshed')).toBeVisible();
+});
+
+test('seed phrase visibility on step 1 should reset after 30 seconds', async ({
+  page
+}) => {
+  await page.clock.install({ time: new Date() });
+
+  // Homepage
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Register' }).click();
+
+  // Step 1 page
+  await page.getByRole('button', { name: 'Show' }).click();
+  await expect(page.getByRole('button', { name: 'Hide' })).toBeVisible();
+
+  await page.clock.fastForward('30');
+
+  await expect(page.getByRole('button', { name: 'Show' })).toBeVisible();
 });
 
 test('unsuccessful search attempt when an invalid Bitcoin address is entered', async ({

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
@@ -32,6 +32,7 @@ export function RegistrationStep1() {
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
+  const seedPhraseVisibilityTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
   const copySeedPhrase = useCallback(() => {
     if (seedPhrase) {
@@ -44,10 +45,27 @@ export function RegistrationStep1() {
     copyTextToolbarButtonRef.current?.showSuccessIndicator();
   }, [copySeedPhrase]);
 
-  const toggleSeedPhraseVisibility = useCallback(
-    () => setIsSeedPhraseVisible(!isSeedPhraseVisible),
-    [isSeedPhraseVisible]
-  );
+  const toggleSeedPhraseVisibility = useCallback(() => {
+    if (seedPhraseVisibilityTimer.current) {
+      clearTimeout(seedPhraseVisibilityTimer.current);
+      seedPhraseVisibilityTimer.current = null;
+      setIsSeedPhraseVisible(false);
+    } else {
+      seedPhraseVisibilityTimer.current = setTimeout(() => {
+        seedPhraseVisibilityTimer.current = null;
+        setIsSeedPhraseVisible(false);
+      }, 30000); // 30 seconds
+      setIsSeedPhraseVisible(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    return function cleanup() {
+      if (seedPhraseVisibilityTimer.current) {
+        clearTimeout(seedPhraseVisibilityTimer.current);
+      }
+    };
+  }, []);
 
   const cancelRegistration = useCallback(() => {
     router.replace('/');
