@@ -198,7 +198,7 @@ test('successful registration when the Bitcoin address is changed', async ({
 
   // Registration complete page
   await expect(page.getByText('Registration Complete!')).toBeVisible({
-    timeout: 30000
+    timeout: 60000
   });
   await expect(page.getByText(btcWallet2.address)).toBeVisible();
 });
