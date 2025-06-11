@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: '/(.*)', // Apply to all routes
         headers: [
           {
             key: 'X-Frame-Options',
@@ -29,6 +29,18 @@ const nextConfig: NextConfig = {
           {
             key: 'Content-Security-Policy',
             value: contentSecurityPolicyValue.replace(/\n/g, ' ').trim()
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'same-origin'
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin'
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp'
           }
         ]
       }
