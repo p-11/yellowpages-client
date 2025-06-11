@@ -7,7 +7,7 @@ connect-src 'self' ${domains.proofService} ${domains.verificationService};
 script-src 'self' https://challenges.cloudflare.com 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''};
 style-src 'self' 'unsafe-inline';
 frame-src https://challenges.cloudflare.com https://status.projecteleven.com;
-img-src 'self' blob: data:;
+img-src 'self';
 font-src 'self';
 object-src 'none';
 base-uri 'self';
