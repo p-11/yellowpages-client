@@ -4,11 +4,21 @@ module.exports = {
   preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'node',
 
+  // Enable experimental fetch
+  setupFiles: ['<rootDir>/jest.setup.js'],
+
+  // Set NODE_ENV to test to ensure Babel plugins are applied
+  setupFilesAfterEnv: [],
+  globals: {
+    'ts-jest': {
+      babelConfig: true
+    }
+  },
+
   // Transform everything under src with ts-jest, and the WASM package with Babel
   transform: {
-    // Transform the WASM package with Babel to handle import.meta (must come first)
-    '.*/node_modules/@evervault/wasm-attestation-bindings/.*\\.js$': 'babel-jest',
-    '^.+\\.[jt]sx?$': 'ts-jest'
+    '^.+\\.[jt]sx?$': 'ts-jest',
+    '^.+/node_modules/@evervault/wasm-attestation-bindings/index\\.js$': 'babel-jest'
   },
   transformIgnorePatterns: [
     // Ignore all node_modules except specific ESM packages

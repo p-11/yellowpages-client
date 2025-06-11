@@ -30,8 +30,9 @@ import { HDKey } from '@scure/bip32';
 import { base64 } from '@scure/base';
 import { gcm } from '@noble/ciphers/aes.js';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
-import { PCRs, validateAttestationDocPcrs } from '@evervault/wasm-attestation-bindings';
+import init, { PCRs, validateAttestationDocPcrs } from '@evervault/wasm-attestation-bindings';
 import fs from 'fs';
+import path from 'path';
 
 // Helper: convert Uint8Array to hex string
 function toHex(bytes: Uint8Array): string {
@@ -468,6 +469,19 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
   });
 
   describe('Attestation document verification', () => {
+    beforeAll(async () => {
+      // Load WASM file directly
+      const wasmPath = path.join(
+        process.cwd(),
+        'node_modules',
+        '@evervault',
+        'wasm-attestation-bindings',
+        'index_bg.wasm'
+      );
+      const wasmBytes = await fs.promises.readFile(wasmPath);
+      await init(wasmBytes);
+    });
+
     test('validates attestation document with correct PCRs', async () => {
       // Read the attestation document from test data
       const attestationDoc = await fs.promises.readFile(
@@ -486,6 +500,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
 
       // Validate the attestation document
       const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
+      console.log(result);
       expect(result).toBe(true);
     });
 
