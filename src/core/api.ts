@@ -17,7 +17,7 @@ import {
 } from './cryptography';
 import { base64 } from '@scure/base';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
-import { ErrorWithCode } from '../utils/errorWithCode';
+import { ErrorWithCode } from '@/utils/errorWithCode';
 import { domains } from '@/lib/domains';
 
 export interface Proof {
