@@ -1,10 +1,19 @@
 import type { NextConfig } from 'next';
 import { domains } from '@/lib/domains';
 
-const contentSecurityPolicyValue = `
+const scriptSrcDirective = [
+  "'self'",
+  'https://challenges.cloudflare.com',
+  "'unsafe-inline'",
+  process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : null
+]
+  .filter(Boolean)
+  .join(' ');
+
+const contentSecurityPolicy = `
 default-src 'self';
 connect-src 'self' ${domains.proofService} ${domains.verificationService};
-script-src 'self' https://challenges.cloudflare.com 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''};
+script-src ${scriptSrcDirective};
 style-src 'self' 'unsafe-inline';
 frame-src https://challenges.cloudflare.com https://status.projecteleven.com;
 img-src 'self';
@@ -28,7 +37,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: contentSecurityPolicyValue.replace(/\n/g, ' ').trim()
+            value: contentSecurityPolicy.replace(/\n/g, ' ').trim()
           },
           {
             key: 'Cross-Origin-Resource-Policy',
