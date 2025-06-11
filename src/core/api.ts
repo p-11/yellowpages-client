@@ -18,6 +18,7 @@ import {
 import { base64 } from '@scure/base';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
 import { ErrorWithCode } from '@/utils/errorWithCode';
+import { domains } from '@/lib/domains';
 
 export interface Proof {
   id: string;
@@ -68,19 +69,6 @@ enum WebSocketCloseCode {
   // eslint-disable-next-line no-unused-vars
   Timeout = 4000
 }
-
-/**
- * Base domains per service and environment.
- */
-const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
-const domains = {
-  verificationService: IS_PROD
-    ? 'https://verification-api.yellowpages.xyz'
-    : 'https://verification-api.yellowpages-development.xyz',
-  proofService: IS_PROD
-    ? 'wss://yellowpages-proof-service.app-d1312b66384d.enclave.evervault.com'
-    : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
-};
 
 /**
  * Low-level wrapper around fetch.
