@@ -482,41 +482,80 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       await init(wasmBytes);
     });
 
-    test('validates attestation document with correct PCRs', async () => {
-      // Read the attestation document from test data
-      const attestationDoc = await fs.promises.readFile(
-        'src/__tests__/test_data/attestation_doc.txt',
+    test('validates dev attestation document with correct PCR8', async () => {
+      // Read the attestation document from test data and clean up any whitespace
+      const attestationDoc = (await fs.promises.readFile(
+        'src/__tests__/test_data/development_attestation_doc.txt',
         'utf8'
-      );
+      )).trim();
 
-      // Create PCR container with known good values
+      // Create PCR container with correct PCR8
       const pcrs = new PCRs(
-        "0f95e7a3a2252449726de0151b5b72a0e8218401ba7bccbb0014f8a7ce2b4989fdc7fbc8204ee5b5c334e52717ea1432",
-        "0343b056cd8485ca7890ddd833476d78460aed2aa161548e4e26bedf321726696257d623e8805f3f605946b3d8b0c6aa",
-        "c79b8ad83429f1f3b1eb01f55ee01fe21a87f0c5c1c2f444e09c31eedd534e44e591813582460004d279979dd7a7b68f",
-        "6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83",
-        undefined // hash algorithm is optional
+        undefined, // pcr_0
+        undefined, // pcr_1
+        undefined, // pcr_2
+        "6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83", // pcr_8
+        undefined // hash_algorithm
       );
 
       // Validate the attestation document
       const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
-      console.log(result);
       expect(result).toBe(true);
     });
 
-    test('fails validation with incorrect PCR values', async () => {
-      const attestationDoc = await fs.promises.readFile(
-        'src/__tests__/test_data/attestation_doc.txt',
+    test('fails dev validation with incorrect PCR8', async () => {
+      const attestationDoc = (await fs.promises.readFile(
+        'src/__tests__/test_data/development_attestation_doc.txt',
         'utf8'
-      );
+      )).trim();
 
       // Create PCR container with incorrect PCR8
       const pcrs = new PCRs(
-        "0f95e7a3a2252449726de0151b5b72a0e8218401ba7bccbb0014f8a7ce2b4989fdc7fbc8204ee5b5c334e52717ea1432",
-        "0343b056cd8485ca7890ddd833476d78460aed2aa161548e4e26bedf321726696257d623e8805f3f605946b3d8b0c6aa",
-        "c79b8ad83429f1f3b1eb01f55ee01fe21a87f0c5c1c2f444e09c31eedd534e44e591813582460004d279979dd7a7b68f",
-        "incorrect_pcr8_value",
-        undefined
+        undefined, // pcr_0
+        undefined, // pcr_1
+        undefined, // pcr_2
+        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3", // pcr_8
+        undefined // hash_algorithm
+      );
+
+      const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
+      expect(result).toBe(false);
+    });
+
+    test('validates prod attestation document with correct PCR8', async () => {
+      // Read the attestation document from test data and clean up any whitespace
+      const attestationDoc = (await fs.promises.readFile(
+        'src/__tests__/test_data/production_attestation_doc.txt',
+        'utf8'
+      )).trim();
+
+      // Create PCR container with correct PCR8
+      const pcrs = new PCRs(
+        undefined, // pcr_0
+        undefined, // pcr_1
+        undefined, // pcr_2
+        "963ce555a9ffd22df1813b9a8c2137c2fd3eca51a83067c932da42acb962f8b154916cc148186bb2dd8555fc4f532345", // pcr_8
+        undefined // hash_algorithm
+      );
+
+      // Validate the attestation document
+      const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
+      expect(result).toBe(true);
+    });
+
+    test('fails prod validation with incorrect PCR8', async () => {
+      const attestationDoc = (await fs.promises.readFile(
+        'src/__tests__/test_data/production_attestation_doc.txt',
+        'utf8'
+      )).trim();
+
+      // Create PCR container with incorrect PCR8
+      const pcrs = new PCRs(
+        undefined, // pcr_0
+        undefined, // pcr_1
+        undefined, // pcr_2
+        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3", // pcr_8
+        undefined // hash_algorithm
       );
 
       const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
