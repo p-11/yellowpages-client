@@ -32,6 +32,7 @@
     "react-dom": "19.1.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.27.2",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.24.0",
     "@playwright/test": "1.52.0",
@@ -39,6 +40,7 @@
     "@types/node": "22.14.0",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.2",
+    "babel-plugin-transform-import-meta": "^2.3.3",
     "bitcoinjs-lib": "6.1.7",
     "eslint": "9.24.0",
     "eslint-config-next": "15.2.5",

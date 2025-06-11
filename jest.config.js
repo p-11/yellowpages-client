@@ -4,13 +4,15 @@ module.exports = {
   preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'node',
 
-  // Transform everything under src, and also these two ESM deps in node_modules
+  // Transform everything under src with ts-jest, and the WASM package with Babel
   transform: {
+    // Transform the WASM package with Babel to handle import.meta (must come first)
+    '.*/node_modules/@evervault/wasm-attestation-bindings/.*\\.js$': 'babel-jest',
     '^.+\\.[jt]sx?$': 'ts-jest'
   },
   transformIgnorePatterns: [
-    // Ignore all node_modules except bitcoin-address-validation AND base58-js
-    '/node_modules/(?!(bitcoin-address-validation|base58-js)/)'
+    // Ignore all node_modules except specific ESM packages
+    '/node_modules/(?!(bitcoin-address-validation|base58-js|@evervault\\/wasm-attestation-bindings)/)'
   ],
 
   // If you use path-aliases (e.g. @/…), map them:

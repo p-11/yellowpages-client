@@ -30,6 +30,8 @@ import { HDKey } from '@scure/bip32';
 import { base64 } from '@scure/base';
 import { gcm } from '@noble/ciphers/aes.js';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
+import { PCRs, validateAttestationDocPcrs } from '@evervault/wasm-attestation-bindings';
+import fs from 'fs';
 
 // Helper: convert Uint8Array to hex string
 function toHex(bytes: Uint8Array): string {
@@ -462,6 +464,48 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       // Keypair should be destroyed even if encryption fails
       expect(keypair.encapsulationKey).toBeUndefined();
       expect(keypair.decapsulationKey).toBeUndefined();
+    });
+  });
+
+  describe('Attestation document verification', () => {
+    test('validates attestation document with correct PCRs', async () => {
+      // Read the attestation document from test data
+      const attestationDoc = await fs.promises.readFile(
+        'src/__tests__/test_data/attestation_doc.txt',
+        'utf8'
+      );
+
+      // Create PCR container with known good values
+      const pcrs = new PCRs(
+        "0f95e7a3a2252449726de0151b5b72a0e8218401ba7bccbb0014f8a7ce2b4989fdc7fbc8204ee5b5c334e52717ea1432",
+        "0343b056cd8485ca7890ddd833476d78460aed2aa161548e4e26bedf321726696257d623e8805f3f605946b3d8b0c6aa",
+        "c79b8ad83429f1f3b1eb01f55ee01fe21a87f0c5c1c2f444e09c31eedd534e44e591813582460004d279979dd7a7b68f",
+        "6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83",
+        undefined // hash algorithm is optional
+      );
+
+      // Validate the attestation document
+      const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
+      expect(result).toBe(true);
+    });
+
+    test('fails validation with incorrect PCR values', async () => {
+      const attestationDoc = await fs.promises.readFile(
+        'src/__tests__/test_data/attestation_doc.txt',
+        'utf8'
+      );
+
+      // Create PCR container with incorrect PCR8
+      const pcrs = new PCRs(
+        "0f95e7a3a2252449726de0151b5b72a0e8218401ba7bccbb0014f8a7ce2b4989fdc7fbc8204ee5b5c334e52717ea1432",
+        "0343b056cd8485ca7890ddd833476d78460aed2aa161548e4e26bedf321726696257d623e8805f3f605946b3d8b0c6aa",
+        "c79b8ad83429f1f3b1eb01f55ee01fe21a87f0c5c1c2f444e09c31eedd534e44e591813582460004d279979dd7a7b68f",
+        "incorrect_pcr8_value",
+        undefined
+      );
+
+      const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
+      expect(result).toBe(false);
     });
   });
 });
