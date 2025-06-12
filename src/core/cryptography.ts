@@ -22,9 +22,16 @@ import {
   PubKeyType
 } from '@project-eleven/pq-address';
 import { base64 } from '@scure/base';
-import { utf8ToBytes } from '@noble/ciphers/utils.js';
-import init, { validateAttestationDocPcrs, PCRs, getUserData } from '@evervault/wasm-attestation-bindings';
-import Buffer from 'buffer';
+import init, { validateAttestationDocPcrs, PCRs, getUserData, InitOutput } from '@evervault/wasm-attestation-bindings';
+
+// Initialize WASM module
+let wasmInitPromise: Promise<InitOutput>;
+export function initWasm() {
+  if (!wasmInitPromise) {
+    wasmInitPromise = init();
+  }
+  return wasmInitPromise;
+}
 
 // Get Environment
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
@@ -774,10 +781,13 @@ interface AuthAttestationDocUserData {
  * @param attestationDoc - Base64 encoded attestation document
  * @returns The decoded user data object, or null if decoding fails
  */
-export function parseAttestationDocUserData(
+export async function parseAttestationDocUserData(
   attestationDoc: AttestationDocBase64
-): AuthAttestationDocUserData | null {
+): Promise<AuthAttestationDocUserData | null> {
   try {
+    // Ensure WASM is initialized
+    await initWasm();
+
     // Get user data from attestation doc
     const userData = getUserData(attestationDoc);
     if (!userData) {
@@ -805,7 +815,7 @@ export async function verifyAttestationDocUserData(
 ): Promise<boolean> {
   try {
     // Decode the user data
-    const authAttestationDocUserData = parseAttestationDocUserData(attestationDoc);
+    const authAttestationDocUserData = await parseAttestationDocUserData(attestationDoc);
     if (!authAttestationDocUserData) {
       return false;
     }

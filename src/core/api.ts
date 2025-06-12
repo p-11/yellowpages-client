@@ -245,8 +245,6 @@ export async function createProof(
     const isValid = await verifyAttestationDocUserData(attestationDoc, mlKem768CiphertextBytes);
     if (!isValid) {
       throw new Error('Failed to verify attestation document: ciphertext hash mismatch');
-    } else {
-      console.log('validated the user data field!');
     }
 
     // Step 7: Create and encrypt proof request
