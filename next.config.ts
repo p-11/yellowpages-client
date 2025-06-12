@@ -32,10 +32,6 @@ const nextConfig: NextConfig = {
         source: '/images/og-image.png',
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
-          },
-          {
             key: 'Content-Security-Policy',
             value: contentSecurityPolicy.replace(/\n/g, ' ').trim()
           },
