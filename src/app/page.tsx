@@ -43,6 +43,7 @@ export default function HomePage() {
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' && (
         <div className={styles.footer}>
+          <p>Built by <Link href='https://projecteleven.com' target='_blank'>Project Eleven</Link></p>
           <iframe
             src='https://status.projecteleven.com/badge?theme=light'
             width='250'

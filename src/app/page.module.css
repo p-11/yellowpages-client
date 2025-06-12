@@ -23,7 +23,8 @@
     gap: 24px;
 }
 
-.primaryLink, .secondaryLink {
+.primaryLink,
+.secondaryLink {
     font-size: 14px;
 }
 
@@ -48,7 +49,8 @@
     color: #E8D674;
 }
 
-.primaryLink:hover, .secondaryLink:hover {
+.primaryLink:hover,
+.secondaryLink:hover {
     opacity: 0.85;
 }
 
@@ -72,7 +74,14 @@
 
 .footer {
     position: fixed;
-    bottom: 24px
+    bottom: 24px;
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}
+
+.footer>p {
+    font-size: 14px;
 }
 
 @media only screen and (min-width: 768px) {
@@ -80,7 +89,8 @@
         flex-direction: row-reverse;
     }
 
-    .primaryLink, .secondaryLink {
+    .primaryLink,
+    .secondaryLink {
         font-size: 15px;
         flex: 1
     }
