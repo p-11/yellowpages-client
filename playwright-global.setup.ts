@@ -9,7 +9,7 @@ async function globalSetup(config: FullConfig) {
 
   const isDevelopmentBannerVisible = await page
     .getByText(
-      'Note, this is a development environment. Registration on this environment does not register your Bitcoin address on the yellowpages. Do not register a Bitcoin address with mainnet funds.',
+      'Note, this is a development environment. Do not register a Bitcoin address with mainnet funds.',
       { exact: true }
     )
     .isVisible();
