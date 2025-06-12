@@ -1,0 +1,31 @@
+.main {
+    padding-top: 20px;
+}
+
+.title {
+    font-size: 1.4rem;
+    letter-spacing: -1px;
+    font-weight: 400;
+    line-height: 2.2rem;
+    margin-bottom: 0;
+    margin-top: 24px;
+}
+
+.itemHeading {
+    font-size: 1rem;
+    margin-bottom: 0;
+    margin-top: 10px;
+    word-break: break-word;
+}
+
+.itemHeading span {
+    font-weight: 400;
+}
+
+@media only screen and (min-width: 768px) {
+    .title {
+        margin-top: 32px;
+        font-size: 1.8rem;
+        margin-bottom: 16px;
+    }
+}
