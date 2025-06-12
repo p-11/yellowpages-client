@@ -23,7 +23,9 @@ import {
   ProofRequestBytes,
   PQAddress,
   verifyAttestationDocUserData,
-  AttestationDocBase64
+  AttestationDocBase64,
+  verifyAttestationDoc,
+  PCR8Value
 } from './../core/cryptography';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
@@ -485,23 +487,15 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     });
 
     test('validates dev attestation document with correct PCR8', async () => {
-      // Read the attestation document from test data and clean up any whitespace
       const attestationDoc = (await fs.promises.readFile(
         'src/__tests__/test_data/development_attestation_doc.txt',
         'utf8'
-      )).trim();
+      )).trim() as AttestationDocBase64;
 
-      // Create PCR container with correct PCR8
-      const pcrs = new PCRs(
-        undefined, // pcr_0
-        undefined, // pcr_1
-        undefined, // pcr_2
-        "6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83", // pcr_8
-        undefined // hash_algorithm
+      const result = await verifyAttestationDoc(
+        attestationDoc,
+        "6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83" as PCR8Value
       );
-
-      // Validate the attestation document
-      const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
       expect(result).toBe(true);
     });
 
@@ -509,39 +503,25 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       const attestationDoc = (await fs.promises.readFile(
         'src/__tests__/test_data/development_attestation_doc.txt',
         'utf8'
-      )).trim();
+      )).trim() as AttestationDocBase64;
 
-      // Create PCR container with incorrect PCR8
-      const pcrs = new PCRs(
-        undefined, // pcr_0
-        undefined, // pcr_1
-        undefined, // pcr_2
-        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3", // pcr_8
-        undefined // hash_algorithm
+      const result = await verifyAttestationDoc(
+        attestationDoc,
+        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3" as PCR8Value
       );
-
-      const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
       expect(result).toBe(false);
     });
 
     test('validates prod attestation document with correct PCR8', async () => {
-      // Read the attestation document from test data and clean up any whitespace
       const attestationDoc = (await fs.promises.readFile(
         'src/__tests__/test_data/production_attestation_doc.txt',
         'utf8'
-      )).trim();
+      )).trim() as AttestationDocBase64;
 
-      // Create PCR container with correct PCR8
-      const pcrs = new PCRs(
-        undefined, // pcr_0
-        undefined, // pcr_1
-        undefined, // pcr_2
-        "963ce555a9ffd22df1813b9a8c2137c2fd3eca51a83067c932da42acb962f8b154916cc148186bb2dd8555fc4f532345", // pcr_8
-        undefined // hash_algorithm
+      const result = await verifyAttestationDoc(
+        attestationDoc,
+        "963ce555a9ffd22df1813b9a8c2137c2fd3eca51a83067c932da42acb962f8b154916cc148186bb2dd8555fc4f532345" as PCR8Value
       );
-
-      // Validate the attestation document
-      const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
       expect(result).toBe(true);
     });
 
@@ -549,18 +529,12 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       const attestationDoc = (await fs.promises.readFile(
         'src/__tests__/test_data/production_attestation_doc.txt',
         'utf8'
-      )).trim();
+      )).trim() as AttestationDocBase64;
 
-      // Create PCR container with incorrect PCR8
-      const pcrs = new PCRs(
-        undefined, // pcr_0
-        undefined, // pcr_1
-        undefined, // pcr_2
-        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3", // pcr_8
-        undefined // hash_algorithm
+      const result = await verifyAttestationDoc(
+        attestationDoc,
+        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3" as PCR8Value
       );
-
-      const result = validateAttestationDocPcrs(attestationDoc, [pcrs]);
       expect(result).toBe(false);
     });
 

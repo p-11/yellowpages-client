@@ -76,6 +76,10 @@ export type AttestationDocBase64 = Brand<
   string,
   'AttestationDocBase64'
 >;
+export type PCR8Value = Brand<
+  string,
+  'PCR8Value'
+>;
 
 const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
   AddressType.p2pkh,
@@ -841,6 +845,38 @@ export async function verifyAttestationDocUserData(
     return true;
   } catch (error) {
     console.error('Failed to verify attestation doc user data:', error);
+    return false;
+  }
+}
+
+/**
+ * Verifies an attestation document against a given PCR8 value.
+ * 
+ * @param attestationDoc - Base64 encoded attestation document
+ * @param pcr8 - The expected PCR8 value
+ * @returns true if the attestation document is valid and matches the PCR8 value
+ */
+export async function verifyAttestationDoc(
+  attestationDoc: AttestationDocBase64,
+  pcr8: PCR8Value
+): Promise<boolean> {
+  try {
+    // Ensure WASM is initialized
+    await initWasm();
+
+    // Create PCR container with PCR8
+    const pcrs = new PCRs(
+      undefined, // pcr_0
+      undefined, // pcr_1
+      undefined, // pcr_2
+      pcr8,      // pcr_8
+      undefined  // hash_algorithm
+    );
+
+    // Validate the attestation document
+    return validateAttestationDocPcrs(attestationDoc, [pcrs]);
+  } catch (error) {
+    console.error('Failed to verify attestation document:', error);
     return false;
   }
 }
