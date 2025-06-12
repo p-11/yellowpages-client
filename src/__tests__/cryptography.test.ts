@@ -563,33 +563,31 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       expect(result).toBe(false);
     });
 
-    test('validates attestation doc user data with matching ciphertext', async () => {
+    test('validates dev attestation doc user data with matching ciphertext', async () => {
       const attestationDoc = (await fs.promises.readFile(
         'src/__tests__/test_data/development_attestation_doc.txt',
         'utf8'
       )).trim();
 
-      // Create a sample ML-KEM-768 ciphertext that matches the hash in the attestation doc
-      const ciphertext = new Uint8Array([
-        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-        0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10
-      ]);
+      // Read and decode the ML-KEM-768 ciphertext from file
+      const encodedCiphertext = (await fs.promises.readFile(
+        'src/__tests__/test_data/development_ml_kem_768_ciphertext.txt',
+        'utf8'
+      )).trim();
+      const ciphertext = base64.decode(encodedCiphertext);
 
       const result = await verifyAttestationDocUserData(attestationDoc, ciphertext);
       expect(result).toBe(true);
     });
 
-    test('fails attestation doc user data with non-matching ciphertext', async () => {
+    test('fails dev attestation doc user data with non-matching ciphertext', async () => {
       const attestationDoc = (await fs.promises.readFile(
         'src/__tests__/test_data/development_attestation_doc.txt',
         'utf8'
       )).trim();
 
-      // Create a different ciphertext that won't match the hash in the attestation doc
-      const ciphertext = new Uint8Array([
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
-      ]);
+      // Create a different ciphertext that won't match
+      const ciphertext = new Uint8Array(Array(32).fill(0xff));
 
       const result = await verifyAttestationDocUserData(attestationDoc, ciphertext);
       expect(result).toBe(false);
