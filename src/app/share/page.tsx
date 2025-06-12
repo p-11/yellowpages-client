@@ -16,6 +16,8 @@ export async function generateMetadata({
 
   return {
     title: 'yellowpages',
+    description:
+      'Find yourself in the post quantum world - join the yellowpages.',
     openGraph: {
       images: [
         `/og-image?btc=${btc}&mldsa44=${mldsa44}&slhdsaSha2S128=${slhdsaSha2S128}`
