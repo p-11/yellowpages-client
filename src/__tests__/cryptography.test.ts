@@ -22,7 +22,8 @@ import {
   MlKem768CiphertextBytes,
   ProofRequestBytes,
   PQAddress,
-  verifyAttestationDocUserData
+  verifyAttestationDocUserData,
+  AttestationDocBase64
 } from './../core/cryptography';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
@@ -567,14 +568,14 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       const attestationDoc = (await fs.promises.readFile(
         'src/__tests__/test_data/development_attestation_doc.txt',
         'utf8'
-      )).trim();
+      )).trim() as AttestationDocBase64;
 
       // Read and decode the ML-KEM-768 ciphertext from file
       const encodedCiphertext = (await fs.promises.readFile(
         'src/__tests__/test_data/development_ml_kem_768_ciphertext.txt',
         'utf8'
       )).trim();
-      const ciphertext = base64.decode(encodedCiphertext);
+      const ciphertext = base64.decode(encodedCiphertext) as MlKem768CiphertextBytes;
 
       const result = await verifyAttestationDocUserData(attestationDoc, ciphertext);
       expect(result).toBe(true);
@@ -584,10 +585,10 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       const attestationDoc = (await fs.promises.readFile(
         'src/__tests__/test_data/development_attestation_doc.txt',
         'utf8'
-      )).trim();
+      )).trim() as AttestationDocBase64;
 
       // Create a different ciphertext that won't match
-      const ciphertext = new Uint8Array(Array(32).fill(0xff));
+      const ciphertext = new Uint8Array(Array(32).fill(0xff)) as MlKem768CiphertextBytes;
 
       const result = await verifyAttestationDocUserData(attestationDoc, ciphertext);
       expect(result).toBe(false);

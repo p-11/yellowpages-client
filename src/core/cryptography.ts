@@ -65,6 +65,10 @@ export type MlKem768CiphertextBytes = Brand<
   'MlKem768CiphertextBytes'
 >;
 export type ProofRequestBytes = Brand<Uint8Array, 'ProofRequestBytes'>;
+export type AttestationDocBase64 = Brand<
+  string,
+  'AttestationDocBase64'
+>;
 
 const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
   AddressType.p2pkh,
@@ -765,23 +769,20 @@ interface AuthAttestationDocUserData {
 }
 
 /**
- * Verifies the user data in an attestation document, specifically checking that the ML-KEM-768 ciphertext
- * hash matches the provided ciphertext.
+ * Parses the user data from an attestation document, expecting it to contain an AuthAttestationDocUserData JSON.
  * 
  * @param attestationDoc - Base64 encoded attestation document
- * @param mlKem768Ciphertext - The ML-KEM-768 ciphertext to verify against the hash in the user data
- * @returns true if verification succeeds, false otherwise
+ * @returns The decoded user data object, or null if decoding fails
  */
-export async function verifyAttestationDocUserData(
-  attestationDoc: string,
-  mlKem768Ciphertext: Uint8Array
-): Promise<boolean> {
+export function parseAttestationDocUserData(
+  attestationDoc: AttestationDocBase64
+): AuthAttestationDocUserData | null {
   try {
     // Get user data from attestation doc
     const userData = getUserData(attestationDoc);
     if (!userData) {
       console.error('No user data found in attestation document');
-      return false;
+      return null;
     }
     
     // Convert userData to string first
@@ -791,10 +792,26 @@ export async function verifyAttestationDocUserData(
     const decodedUserData = new TextDecoder().decode(base64.decode(userDataStr));
     
     // Parse user data as JSON
-    const parsedUserData = JSON.parse(decodedUserData) as AuthAttestationDocUserData;
+    return JSON.parse(decodedUserData) as AuthAttestationDocUserData;
+  } catch (error) {
+    console.error('Failed to decode attestation doc user data:', error);
+    return null;
+  }
+}
+
+export async function verifyAttestationDocUserData(
+  attestationDoc: AttestationDocBase64,
+  mlKem768Ciphertext: MlKem768CiphertextBytes
+): Promise<boolean> {
+  try {
+    // Decode the user data
+    const authAttestationDocUserData = parseAttestationDocUserData(attestationDoc);
+    if (!authAttestationDocUserData) {
+      return false;
+    }
     
     // Decode the base64 hash from the JSON to get the raw hash bytes
-    const storedHashBytes = base64.decode(parsedUserData.ml_kem_768_ciphertext_hash);
+    const storedHashBytes = base64.decode(authAttestationDocUserData.ml_kem_768_ciphertext_hash);
     
     // Hash the provided ciphertext
     const expectedCiphertextHash = sha256(mlKem768Ciphertext);
