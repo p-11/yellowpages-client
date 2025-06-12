@@ -29,7 +29,8 @@ export default function HomePage() {
           Bitcoin ownership.
         </p>
         <p>
-          Read our <Link href='/faqs'>faqs</Link> or{' '}
+          Read our <Link href='/faqs'>faqs</Link>,{' '}
+          <Link href='/resources'>resources</Link>, or{' '}
           <Link href='/changelog'>changelog</Link> to learn more.
         </p>
       </div>
