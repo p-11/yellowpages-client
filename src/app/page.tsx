@@ -41,7 +41,8 @@ export default function HomePage() {
           Check the directory <ArrowRightIcon />
         </Link>
       </div>
-      {process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' && (
+      {(process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ||
+        process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview') && (
         <div className={styles.footer}>
           <p>
             Built by{' '}
