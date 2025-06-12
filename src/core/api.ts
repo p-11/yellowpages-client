@@ -3,6 +3,7 @@
  */
 import {
   generateMlKem768Keypair,
+  deriveMlKem768SharedSecret,
   destroyMlKem768Keypair,
   encryptProofRequestData,
   ML_KEM_768_CIPHERTEXT_SIZE,
@@ -13,7 +14,9 @@ import {
   BitcoinAddress,
   SignedMessage,
   PQAddress,
-  PQPublicKeyString
+  PQPublicKeyString,
+  AttestationDocBase64,
+  verifyAttestationDocUserData
 } from './cryptography';
 import { base64 } from '@scure/base';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
@@ -45,6 +48,7 @@ export interface Proof {
  */
 interface HandshakeResponse {
   ml_kem_768_ciphertext: string; // Base64-encoded ML-KEM ciphertext
+  auth_attestation_doc: string;  // Base64-encoded attestation document
 }
 
 /**
@@ -236,7 +240,16 @@ export async function createProof(
       );
     }
 
-    // Step 6: Create and encrypt proof request
+    // Step 6: Verify the attestation document
+    const attestationDoc = handshakeResponse.auth_attestation_doc as AttestationDocBase64;
+    const isValid = await verifyAttestationDocUserData(attestationDoc, mlKem768CiphertextBytes);
+    if (!isValid) {
+      throw new Error('Failed to verify attestation document: ciphertext hash mismatch');
+    } else {
+      console.log('validated the user data field!');
+    }
+
+    // Step 7: Create and encrypt proof request
     const proofRequest = {
       bitcoin_address: body.btcAddress,
       bitcoin_signed_message: body.btcSignedMessage,
@@ -262,7 +275,7 @@ export async function createProof(
     // Send the encrypted proof request as a binary message
     ws.send(aes256GcmEncryptedMessage);
 
-    // Step 7: Wait for successful completion (normal close)
+    // Step 9: Wait for successful completion (normal close)
     const {
       wrappedPromise: onSuccessCloseWithAbortHandling,
       cleanup: cleanupSuccessCloseFn
