@@ -2,7 +2,7 @@ import { mnemonicToSeedSync, generateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { HDKey } from '@scure/bip32';
 import { hmac } from '@noble/hashes/hmac';
-import { sha512 } from '@noble/hashes/sha2';
+import { sha256, sha512 } from '@noble/hashes/sha2';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem';
@@ -22,6 +22,9 @@ import {
   PubKeyType
 } from '@project-eleven/pq-address';
 import { base64 } from '@scure/base';
+import { utf8ToBytes } from '@noble/ciphers/utils.js';
+import init, { validateAttestationDocPcrs, PCRs, getUserData } from '@evervault/wasm-attestation-bindings';
+import Buffer from 'buffer';
 
 // Get Environment
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
@@ -754,6 +757,64 @@ function encryptProofRequestData(
       aes256GcmNonce = undefined;
     }
     destroyMlKem768Keypair(mlKem768Keypair);
+  }
+}
+
+interface AuthAttestationDocUserData {
+  ml_kem_768_ciphertext_hash: string;
+}
+
+/**
+ * Verifies the user data in an attestation document, specifically checking that the ML-KEM-768 ciphertext
+ * hash matches the provided ciphertext.
+ * 
+ * @param attestationDoc - Base64 encoded attestation document
+ * @param mlKem768Ciphertext - The ML-KEM-768 ciphertext to verify against the hash in the user data
+ * @returns true if verification succeeds, false otherwise
+ */
+export async function verifyAttestationDocUserData(
+  attestationDoc: string,
+  mlKem768Ciphertext: Uint8Array
+): Promise<boolean> {
+  try {
+    // Get user data from attestation doc
+    const userData = getUserData(attestationDoc);
+    if (!userData) {
+      console.error('No user data found in attestation document');
+      return false;
+    }
+    
+    // Convert userData to string first
+    const userDataStr = new TextDecoder().decode(userData);
+    
+    // Decode user data from base64 to get JSON string
+    const decodedUserData = new TextDecoder().decode(base64.decode(userDataStr));
+    
+    // Parse user data as JSON
+    const parsedUserData = JSON.parse(decodedUserData) as AuthAttestationDocUserData;
+    
+    // Decode the base64 hash from the JSON to get the raw hash bytes
+    const storedHashBytes = base64.decode(parsedUserData.ml_kem_768_ciphertext_hash);
+    
+    // Hash the provided ciphertext
+    const expectedCiphertextHash = sha256(mlKem768Ciphertext);
+    
+    // Compare the raw hash bytes
+    if (storedHashBytes.length !== expectedCiphertextHash.length) {
+      return false;
+    }
+    
+    // Compare each byte
+    for (let i = 0; i < storedHashBytes.length; i++) {
+      if (storedHashBytes[i] !== expectedCiphertextHash[i]) {
+        return false;
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to verify attestation doc user data:', error);
+    return false;
   }
 }
 
