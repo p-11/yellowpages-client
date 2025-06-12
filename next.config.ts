@@ -61,6 +61,15 @@ const nextConfig: NextConfig = {
             value: 'cross-origin'
           }
         ]
+      },
+      {
+        source: '/og-image',
+        headers: [
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'cross-origin'
+          }
+        ]
       }
     ];
   }
