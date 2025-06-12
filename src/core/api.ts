@@ -16,7 +16,8 @@ import {
   PQAddress,
   PQPublicKeyString,
   AttestationDocBase64,
-  verifyAttestationDocUserData
+  verifyAttestationDoc,
+  PCR8Value
 } from './cryptography';
 import { base64 } from '@scure/base';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
@@ -73,6 +74,15 @@ enum WebSocketCloseCode {
   // eslint-disable-next-line no-unused-vars
   Timeout = 4000
 }
+
+/**
+ * Expected PCR8 values for attestation document verification.
+ * These values represent the known-good PCR8 measurements for our enclaves.
+ */
+const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
+const expectedPCR8: PCR8Value = IS_PROD
+  ? "963ce555a9ffd22df1813b9a8c2137c2fd3eca51a83067c932da42acb962f8b154916cc148186bb2dd8555fc4f532345" as PCR8Value  // prod enclave PCR8
+  : "6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83" as PCR8Value; // dev enclave PCR8
 
 /**
  * Low-level wrapper around fetch.
@@ -242,9 +252,9 @@ export async function createProof(
 
     // Step 6: Verify the attestation document
     const attestationDoc = handshakeResponse.auth_attestation_doc as AttestationDocBase64;
-    const isValid = await verifyAttestationDocUserData(attestationDoc, mlKem768CiphertextBytes);
+    const isValid = await verifyAttestationDoc(attestationDoc, expectedPCR8, mlKem768CiphertextBytes);
     if (!isValid) {
-      throw new Error('Failed to verify attestation document: ciphertext hash mismatch');
+      throw new Error('Failed to verify attestation document');
     }
 
     // Step 7: Create and encrypt proof request

@@ -850,21 +850,25 @@ export async function verifyAttestationDocUserData(
 }
 
 /**
- * Verifies an attestation document against a given PCR8 value.
+ * Verifies an attestation document by checking both:
+ * 1. The PCR8 value matches the expected measurement
+ * 2. The user data contains a matching hash of the ML-KEM-768 ciphertext
  * 
  * @param attestationDoc - Base64 encoded attestation document
  * @param pcr8 - The expected PCR8 value
- * @returns true if the attestation document is valid and matches the PCR8 value
+ * @param mlKem768Ciphertext - The ML-KEM-768 ciphertext to verify against the user data
+ * @returns true if both verifications succeed
  */
 export async function verifyAttestationDoc(
   attestationDoc: AttestationDocBase64,
-  pcr8: PCR8Value
+  pcr8: PCR8Value,
+  mlKem768Ciphertext: MlKem768CiphertextBytes
 ): Promise<boolean> {
   try {
     // Ensure WASM is initialized
     await initWasm();
 
-    // Create PCR container with PCR8
+    // Step 1: Verify PCR8 measurement
     const pcrs = new PCRs(
       undefined, // pcr_0
       undefined, // pcr_1
@@ -873,8 +877,20 @@ export async function verifyAttestationDoc(
       undefined  // hash_algorithm
     );
 
-    // Validate the attestation document
-    return validateAttestationDocPcrs(attestationDoc, [pcrs]);
+    const pcrsValid = validateAttestationDocPcrs(attestationDoc, [pcrs]);
+    if (!pcrsValid) {
+      console.error('PCR8 verification failed');
+      return false;
+    }
+
+    // Step 2: Verify user data contains matching ciphertext hash
+    const userDataValid = await verifyAttestationDocUserData(attestationDoc, mlKem768Ciphertext);
+    if (!userDataValid) {
+      console.error('User data verification failed');
+      return false;
+    }
+
+    return true;
   } catch (error) {
     console.error('Failed to verify attestation document:', error);
     return false;

@@ -492,9 +492,17 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
         'utf8'
       )).trim() as AttestationDocBase64;
 
+      // Read and decode the ML-KEM-768 ciphertext from file
+      const encodedCiphertext = (await fs.promises.readFile(
+        'src/__tests__/test_data/development_ml_kem_768_ciphertext.txt',
+        'utf8'
+      )).trim();
+      const ciphertext = base64.decode(encodedCiphertext) as MlKem768CiphertextBytes;
+
       const result = await verifyAttestationDoc(
         attestationDoc,
-        "6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83" as PCR8Value
+        "6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83" as PCR8Value,
+        ciphertext
       );
       expect(result).toBe(true);
     });
@@ -505,9 +513,17 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
         'utf8'
       )).trim() as AttestationDocBase64;
 
+      // Read and decode the ML-KEM-768 ciphertext from file
+      const encodedCiphertext = (await fs.promises.readFile(
+        'src/__tests__/test_data/development_ml_kem_768_ciphertext.txt',
+        'utf8'
+      )).trim();
+      const ciphertext = base64.decode(encodedCiphertext) as MlKem768CiphertextBytes;
+
       const result = await verifyAttestationDoc(
         attestationDoc,
-        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3" as PCR8Value
+        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3" as PCR8Value,
+        ciphertext
       );
       expect(result).toBe(false);
     });
@@ -518,9 +534,17 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
         'utf8'
       )).trim() as AttestationDocBase64;
 
+      // Read and decode the ML-KEM-768 ciphertext from file
+      const encodedCiphertext = (await fs.promises.readFile(
+        'src/__tests__/test_data/development_ml_kem_768_ciphertext.txt',
+        'utf8'
+      )).trim();
+      const ciphertext = base64.decode(encodedCiphertext) as MlKem768CiphertextBytes;
+
       const result = await verifyAttestationDoc(
         attestationDoc,
-        "963ce555a9ffd22df1813b9a8c2137c2fd3eca51a83067c932da42acb962f8b154916cc148186bb2dd8555fc4f532345" as PCR8Value
+        "963ce555a9ffd22df1813b9a8c2137c2fd3eca51a83067c932da42acb962f8b154916cc148186bb2dd8555fc4f532345" as PCR8Value,
+        ciphertext
       );
       expect(result).toBe(true);
     });
@@ -531,9 +555,17 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
         'utf8'
       )).trim() as AttestationDocBase64;
 
+      // Read and decode the ML-KEM-768 ciphertext from file
+      const encodedCiphertext = (await fs.promises.readFile(
+        'src/__tests__/test_data/development_ml_kem_768_ciphertext.txt',
+        'utf8'
+      )).trim();
+      const ciphertext = base64.decode(encodedCiphertext) as MlKem768CiphertextBytes;
+
       const result = await verifyAttestationDoc(
         attestationDoc,
-        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3" as PCR8Value
+        "11111111115145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a3" as PCR8Value,
+        ciphertext
       );
       expect(result).toBe(false);
     });
