@@ -50,13 +50,6 @@ export default function HomePage() {
               Project Eleven
             </Link>
           </p>
-          <iframe
-            src='https://status.projecteleven.com/badge?theme=light'
-            width='250'
-            height='30'
-            scrolling='no'
-            style={{ colorScheme: 'normal', border: 0 }}
-          />
         </div>
       )}
     </main>
