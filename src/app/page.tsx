@@ -41,8 +41,7 @@ export default function HomePage() {
           Check the directory <ArrowRightIcon />
         </Link>
       </div>
-      {(process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ||
-        process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview') && (
+      {process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' && (
         <div className={styles.footer}>
           <p>
             Built by{' '}
@@ -50,13 +49,12 @@ export default function HomePage() {
               Project Eleven
             </Link>
           </p>
-          <iframe
-            src='https://status.projecteleven.com/badge?theme=light'
-            width='250'
-            height='30'
-            scrolling='no'
-            style={{ colorScheme: 'normal', border: 0 }}
-          />
+          <span className={styles.footerSeparator}>|</span>
+          <p>
+            <Link href='https://status.projecteleven.com' target='_blank'>
+              System status
+            </Link>
+          </p>
         </div>
       )}
     </main>
