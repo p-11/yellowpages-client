@@ -74,14 +74,22 @@
 
 .footer {
     position: fixed;
-    bottom: 24px;
+    bottom: 32px;
     display: flex;
     flex-direction: row;
+    align-items: center;
     gap: 12px;
 }
 
 .footer>p {
     font-size: 14px;
+    margin: 0px;
+}
+
+.footerSeparator {
+    width: 1px;
+    height: 12px;
+    background-color: #1E0B00;
 }
 
 @media only screen and (min-width: 768px) {
