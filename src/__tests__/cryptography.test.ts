@@ -25,7 +25,8 @@ import {
   verifyAttestationDocUserData,
   AttestationDocBase64,
   verifyAttestationDoc,
-  PCR8Value
+  PCR8Value,
+  parseAttestationDocUserData
 } from './../core/cryptography';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
@@ -37,6 +38,7 @@ import { utf8ToBytes } from '@noble/ciphers/utils.js';
 import init, { PCRs, validateAttestationDocPcrs } from '@evervault/wasm-attestation-bindings';
 import fs from 'fs';
 import path from 'path';
+import { sha256 } from '@noble/hashes/sha256';
 
 // Helper: convert Uint8Array to hex string
 function toHex(bytes: Uint8Array): string {
@@ -598,6 +600,23 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
 
       const result = await verifyAttestationDocUserData(attestationDoc, ciphertext);
       expect(result).toBe(false);
+    });
+
+    test('parses dev attestation doc user data', async () => {
+      const attestationDoc = (await fs.promises.readFile(
+        'src/__tests__/test_data/development_attestation_doc.txt',
+        'utf8'
+      )).trim() as AttestationDocBase64;
+
+      const userData = await parseAttestationDocUserData(attestationDoc);
+      expect(userData).not.toBeNull();
+      expect(userData).toHaveProperty('ml_kem_768_ciphertext_hash');
+      expect(typeof userData!.ml_kem_768_ciphertext_hash).toBe('string');
+      expect(userData!.ml_kem_768_ciphertext_hash.length).toBeGreaterThan(0);
+
+      // Decode the stored hash from base64 and check length
+      const storedHashBytes = base64.decode(userData!.ml_kem_768_ciphertext_hash);
+      expect(storedHashBytes.length).toBe(32);
     });
   });
 });
