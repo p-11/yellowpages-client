@@ -487,7 +487,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
         'index_bg.wasm'
       );
       const wasmBytes = await fs.promises.readFile(wasmPath);
-      await init(wasmBytes);
+      await init({ module_or_path: wasmBytes });
     });
 
     // note: these tests require a fresh dev attestation doc and ciphertext
