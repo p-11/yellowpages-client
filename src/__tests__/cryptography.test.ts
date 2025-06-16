@@ -478,7 +478,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
   // at the time of writing, the production proof service doesn't yet serve auth attestation docs, so they aren't included here
   describe('Attestation document verification', () => {
     beforeAll(async () => {
-      // Load WASM file directly
+      // Load WASM file directly, to get working in Node test environment
       const wasmPath = path.join(
         process.cwd(),
         'node_modules',
@@ -558,7 +558,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       ).resolves.not.toThrow();
     });
 
-    test('fails dev attestation doc user data with non-matching ciphertext', async () => {
+    test('fails to verify dev attestation doc user data with non-matching ciphertext', async () => {
       const attestationDoc = (
         await fs.promises.readFile(
           'src/__tests__/test_data/development_attestation_doc.b64',
