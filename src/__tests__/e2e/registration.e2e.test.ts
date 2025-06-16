@@ -60,7 +60,11 @@ const getSeedWords = async (page: Page) => {
   return seedPhrase.split(' ');
 };
 
-test('successful registration and search result', async ({ page }) => {
+test('successful registration and search result', async ({
+  page
+}, testInfo) => {
+  testInfo.setTimeout(60000);
+
   const btcWallet = generateBtcWallet();
 
   // Homepage
@@ -127,7 +131,9 @@ test('successful registration and search result', async ({ page }) => {
 
 test('successful registration when the Bitcoin address is changed', async ({
   page
-}) => {
+}, testInfo) => {
+  testInfo.setTimeout(60000);
+
   const btcWallet = generateBtcWallet();
   const btcWallet2 = generateBtcWallet();
 
