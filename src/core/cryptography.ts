@@ -8,6 +8,7 @@ import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem';
 import { gcm } from '@noble/ciphers/aes.js';
 import { randomBytes } from '@noble/ciphers/webcrypto.js';
+import { equalBytes } from '@noble/ciphers/utils.js';
 import {
   validate,
   getAddressInfo,
@@ -840,12 +841,8 @@ export async function verifyAttestationDocUserData(
     if (storedHashBytes.length !== expectedCiphertextHash.length) {
       throw new Error('Ciphertext hash length mismatch');
     }
-
-    // Compare each byte
-    for (let i = 0; i < storedHashBytes.length; i++) {
-      if (storedHashBytes[i] !== expectedCiphertextHash[i]) {
-        throw new Error('Ciphertext hash mismatch');
-      }
+    if (!equalBytes(storedHashBytes, expectedCiphertextHash)) {
+      throw new Error('Ciphertext hash mismatch');
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
