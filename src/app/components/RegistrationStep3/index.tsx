@@ -30,7 +30,8 @@ import {
   isValidBitcoinAddress,
   isValidBitcoinSignature,
   Message,
-  SignedMessage
+  SignedMessage,
+  SignedMessages
 } from '@/core/cryptography';
 import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
@@ -46,6 +47,7 @@ export function RegistrationStep3() {
     signingMessage,
     signature,
     bitcoinAddress,
+    signedMessagesRef,
     setSignature,
     setBitcoinAddress,
     setSigningMessage
@@ -152,11 +154,12 @@ export function RegistrationStep3() {
   ]);
 
   const editBitcoinAddress = useCallback(() => {
+    signedMessagesRef.current = null;
     setAutoFocusBitcoinAddressField(true);
     setIsBitcoinAddressConfirmed(false);
     setSignature(undefined);
     generateSignedMessagesTaskRef.current.terminate();
-  }, [setSignature]);
+  }, [setSignature, signedMessagesRef]);
 
   const goBack = useCallback(() => {
     router.back();
@@ -179,10 +182,13 @@ export function RegistrationStep3() {
 
         try {
           const signedMessages =
-            await generateSignedMessagesTaskRef.current.waitForResult();
+            signedMessagesRef.current ??
+            (await generateSignedMessagesTaskRef.current.waitForResult());
 
           if (!signedMessages)
             throw new ErrorWithCode('Invalid signedMessages result', 'YP-004');
+
+          signedMessagesRef.current = signedMessages;
 
           await createProof(
             {
@@ -231,6 +237,7 @@ export function RegistrationStep3() {
     signingMessage,
     generateSignedMessagesTaskRef,
     cfTurnstileToken,
+    signedMessagesRef,
     setProof
   ]);
 
@@ -423,11 +430,13 @@ const useSensitiveState = () => {
   const [signingMessage, setSigningMessage] = useState<Message>();
   const [signature, setSignature] = useState<SignedMessage>();
   const [bitcoinAddress, setBitcoinAddress] = useState<BitcoinAddress>();
+  const signedMessagesRef = useRef<SignedMessages>(null);
 
   const clearSensitiveState = useCallback(() => {
     setSigningMessage(undefined);
     setSignature(undefined);
     setBitcoinAddress(undefined);
+    signedMessagesRef.current = null;
   }, []);
 
   useEffect(() => {
@@ -440,6 +449,7 @@ const useSensitiveState = () => {
     signingMessage,
     signature,
     bitcoinAddress,
+    signedMessagesRef,
     clearSensitiveState,
     setSigningMessage,
     setSignature,
