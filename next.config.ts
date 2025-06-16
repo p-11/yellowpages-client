@@ -5,6 +5,7 @@ const scriptSrcDirective = [
   "'self'",
   'https://challenges.cloudflare.com',
   "'unsafe-inline'",
+  "'wasm-unsafe-eval'",
   process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : null
 ]
   .filter(Boolean)
