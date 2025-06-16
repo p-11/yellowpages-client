@@ -832,16 +832,16 @@ export async function verifyAttestationDocUserData(
     const authAttestationDocUserData = await parseAttestationDocUserData(attestationDoc);
 
     // Decode the base64 hash from the JSON to get the raw hash bytes
-    const storedHashBytes = base64.decode(authAttestationDocUserData.ml_kem_768_ciphertext_hash);
+    const receivedMlKem768CiphertextHash = base64.decode(authAttestationDocUserData.ml_kem_768_ciphertext_hash);
 
     // Hash the provided ciphertext
-    const expectedCiphertextHash = sha256(mlKem768Ciphertext);
+    const expectedMlKem768CiphertextHash = sha256(mlKem768Ciphertext);
 
     // Compare the raw hash bytes
-    if (storedHashBytes.length !== expectedCiphertextHash.length) {
+    if (receivedMlKem768CiphertextHash.length !== expectedMlKem768CiphertextHash.length) {
       throw new Error('Ciphertext hash length mismatch');
     }
-    if (!equalBytes(storedHashBytes, expectedCiphertextHash)) {
+    if (!equalBytes(receivedMlKem768CiphertextHash, expectedMlKem768CiphertextHash)) {
       throw new Error('Ciphertext hash mismatch');
     }
   } catch (error) {
