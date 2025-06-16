@@ -369,7 +369,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
     customMessage: string
   ) => {
     const abortHandler = () => {
-      reject(signal.reason || new Error(customMessage));
+      reject(new ErrorWithCode(signal.reason ?? customMessage, 'YP-007'));
     };
     signal.addEventListener('abort', abortHandler, { once: true });
     return () => signal.removeEventListener('abort', abortHandler);
