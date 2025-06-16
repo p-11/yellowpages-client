@@ -1,6 +1,6 @@
-/** @type {import('jest').Config} */
-const config = {
-  preset: 'ts-jest',
+/** @type {import('ts-jest').JestConfigWithTsJest} */
+module.exports = {
+  preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'node',
   transform: {
     '^.+\\.(ts|tsx)$': [
@@ -19,13 +19,11 @@ const config = {
   },
   transformIgnorePatterns: [
     // Transform ESM modules that we need
-    '/node_modules/(?!(bitcoin-address-validation|base58-js|@noble|@evervault|@scure)/)'
+    '/node_modules/(?!(bitcoin-address-validation|base58-js|@evervault)/)'
   ],
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1'
+    '^@/(.*)$': '<rootDir>/src/$1'
   },
   // Exclude e2e tests and config files
   testPathIgnorePatterns: ['\\.e2e\\.test\\.[jt]sx?$', 'babel\\.config\\.js$']
 };
-
-module.exports = config;
