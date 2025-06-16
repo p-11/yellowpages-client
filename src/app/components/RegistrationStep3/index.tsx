@@ -212,6 +212,7 @@ export function RegistrationStep3() {
 
           router.push('/registration-complete');
         } catch (e) {
+          console.log('failed', e);
           setShowErrorDialog(true);
 
           if (hasErrorCode(e)) {
