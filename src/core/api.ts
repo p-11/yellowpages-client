@@ -263,7 +263,7 @@ export async function createProof(
         error instanceof Error ? error.message : String(error);
       throw new ErrorWithCode(
         `Failed to verify attestation document: ${errorMessage}`,
-        'YP-007'
+        'YP-008'
       );
     }
 
