@@ -24,8 +24,6 @@ import {
   PQAddress,
   verifyAttestationDocUserData,
   AttestationDocBase64,
-  verifyAttestationDoc,
-  PCR8Value,
   parseAttestationDocUserData
 } from './../core/cryptography';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
@@ -35,10 +33,9 @@ import { HDKey } from '@scure/bip32';
 import { base64 } from '@scure/base';
 import { gcm } from '@noble/ciphers/aes.js';
 import { utf8ToBytes } from '@noble/ciphers/utils.js';
-import init, { PCRs, validateAttestationDocPcrs } from '@evervault/wasm-attestation-bindings';
+import init from '@evervault/wasm-attestation-bindings';
 import fs from 'fs';
 import path from 'path';
-import { sha256 } from '@noble/hashes/sha256';
 
 // Helper: convert Uint8Array to hex string
 function toHex(bytes: Uint8Array): string {
@@ -494,7 +491,7 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     });
 
     // note: these tests require a fresh dev attestation doc and ciphertext
-    // 
+    //
     // test('verifies dev attestation document with correct PCR8', async () => {
     //   const attestationDoc = (await fs.promises.readFile(
     //     'src/__tests__/test_data/development_attestation_doc.b64',
@@ -537,41 +534,55 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
     // });
 
     test('verifies dev attestation doc user data with matching ciphertext', async () => {
-      const attestationDoc = (await fs.promises.readFile(
-        'src/__tests__/test_data/development_attestation_doc.b64',
-        'utf8'
-      )).trim() as AttestationDocBase64;
+      const attestationDoc = (
+        await fs.promises.readFile(
+          'src/__tests__/test_data/development_attestation_doc.b64',
+          'utf8'
+        )
+      ).trim() as AttestationDocBase64;
 
       // Read and decode the ML-KEM-768 ciphertext from file
-      const encodedCiphertext = (await fs.promises.readFile(
-        'src/__tests__/test_data/development_ml_kem_768_ciphertext.b64',
-        'utf8'
-      )).trim();
-      const ciphertext = base64.decode(encodedCiphertext) as MlKem768CiphertextBytes;
+      const encodedCiphertext = (
+        await fs.promises.readFile(
+          'src/__tests__/test_data/development_ml_kem_768_ciphertext.b64',
+          'utf8'
+        )
+      ).trim();
+      const ciphertext = base64.decode(
+        encodedCiphertext
+      ) as MlKem768CiphertextBytes;
 
       // Should not throw
-      await expect(verifyAttestationDocUserData(attestationDoc, ciphertext))
-        .resolves.not.toThrow();
+      await expect(
+        verifyAttestationDocUserData(attestationDoc, ciphertext)
+      ).resolves.not.toThrow();
     });
 
     test('fails dev attestation doc user data with non-matching ciphertext', async () => {
-      const attestationDoc = (await fs.promises.readFile(
-        'src/__tests__/test_data/development_attestation_doc.b64',
-        'utf8'
-      )).trim() as AttestationDocBase64;
+      const attestationDoc = (
+        await fs.promises.readFile(
+          'src/__tests__/test_data/development_attestation_doc.b64',
+          'utf8'
+        )
+      ).trim() as AttestationDocBase64;
 
       // Create a different ciphertext that won't match
-      const ciphertext = new Uint8Array(Array(32).fill(0xff)) as MlKem768CiphertextBytes;
+      const ciphertext = new Uint8Array(
+        Array(32).fill(0xff)
+      ) as MlKem768CiphertextBytes;
 
-      await expect(verifyAttestationDocUserData(attestationDoc, ciphertext))
-        .rejects.toThrow('Ciphertext hash mismatch');
+      await expect(
+        verifyAttestationDocUserData(attestationDoc, ciphertext)
+      ).rejects.toThrow('Ciphertext hash mismatch');
     });
 
     test('parses dev attestation doc user data', async () => {
-      const attestationDoc = (await fs.promises.readFile(
-        'src/__tests__/test_data/development_attestation_doc.b64',
-        'utf8'
-      )).trim() as AttestationDocBase64;
+      const attestationDoc = (
+        await fs.promises.readFile(
+          'src/__tests__/test_data/development_attestation_doc.b64',
+          'utf8'
+        )
+      ).trim() as AttestationDocBase64;
 
       const userData = await parseAttestationDocUserData(attestationDoc);
       expect(userData).not.toBeNull();
@@ -580,7 +591,9 @@ SLH-DSA-SHA2-128s address: slhdsaSha2S128`;
       expect(userData!.ml_kem_768_ciphertext_hash.length).toBeGreaterThan(0);
 
       // Decode the stored hash from base64 and check length
-      const storedHashBytes = base64.decode(userData!.ml_kem_768_ciphertext_hash);
+      const storedHashBytes = base64.decode(
+        userData!.ml_kem_768_ciphertext_hash
+      );
       expect(storedHashBytes.length).toBe(32);
     });
 

@@ -3,7 +3,6 @@
  */
 import {
   generateMlKem768Keypair,
-  deriveMlKem768SharedSecret,
   destroyMlKem768Keypair,
   encryptProofRequestData,
   ML_KEM_768_CIPHERTEXT_SIZE,
@@ -49,7 +48,7 @@ export interface Proof {
  */
 interface HandshakeResponse {
   ml_kem_768_ciphertext: string; // Base64-encoded ML-KEM ciphertext
-  auth_attestation_doc: string;  // Base64-encoded attestation document
+  auth_attestation_doc: string; // Base64-encoded attestation document
 }
 
 /**
@@ -81,8 +80,8 @@ enum WebSocketCloseCode {
  */
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 const expectedPCR8: PCR8Value = IS_PROD
-  ? "963ce555a9ffd22df1813b9a8c2137c2fd3eca51a83067c932da42acb962f8b154916cc148186bb2dd8555fc4f532345" as PCR8Value  // prod enclave PCR8
-  : "6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83" as PCR8Value; // dev enclave PCR8
+  ? ('963ce555a9ffd22df1813b9a8c2137c2fd3eca51a83067c932da42acb962f8b154916cc148186bb2dd8555fc4f532345' as PCR8Value) // prod enclave PCR8
+  : ('6b3e6d52305145a280af7ec4aaf9327781a3f30441205294b37025a8921f28235cf0ea8603829498d6c95cc3edf54a83' as PCR8Value); // dev enclave PCR8
 
 /**
  * Low-level wrapper around fetch.
@@ -251,12 +250,21 @@ export async function createProof(
     }
 
     // Step 6: Verify the attestation document
-    const attestationDoc = handshakeResponse.auth_attestation_doc as AttestationDocBase64;
+    const attestationDoc =
+      handshakeResponse.auth_attestation_doc as AttestationDocBase64;
     try {
-      await verifyAttestationDoc(attestationDoc, expectedPCR8, mlKem768CiphertextBytes);
+      await verifyAttestationDoc(
+        attestationDoc,
+        expectedPCR8,
+        mlKem768CiphertextBytes
+      );
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new ErrorWithCode(`Failed to verify attestation document: ${errorMessage}`, 'YP-007');
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new ErrorWithCode(
+        `Failed to verify attestation document: ${errorMessage}`,
+        'YP-007'
+      );
     }
 
     // Step 7: Create and encrypt proof request
