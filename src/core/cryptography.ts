@@ -783,11 +783,12 @@ interface AuthAttestationDocUserData {
  * Parses the user data from an attestation document, expecting it to contain an AuthAttestationDocUserData JSON.
  * 
  * @param attestationDoc - Base64 encoded attestation document
- * @returns The decoded user data object, or null if decoding fails
+ * @returns The decoded user data object
+ * @throws Error if decoding or parsing fails
  */
 export async function parseAttestationDocUserData(
   attestationDoc: AttestationDocBase64
-): Promise<AuthAttestationDocUserData | null> {
+): Promise<AuthAttestationDocUserData> {
   try {
     // Ensure WASM is initialized
     await initWasm();
@@ -795,57 +796,60 @@ export async function parseAttestationDocUserData(
     // Get user data from attestation doc
     const userData = getUserData(attestationDoc);
     if (!userData) {
-      console.error('No user data found in attestation document');
-      return null;
+      throw new Error('No user data found in attestation document');
     }
     
     // Convert userData to string first
     const userDataStr = new TextDecoder().decode(userData);
     
     // Decode user data from base64 to get JSON string
-    const decodedUserData = new TextDecoder().decode(base64.decode(userDataStr));
+    let decodedUserData: string;
+    try {
+      decodedUserData = new TextDecoder().decode(base64.decode(userDataStr));
+    } catch (e) {
+      throw new Error('Failed to base64 decode attestation doc user data');
+    }
     
     // Parse user data as JSON
-    return JSON.parse(decodedUserData) as AuthAttestationDocUserData;
+    try {
+      return JSON.parse(decodedUserData) as AuthAttestationDocUserData;
+    } catch (e) {
+      throw new Error('Failed to parse attestation doc user data as JSON');
+    }
   } catch (error) {
-    console.error('Failed to decode attestation doc user data:', error);
-    return null;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to parse attestation document user data: ${errorMessage}`);
   }
 }
 
 export async function verifyAttestationDocUserData(
   attestationDoc: AttestationDocBase64,
   mlKem768Ciphertext: MlKem768CiphertextBytes
-): Promise<boolean> {
+): Promise<void> {
   try {
     // Decode the user data
     const authAttestationDocUserData = await parseAttestationDocUserData(attestationDoc);
-    if (!authAttestationDocUserData) {
-      return false;
-    }
-    
+
     // Decode the base64 hash from the JSON to get the raw hash bytes
     const storedHashBytes = base64.decode(authAttestationDocUserData.ml_kem_768_ciphertext_hash);
-    
+
     // Hash the provided ciphertext
     const expectedCiphertextHash = sha256(mlKem768Ciphertext);
-    
+
     // Compare the raw hash bytes
     if (storedHashBytes.length !== expectedCiphertextHash.length) {
-      return false;
+      throw new Error('Ciphertext hash length mismatch');
     }
-    
+
     // Compare each byte
     for (let i = 0; i < storedHashBytes.length; i++) {
       if (storedHashBytes[i] !== expectedCiphertextHash[i]) {
-        return false;
+        throw new Error('Ciphertext hash mismatch');
       }
     }
-    
-    return true;
   } catch (error) {
-    console.error('Failed to verify attestation doc user data:', error);
-    return false;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Attestation document user data verification failed: ${errorMessage}`);
   }
 }
 
@@ -857,13 +861,13 @@ export async function verifyAttestationDocUserData(
  * @param attestationDoc - Base64 encoded attestation document
  * @param pcr8 - The expected PCR8 value
  * @param mlKem768Ciphertext - The ML-KEM-768 ciphertext to verify against the user data
- * @returns true if both verifications succeed
+ * @throws Error if any verification fails
  */
 export async function verifyAttestationDoc(
   attestationDoc: AttestationDocBase64,
   pcr8: PCR8Value,
   mlKem768Ciphertext: MlKem768CiphertextBytes
-): Promise<boolean> {
+): Promise<void> {
   try {
     // Ensure WASM is initialized
     await initWasm();
@@ -879,21 +883,14 @@ export async function verifyAttestationDoc(
 
     const pcrsValid = validateAttestationDocPcrs(attestationDoc, [pcrs]);
     if (!pcrsValid) {
-      console.error('PCR8 verification failed');
-      return false;
+      throw new Error('PCR8 verification failed');
     }
 
     // Step 2: Verify user data contains matching ciphertext hash
-    const userDataValid = await verifyAttestationDocUserData(attestationDoc, mlKem768Ciphertext);
-    if (!userDataValid) {
-      console.error('User data verification failed');
-      return false;
-    }
-
-    return true;
+    await verifyAttestationDocUserData(attestationDoc, mlKem768Ciphertext);
   } catch (error) {
-    console.error('Failed to verify attestation document:', error);
-    return false;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Attestation document verification failed: ${errorMessage}`);
   }
 }
 
