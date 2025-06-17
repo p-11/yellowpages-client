@@ -213,6 +213,7 @@ export function RegistrationStep3() {
 
           router.push('/registration-complete');
         } catch (e) {
+          setCfTurnstileToken(null);
           cfTurnstileRef.current?.reset();
           setShowErrorDialog(true);
 
