@@ -27,6 +27,15 @@ ${process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' || process.env.NEXT_PUBLIC
 `;
 
 const nextConfig: NextConfig = {
+  webpack: (config, { isServer }) => {
+    // Exclude everything from __tests__ directories
+    config.module.rules.push({
+      test: /\/__tests__\//,
+      use: 'ignore-loader'
+    });
+
+    return config;
+  },
   async headers() {
     return [
       {
