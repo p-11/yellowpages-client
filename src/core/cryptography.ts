@@ -2,12 +2,13 @@ import { mnemonicToSeedSync, generateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { HDKey } from '@scure/bip32';
 import { hmac } from '@noble/hashes/hmac';
-import { sha512 } from '@noble/hashes/sha2';
+import { sha256, sha512 } from '@noble/hashes/sha2';
 import { ml_dsa44 } from '@noble/post-quantum/ml-dsa';
 import { slh_dsa_sha2_128s } from '@noble/post-quantum/slh-dsa';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem';
 import { gcm } from '@noble/ciphers/aes.js';
 import { randomBytes } from '@noble/ciphers/webcrypto.js';
+import { equalBytes } from '@noble/ciphers/utils.js';
 import {
   validate,
   getAddressInfo,
@@ -22,6 +23,21 @@ import {
   PubKeyType
 } from '@project-eleven/pq-address';
 import { base64 } from '@scure/base';
+import init, {
+  validateAttestationDocPcrs,
+  PCRs,
+  getUserData,
+  InitOutput
+} from '@evervault/wasm-attestation-bindings';
+
+// Initialize WASM module
+let wasmInitPromise: Promise<InitOutput>;
+export function initWasm() {
+  if (!wasmInitPromise) {
+    wasmInitPromise = init();
+  }
+  return wasmInitPromise;
+}
 
 // Get Environment
 const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
@@ -62,6 +78,8 @@ export type MlKem768CiphertextBytes = Brand<
   'MlKem768CiphertextBytes'
 >;
 export type ProofRequestBytes = Brand<Uint8Array, 'ProofRequestBytes'>;
+export type AttestationDocBase64 = Brand<string, 'AttestationDocBase64'>;
+export type PCR8Value = Brand<string, 'PCR8Value'>;
 
 const SUPPORTED_BITCOIN_ADDRESS_TYPES: ReadonlyArray<AddressType> = [
   AddressType.p2pkh,
@@ -754,6 +772,138 @@ function encryptProofRequestData(
       aes256GcmNonce = undefined;
     }
     destroyMlKem768Keypair(mlKem768Keypair);
+  }
+}
+
+interface AuthAttestationDocUserData {
+  ml_kem_768_ciphertext_hash: string;
+}
+
+/**
+ * Parses the user data from an attestation document, expecting it to contain an AuthAttestationDocUserData JSON.
+ *
+ * @param attestationDoc - Base64 encoded attestation document
+ * @returns The decoded user data object
+ * @throws Error if decoding or parsing fails
+ */
+export async function parseAttestationDocUserData(
+  attestationDoc: AttestationDocBase64
+): Promise<AuthAttestationDocUserData> {
+  try {
+    // Ensure WASM is initialized
+    await initWasm();
+
+    // Get user data from attestation doc
+    const userData = getUserData(attestationDoc);
+    if (!userData) {
+      throw new Error('No user data found in attestation document');
+    }
+
+    // Convert userData to string first
+    const userDataStr = new TextDecoder().decode(userData);
+
+    // Decode user data from base64 to get JSON string
+    let decodedUserData: string;
+    try {
+      decodedUserData = new TextDecoder().decode(base64.decode(userDataStr));
+    } catch {
+      throw new Error('Failed to base64 decode attestation doc user data');
+    }
+
+    // Parse user data as JSON
+    try {
+      return JSON.parse(decodedUserData) as AuthAttestationDocUserData;
+    } catch {
+      throw new Error('Failed to parse attestation doc user data as JSON');
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to parse attestation document user data: ${errorMessage}`
+    );
+  }
+}
+
+export async function verifyAttestationDocUserData(
+  attestationDoc: AttestationDocBase64,
+  mlKem768Ciphertext: MlKem768CiphertextBytes
+): Promise<void> {
+  try {
+    // Decode the user data
+    const authAttestationDocUserData =
+      await parseAttestationDocUserData(attestationDoc);
+
+    // Decode the base64 hash from the JSON to get the raw hash bytes
+    const receivedMlKem768CiphertextHash = base64.decode(
+      authAttestationDocUserData.ml_kem_768_ciphertext_hash
+    );
+
+    // Hash the provided ciphertext
+    const expectedMlKem768CiphertextHash = sha256(mlKem768Ciphertext);
+
+    // Compare the raw hash bytes
+    if (
+      receivedMlKem768CiphertextHash.length !==
+      expectedMlKem768CiphertextHash.length
+    ) {
+      throw new Error('Ciphertext hash length mismatch');
+    }
+    if (
+      !equalBytes(
+        receivedMlKem768CiphertextHash,
+        expectedMlKem768CiphertextHash
+      )
+    ) {
+      throw new Error('Ciphertext hash mismatch');
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Attestation document user data verification failed: ${errorMessage}`
+    );
+  }
+}
+
+/**
+ * Verifies an attestation document by checking both:
+ * 1. The PCR8 value matches the expected measurement
+ * 2. The user data contains a matching hash of the ML-KEM-768 ciphertext
+ *
+ * @param attestationDoc - Base64 encoded attestation document
+ * @param pcr8 - The expected PCR8 value
+ * @param mlKem768Ciphertext - The ML-KEM-768 ciphertext to verify against the user data
+ * @throws Error if any verification fails
+ */
+export async function verifyAttestationDoc(
+  attestationDoc: AttestationDocBase64,
+  pcr8: PCR8Value,
+  mlKem768Ciphertext: MlKem768CiphertextBytes
+): Promise<void> {
+  try {
+    // Ensure WASM is initialized
+    await initWasm();
+
+    // Step 1: Verify PCR8 measurement
+    const pcrs = new PCRs(
+      undefined, // pcr_0
+      undefined, // pcr_1
+      undefined, // pcr_2
+      pcr8, // pcr_8
+      undefined // hash_algorithm
+    );
+
+    const pcrsValid = validateAttestationDocPcrs(attestationDoc, [pcrs]);
+    if (!pcrsValid) {
+      throw new Error('PCR8 verification failed');
+    }
+
+    // Step 2: Verify user data contains matching ciphertext hash
+    await verifyAttestationDocUserData(attestationDoc, mlKem768Ciphertext);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Attestation document verification failed: ${errorMessage}`
+    );
   }
 }
 
