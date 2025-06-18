@@ -201,7 +201,7 @@ export default function FaqsPage() {
         </AccordionItem>
         <AccordionItem title='How are the proofs stored and who can see them?'>
           <p>
-            Today the proofs live in a public directory hosted by ProjectEleven
+            Today the proofs live in a public directory hosted by Project Eleven
             so anyone can look up or verify them.
           </p>
         </AccordionItem>
