@@ -50,7 +50,7 @@ export default function HomePage() {
               Project Eleven
             </Link>
           </p>
-          <span className={styles.footerSeparator}>|</span>
+          <span className={styles.footerSeparator} />
           <p>
             <Link href='https://status.projecteleven.com' target='_blank'>
               System status
