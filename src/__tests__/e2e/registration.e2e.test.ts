@@ -68,9 +68,11 @@ test('successful registration and search result', async ({
   testInfo.setTimeout(60000);
   page.on('websocket', ws => {
     console.log(`WebSocket opened: ${ws.url()}>`);
-    ws.on('framesent', event => console.log(event.payload));
-    ws.on('framereceived', event => console.log(event.payload));
-    ws.on('socketerror', event => console.log(event));
+    ws.on('framesent', event => console.log('framesent', event.payload));
+    ws.on('framereceived', event =>
+      console.log('framereceived', event.payload)
+    );
+    ws.on('socketerror', event => console.log('socketerror', event));
     ws.on('close', () => console.log('WebSocket closed'));
   });
 
@@ -144,9 +146,11 @@ test('successful registration when the Bitcoin address is changed', async ({
   testInfo.setTimeout(60000);
   page.on('websocket', ws => {
     console.log(`WebSocket opened: ${ws.url()}>`);
-    ws.on('framesent', event => console.log(event.payload));
-    ws.on('framereceived', event => console.log(event.payload));
-    ws.on('socketerror', event => console.log(event));
+    ws.on('framesent', event => console.log('framesent', event.payload));
+    ws.on('framereceived', event =>
+      console.log('framereceived', event.payload)
+    );
+    ws.on('socketerror', event => console.log('socketerror', event));
     ws.on('close', () => console.log('WebSocket closed'));
   });
 
