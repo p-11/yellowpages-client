@@ -28,7 +28,7 @@ ${process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' || process.env.NEXT_PUBLIC
 
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: true,
-  webpack: (config, { isServer }) => {
+  webpack: config => {
     // Exclude everything from __tests__ directories
     config.module.rules.push({
       test: /\/__tests__\//,
