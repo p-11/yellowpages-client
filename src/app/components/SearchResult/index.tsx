@@ -80,7 +80,7 @@ export function SearchResult() {
           <ArrowLeftIcon /> Search
         </Button>
         <Button variant='primary' onClick={navigateToHomepage}>
-          Homepage
+          Directory home
         </Button>
       </div>
       {showProofDialog && result && (
