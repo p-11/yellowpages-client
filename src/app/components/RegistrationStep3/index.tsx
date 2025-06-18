@@ -213,6 +213,10 @@ export function RegistrationStep3() {
 
           router.push('/registration-complete');
         } catch (e) {
+          if (process.env.NEXT_PUBLIC_VERCEL_ENV === 'test') {
+            console.log(e);
+          }
+
           setCfTurnstileToken(null);
           cfTurnstileRef.current?.reset();
           setShowErrorDialog(true);
@@ -227,6 +231,10 @@ export function RegistrationStep3() {
         setShowInvalidSignatureAlert(true);
       }
     } catch (e) {
+      if (process.env.NEXT_PUBLIC_VERCEL_ENV === 'test') {
+        console.log(e);
+      }
+
       setShowErrorDialog(true);
 
       if (hasErrorCode(e)) {
