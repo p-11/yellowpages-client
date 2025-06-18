@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Turnstile } from '@marsidev/react-turnstile';
+import { Turnstile, TurnstileInstance } from '@marsidev/react-turnstile';
 import { RegistrationProgressIndicator } from '@/app/components/RegistrationProgressIndicator';
 import { RegistrationStepTitle } from '@/app/components/RegistrationStepTitle';
 import { RegistrationHeader } from '@/app/components/RegistrationHeader';
@@ -73,6 +73,7 @@ export function RegistrationStep3() {
   const generateSignedMessagesTaskRef = useRef(
     createGenerateSignedMessagesTask()
   );
+  const cfTurnstileRef = useRef<TurnstileInstance>(null);
 
   const isBitcoinAddressPopulated = bitcoinAddress && bitcoinAddress.length > 0;
   const isSignaturePopulated = signature && signature.length > 0;
@@ -212,6 +213,8 @@ export function RegistrationStep3() {
 
           router.push('/registration-complete');
         } catch (e) {
+          setCfTurnstileToken(null);
+          cfTurnstileRef.current?.reset();
           setShowErrorDialog(true);
 
           if (hasErrorCode(e)) {
@@ -347,6 +350,7 @@ export function RegistrationStep3() {
           className={`${styles.captchaContainer} ${isSignaturePopulated ? styles.showCaptcha : ''}`}
         >
           <Turnstile
+            ref={cfTurnstileRef}
             siteKey={process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY!}
             onSuccess={setCfTurnstileToken}
             onExpire={() => setCfTurnstileToken(null)}
