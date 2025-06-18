@@ -5,6 +5,7 @@ const scriptSrcDirective = [
   "'self'",
   'https://challenges.cloudflare.com',
   "'unsafe-inline'",
+  "'wasm-unsafe-eval'", // required for running WASM, which we need for attestation document verification
   process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : null
 ]
   .filter(Boolean)
@@ -26,6 +27,16 @@ ${process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' || process.env.NEXT_PUBLIC
 `;
 
 const nextConfig: NextConfig = {
+  productionBrowserSourceMaps: true,
+  webpack: config => {
+    // Exclude everything from __tests__ directories
+    config.module.rules.push({
+      test: /\/__tests__\//,
+      use: 'ignore-loader'
+    });
+
+    return config;
+  },
   async headers() {
     return [
       {

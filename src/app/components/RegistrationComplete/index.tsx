@@ -75,7 +75,7 @@ export function RegistrationComplete() {
       <h1 className={styles.title}>Registration complete!</h1>
       <div className={styles.content}>
         <p>
-          Your post-quantum (PQ) address has been created and cryptographically
+          Your post-quantum addresses have been created and cryptographically
           linked to your Bitcoin address.
         </p>
         <div className={styles.warningSection}>
@@ -107,8 +107,8 @@ export function RegistrationComplete() {
           <p>
             Own multiple addresses? You can{' '}
             <Link href='/register/step-1'>register</Link> as many addresses as
-            you need to. Each address will be linked to a different post-quantum
-            address suite.
+            you need to. Each address will be linked to a different set of
+            post-quantum addresses.
           </p>
         </div>
         <div className={styles.footer}>

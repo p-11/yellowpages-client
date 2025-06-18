@@ -218,8 +218,7 @@ export async function GET(request: Request) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <span style={{ fontSize: 24 }}>
-            I found myself in the post-quantum world. Get protected and join the
-            yellowpages.
+            I found myself in the post-quantum world. Join the yellowpages.
           </span>
           <span style={{ fontSize: 24 }}>yellowpages.xyz</span>
         </div>

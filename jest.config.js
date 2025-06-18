@@ -1,23 +1,29 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  // Use ts-jest to transform both .ts/.tsx and .js/.jsx
   preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'node',
-
-  // Transform everything under src, and also these two ESM deps in node_modules
   transform: {
-    '^.+\\.[jt]sx?$': 'ts-jest'
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.json',
+        babelConfig: './src/__tests__/babel.config.js'
+      }
+    ],
+    '^.+\\.js$': [
+      'babel-jest',
+      {
+        configFile: './src/__tests__/babel.config.js'
+      }
+    ]
   },
   transformIgnorePatterns: [
-    // Ignore all node_modules except bitcoin-address-validation AND base58-js
-    '/node_modules/(?!(bitcoin-address-validation|base58-js)/)'
+    // Transform ESM modules that we need
+    '/node_modules/(?!(bitcoin-address-validation|base58-js|@evervault)/)'
   ],
-
-  // If you use path-aliases (e.g. @/…), map them:
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   },
-
-  // ignore e2e test files
-  testPathIgnorePatterns: ['\\.e2e\\.']
+  // Exclude e2e tests and config files
+  testPathIgnorePatterns: ['\\.e2e\\.test\\.[jt]sx?$', 'babel\\.config\\.js$']
 };

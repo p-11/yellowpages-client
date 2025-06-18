@@ -5,6 +5,8 @@ import * as bitcoin from 'bitcoinjs-lib';
 import { HDKey } from '@scure/bip32';
 import { wordlist } from '@scure/bip39/wordlists/english';
 
+/* eslint no-console: "off" */
+
 const generateBtcWallet = () => {
   const mnemonic = generateMnemonic(wordlist, 256);
   const seed = mnemonicToSeedSync(mnemonic);
@@ -60,7 +62,20 @@ const getSeedWords = async (page: Page) => {
   return seedPhrase.split(' ');
 };
 
-test('successful registration and search result', async ({ page }) => {
+test('successful registration and search result', async ({
+  page
+}, testInfo) => {
+  testInfo.setTimeout(60000);
+  page.on('websocket', ws => {
+    console.log(`WebSocket opened: ${ws.url()}>`);
+    ws.on('framesent', event => console.log('framesent', event.payload));
+    ws.on('framereceived', event =>
+      console.log('framereceived', event.payload)
+    );
+    ws.on('socketerror', event => console.log('socketerror', event));
+    ws.on('close', () => console.log('WebSocket closed'));
+  });
+
   const btcWallet = generateBtcWallet();
 
   // Homepage
@@ -127,7 +142,18 @@ test('successful registration and search result', async ({ page }) => {
 
 test('successful registration when the Bitcoin address is changed', async ({
   page
-}) => {
+}, testInfo) => {
+  testInfo.setTimeout(60000);
+  page.on('websocket', ws => {
+    console.log(`WebSocket opened: ${ws.url()}>`);
+    ws.on('framesent', event => console.log('framesent', event.payload));
+    ws.on('framereceived', event =>
+      console.log('framereceived', event.payload)
+    );
+    ws.on('socketerror', event => console.log('socketerror', event));
+    ws.on('close', () => console.log('WebSocket closed'));
+  });
+
   const btcWallet = generateBtcWallet();
   const btcWallet2 = generateBtcWallet();
 
