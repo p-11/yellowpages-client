@@ -16,12 +16,13 @@ export default function FaqsPage() {
         <h2>1. Overview</h2>
         <AccordionItem title='What is yellowpages?'>
           <p>
-            yellowpages is a public, anonymous proof of Bitcoin ownership. It
-            acts as a directory that lets you prove, today, that you control a
-            Bitcoin address and link it to a brand-new, quantum-safe
-            (post-quantum, or “PQ”) address. The directory stores only a compact
+            yellowpages is a public, post-quantum, anonymous proof of Bitcoin
+            ownership. It acts as a directory that lets you prove, today, that
+            you control a Bitcoin address by linking it to brand-new
+            post-quantum addresses. The directory stores only a compact
             cryptographic proof, never your keys, so you stay private while
-            future-proofing your coins. More detail can be found in the{' '}
+            having a public proof that your Bitcoin address is linked to
+            post-quantum addresses. More detail can be found in the{' '}
             <Link href='/whitepaper/v0.0.1.pdf' target='_blank'>
               whitepaper
             </Link>
@@ -32,17 +33,17 @@ export default function FaqsPage() {
           <p>
             No. yellowpages and Project Eleven are not associated with any token
             or cryptocurrency. The system links your existing Bitcoin address to
-            a new post-quantum (PQ) address. It does not replicate your holdings
-            or issue any new assets.
+            new post-quantum addresses. It does not replicate your holdings or
+            issue any new assets.
           </p>
         </AccordionItem>
         <AccordionItem title='What data will sharing my directory entry reveal?'>
           <p>
             Sharing your directory entry will share your Bitcoin address and
-            your PQ address. It will not share any sensitive information.
-            However, if you want to ensure your Bitcoin address is not directly
-            linked to your personal identity, we recommend not sharing to social
-            media.
+            your post-quantum addresses. It will not share any sensitive
+            information. However, if you want to ensure your Bitcoin address is
+            not directly linked to your personal identity, we recommend not
+            sharing to social media.
           </p>
         </AccordionItem>
         <AccordionItem title='Why should I use yellowpages?'>
@@ -56,27 +57,37 @@ export default function FaqsPage() {
           </p>
         </AccordionItem>
         <AccordionItem title='How does it work?'>
-          <p>
-            yellowpages works through a straightforward, private handshake. A
-            fresh post-quantum (PQ) key pair is generated, then you create a
-            signature using your Bitcoin wallet linking the Bitcoin address you
-            own to the PQ key pair and address. You upload that signature to the
-            yellowpages Proving Engine, which runs inside a Trusted Execution
-            Environment. The Trust Execution Environment confirms the link and
-            demonstration of ownership, packages them into a compact proof that
-            links the addresses without exposing either key or the signatures,
-            and time-stamps that proof in ProjectEleven&apos;s directory. Anyone
-            can verify the proof, now or after “Q-Day”, but no one can derive
-            your verifying or private keys from it.
-          </p>
+          <p>yellowpages works by a simple 6-step process:</p>
+          <ul>
+            <li>
+              User generates post-quantum key pairs through the yellowpages
+              client and saves their seed phrase.
+            </li>
+            <li>
+              User signs a message using their Bitcoin wallet, linking their
+              Bitcoin address to the post-quantum keys.
+            </li>
+            <li>The post-quantum keys are used to sign the same message.</li>
+            <li>
+              Signatures are passed to a Trusted Execution Environment (TEE).
+            </li>
+            <li>
+              TEE creates a proof that all the signatures are valid without
+              revealing the keys or the signatures.
+            </li>
+            <li>
+              Verifiable proof is uploaded to the P11 Database, and made
+              available for anyone to download.
+            </li>
+          </ul>
         </AccordionItem>
         <h2>2. Getting Started</h2>
         <AccordionItem title='Which Bitcoin wallets does yellowpages support today?'>
           <p>
             Any wallet that lets you sign an arbitrary message with your Bitcoin
             private key will work. If your wallet can display a “Sign Message”
-            button, you&apos;re good to go, see the compatibility table below
-            for details.
+            button, you&apos;re good to go. The currently supported Bitcoin
+            address types are P2PKH and P2WPKH.
           </p>
         </AccordionItem>
         <AccordionItem title='How do I create a signature?'>
@@ -101,11 +112,10 @@ export default function FaqsPage() {
         </AccordionItem>
         <AccordionItem title='Can I use my post-quantum key pair on Bitcoin?'>
           <p>
-            Not yet. Bitcoin only accepts ECDSA signatures on-chain today, so
-            your PQ key can&apos;t spend coins directly. yellowpages simply
-            records the link between your current Bitcoin address and your new
-            PQ address, ready for wallets or a future protocol upgrade that
-            understands PQ signatures.
+            Not yet. Bitcoin only accepts ECC signatures on-chain today, so your
+            post-quantum keys can&apos;t spend coins directly. yellowpages
+            simply records the link between your current Bitcoin address and
+            your new post-quantum addresses.
           </p>
         </AccordionItem>
         <AccordionItem title='Do I have to move my coins or sign an on-chain transaction?'>
@@ -124,14 +134,14 @@ export default function FaqsPage() {
         <h2>3. Key Management</h2>
         <AccordionItem title='Can I update or revoke a linkage later if I rotate keys or lose access?'>
           <p>
-            Every yellowpages proof links a <i>specific</i> Bitcoin address to a{' '}
-            <i>specific</i> set of post-quantum keys. Therefore, every separate
-            Bitcoin address you own must be registered separately. The directory
-            automatically treats the newest timestamp as authoritative.
+            Proofs cannot be revoked, but if you would like to create a new
+            proof for an existing Bitcoin address, simply re-register to
+            yellowpages. The directory automatically treats the newest timestamp
+            as authoritative.
           </p>
           <p>
-            Lost your PQ key or seed phrase? Simply generate a new PQ key and
-            register a new proof for your original Bitcoin address.
+            Lost your post-quantum seed phrase? Simply register a new proof for
+            your Bitcoin address.
           </p>
         </AccordionItem>
         <AccordionItem title='What is the 24-word seed phrase?'>
@@ -145,12 +155,20 @@ export default function FaqsPage() {
             . There is no mechanism for recovery if these keys are lost.
           </p>
         </AccordionItem>
+        <AccordionItem title='Why do I have more than one post-quantum address?'>
+          <p>
+            yellowpages links your address to both an ML-DSA and a SLH-DSA key
+            pair. This is to ensure that even if one is broken (classically or
+            by quantum methods) your Bitcoin address is still linked to a
+            post-quantum secure key pair.
+          </p>
+        </AccordionItem>
         <h2>4. Security &amp; Privacy</h2>
         <AccordionItem title='What makes this post quantum secure?'>
           <p>
-            Your new key pair is generated using NIST-standardised, quantum-safe
-            signatures. All communication between yourself and the yellowpages
-            is secured using PQ cryptography
+            Your new key pairs are generated using NIST-standardised,
+            quantum-safe algorithms. All communication between yourself and the
+            yellowpages is secured using post quantum (PQ) cryptography.
           </p>
         </AccordionItem>
         <AccordionItem title='Does the yellowpages ever see my Bitcoin private key?'>
@@ -174,9 +192,11 @@ export default function FaqsPage() {
         <AccordionItem title='Will using yellowpages reveal any of my information?'>
           <p>
             The proof only exposes two items: your Bitcoin address (already
-            public once you transact) and your new PQ address(es) (which reveals
-            nothing about balances). It does not publish the signatures,
-            verification keys, IP data or any personal identifiers.
+            public once you transact) and your new post-quantum addresses (which
+            reveals nothing about balances). It does not publish the signatures,
+            verification keys, IP data or any personal identifiers. We
+            don&apos;t log or store any client IP addresses, but as an extra
+            precaution you could opt to use a VPN during registration.
           </p>
         </AccordionItem>
         <AccordionItem title='How are the proofs stored and who can see them?'>
@@ -188,9 +208,12 @@ export default function FaqsPage() {
         <h2>5. Interoperability &amp; Verification</h2>
         <AccordionItem title="How do I verify someone else's proof?">
           <p>
-            Search for the Bitcoin address in the yellowpages explorer and
+            Search for the Bitcoin address in the yellowpages explorer, and
             you&apos;ll instantly see the most recent proof, its timestamp, and
-            the linked PQ address(es).
+            the linked post-quantum addresses. Our backend will verify their
+            proof before showing it to you. We don&apos;t currently have a
+            method for verifying proofs locally, but will likely add support for
+            that soon.
           </p>
         </AccordionItem>
         <AccordionItem title='What address types does yellowpages work with?'>
