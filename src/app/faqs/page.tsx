@@ -23,7 +23,7 @@ export default function FaqsPage() {
             cryptographic proof, never your keys, so you stay private while
             having a public proof that your Bitcoin address is linked to
             post-quantum addresses. More detail can be found in the{' '}
-            <Link href='/whitepaper/v0.0.1.pdf' target='_blank'>
+            <Link href='/whitepaper/v1.0.0.pdf' target='_blank'>
               whitepaper
             </Link>
             .
