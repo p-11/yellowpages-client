@@ -47,6 +47,16 @@ const resources = [
     heading: 'PQ Address - TypeScript',
     url: 'https://github.com/p-11/pq-address-ts',
     displayUrl: 'https://github.com/p-11/pq-address-ts'
+  },
+  {
+    heading: 'Cryptography Audit',
+    url: 'https://cure53.de/audit-report_project-11-crypto.pdf',
+    displayUrl: 'https://cure53.de/audit-report_project-11-crypto.pdf'
+  },
+  {
+    heading: 'Web App & API Penetration Test & Audit',
+    url: 'https://cure53.de/pentest-report_project-11-web.pdf',
+    displayUrl: 'https://cure53.de/pentest-report_project-11-web.pdf'
   }
 ];
 
