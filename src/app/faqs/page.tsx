@@ -93,6 +93,27 @@ export default function FaqsPage() {
             </li>
           </ul>
         </AccordionItem>
+        <AccordionItem title='Is yellowpages audited?'>
+          <p>Yes!</p>
+          <ul>
+            <li>
+              <Link
+                href='https://cure53.de/audit-report_project-11-crypto.pdf'
+                target='_blank'
+              >
+                yellowpages Cryptography Audit
+              </Link>
+            </li>
+            <li>
+              <Link
+                href='https://cure53.de/pentest-report_project-11-web.pdf'
+                target='_blank'
+              >
+                yellowpages Web App & API Penetration Test & Audit
+              </Link>
+            </li>
+          </ul>
+        </AccordionItem>
         <AccordionItem title='How does it work?'>
           <p>yellowpages works by a simple 6-step process:</p>
           <ul>
