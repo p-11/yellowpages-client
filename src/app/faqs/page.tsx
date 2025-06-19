@@ -56,6 +56,64 @@ export default function FaqsPage() {
             required.
           </p>
         </AccordionItem>
+        <AccordionItem title='Is yellowpages open-source?'>
+          <p>Yes!</p>
+          <ul>
+            <li>
+              <Link
+                href='https://github.com/p-11/yellowpages-client'
+                target='_blank'
+              >
+                yellowpages Client Repository
+              </Link>
+            </li>
+            <li>
+              <Link
+                href='https://github.com/p-11/yellowpages-proof-service'
+                target='_blank'
+              >
+                yellowpages Proof Service
+              </Link>
+            </li>
+            <li>
+              <Link
+                href='https://github.com/p-11/pq-address-rs'
+                target='_blank'
+              >
+                PQ Address - Rust
+              </Link>
+            </li>
+            <li>
+              <Link
+                href='https://github.com/p-11/pq-address-ts'
+                target='_blank'
+              >
+                PQ Address - TypeScript
+              </Link>
+            </li>
+          </ul>
+        </AccordionItem>
+        <AccordionItem title='Is yellowpages audited?'>
+          <p>Yes!</p>
+          <ul>
+            <li>
+              <Link
+                href='https://cure53.de/audit-report_project-11-crypto.pdf'
+                target='_blank'
+              >
+                yellowpages Cryptography Audit
+              </Link>
+            </li>
+            <li>
+              <Link
+                href='https://cure53.de/pentest-report_project-11-web.pdf'
+                target='_blank'
+              >
+                yellowpages Web App & API Penetration Test & Audit
+              </Link>
+            </li>
+          </ul>
+        </AccordionItem>
         <AccordionItem title='How does it work?'>
           <p>yellowpages works by a simple 6-step process:</p>
           <ul>
@@ -169,6 +227,18 @@ export default function FaqsPage() {
             Your new key pairs are generated using NIST-standardised,
             quantum-safe algorithms. All communication between yourself and the
             yellowpages is secured using post quantum (PQ) cryptography.
+          </p>
+        </AccordionItem>
+        <AccordionItem title='What is the trust model of yellowpages?'>
+          <p>
+            You can read about our trust model in detail in our{' '}
+            <Link
+              href='https://blog.projecteleven.com/posts/the-trust-model-of-yellowpages-v1'
+              target='_blank'
+            >
+              The Trust Model of yellowpages v1
+            </Link>{' '}
+            blog post.
           </p>
         </AccordionItem>
         <AccordionItem title='Does the yellowpages ever see my Bitcoin private key?'>

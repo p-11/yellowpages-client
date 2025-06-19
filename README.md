@@ -14,3 +14,11 @@
 
 - Run `npx playwright install --with-deps` to install Playwright browsers.
 - Run `npx playwright test` to run the tests.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
+
+## License
+
+This project is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for more details.
