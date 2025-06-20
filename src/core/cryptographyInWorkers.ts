@@ -79,6 +79,7 @@ function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
         currentWorker?.removeEventListener('error', onError);
         currentWorker?.terminate();
         currentWorker = null;
+        resolveCurrentPromise = null;
       };
 
       currentWorker?.addEventListener('message', onMessage);
