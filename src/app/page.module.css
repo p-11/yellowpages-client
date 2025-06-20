@@ -5,7 +5,6 @@
     margin-top: 0;
     margin-bottom: 0;
     justify-content: center;
-    padding-bottom: 20px;
 }
 
 .title {
@@ -22,6 +21,7 @@
     flex-direction: column;
     width: 100%;
     gap: 24px;
+    margin-bottom: 16px;
 }
 
 .primaryLink,
@@ -122,8 +122,8 @@
 }
 
 @media only screen and (min-height: 720px) {
-    .homepage {
-        padding-bottom: 0;
+    .links {
+        margin-bottom: 0;
     }
 
     .content {
