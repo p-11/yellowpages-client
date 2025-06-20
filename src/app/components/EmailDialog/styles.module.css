@@ -1,0 +1,57 @@
+.emailSection {
+    padding: 1rem 0rem;
+}
+
+.inputBox {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.inputLabel {
+    font-weight: 500;
+    color: #333;
+}
+
+.input {
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 95%;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #635b34;
+}
+
+.input:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}
+
+.errorMessage {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.successMessage {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #635b34;
+    font-size: 1rem;
+}
+
+.successMessage svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #635b34;
+}
+
+.emailDialogFooter {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 0rem;
+}
