@@ -124,7 +124,7 @@ export function EmailDialog({ onExit }: { onExit: () => void }) {
         <Button
           variant='primary'
           onClick={handleSubmit}
-          disabled={!email || isSubmitting}
+          disabled={!email || isSubmitting || !cfTurnstileToken}
         >
           {isSubmitting ? (
             <>
