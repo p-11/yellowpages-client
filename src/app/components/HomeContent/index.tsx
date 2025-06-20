@@ -43,22 +43,20 @@ export function HomeContent() {
           Check the directory <ArrowRightIcon />
         </Link>
       </div>
-      {process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' && (
-        <div className={styles.footer}>
-          <p>
-            Built by{' '}
-            <Link href='https://projecteleven.com' target='_blank'>
-              Project Eleven
-            </Link>
-          </p>
-          <span className={styles.footerSeparator} />
-          <p>
-            <Link href='https://status.projecteleven.com' target='_blank'>
-              System status
-            </Link>
-          </p>
-        </div>
-      )}
+      <div className={styles.footer}>
+        <p>
+          Built by{' '}
+          <Link href='https://projecteleven.com' target='_blank'>
+            Project Eleven
+          </Link>
+        </p>
+        <span className={styles.footerSeparator} />
+        <p>
+          <Link href='https://status.projecteleven.com' target='_blank'>
+            System status
+          </Link>
+        </p>
+      </div>
       {showEmailDialog && <EmailDialog onExit={toggleEmailDialog} />}
     </main>
   );
