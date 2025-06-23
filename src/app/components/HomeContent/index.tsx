@@ -27,13 +27,15 @@ export function HomeContent() {
           <Link href='/resources'>resources</Link>, or{' '}
           <Link href='/changelog'>changelog</Link> to learn more.
         </p>
-        <p className={styles.emailCta}>
-          Learn more by{' '}
-          <button onClick={toggleEmailDialog} className={styles.emailButton}>
-            signing up to our e-mail bulletin
-          </button>
-          .
-        </p>
+        {!process.env.NEXT_PUBLIC_BOT_PROTECTION_ENABLED && (
+          <p className={styles.emailCta}>
+            Learn more by{' '}
+            <button onClick={toggleEmailDialog} className={styles.emailButton}>
+              signing up to our e-mail bulletin
+            </button>
+            .
+          </p>
+        )}
       </div>
       <div className={styles.links}>
         <Link className={styles.primaryLink} href='/register/step-1'>
