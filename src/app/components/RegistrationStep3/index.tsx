@@ -167,6 +167,7 @@ export function RegistrationStep3() {
   }, [router]);
 
   const completeRegistration = useCallback(async () => {
+    return null;
     try {
       if (!signingMessage)
         throw new ErrorWithCode('Invalid signing message', 'YP-001');
@@ -365,9 +366,7 @@ export function RegistrationStep3() {
           <Button
             variant='primary'
             onClick={completeRegistration}
-            disabled={
-              !isSignaturePopulated || !cfTurnstileToken || isSubmitting
-            }
+            disabled={true}
           >
             Complete {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}
           </Button>
