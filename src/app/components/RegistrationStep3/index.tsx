@@ -28,17 +28,13 @@ import {
   BitcoinAddress,
   generateMessage,
   isValidBitcoinAddress,
-  isValidBitcoinSignature,
   Message,
   SignedMessage,
   SignedMessages
 } from '@/core/cryptography';
-import { createProof, searchYellowpagesByBtcAddress } from '@/core/api';
 import { LoaderCircleIcon } from '@/app/icons/LoaderCircleIcon';
 import { createGenerateSignedMessagesTask } from '@/core/cryptographyInWorkers';
 import { useRegistrationContext } from '@/app/providers/RegistrationProvider';
-import { ErrorWithCode } from '@/utils/errorWithCode';
-import { hasErrorCode } from '@/utils/hasErrorCode';
 import styles from './styles.module.css';
 
 export function RegistrationStep3() {
@@ -65,7 +61,6 @@ export function RegistrationStep3() {
   const { seedPhrase, pqAddresses, generateAddressesTaskRef, setPqAddresses } =
     useRegistrationSessionContext();
   const { setProof } = useRegistrationContext();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
@@ -167,72 +162,7 @@ export function RegistrationStep3() {
   }, [router]);
 
   const completeRegistration = useCallback(async () => {
-    try {
-      if (!signingMessage)
-        throw new ErrorWithCode('Invalid signing message', 'YP-001');
-      if (!bitcoinAddress)
-        throw new ErrorWithCode('Invalid Bitcoin address', 'YP-002');
-      if (!cfTurnstileToken)
-        throw new ErrorWithCode('Invalid CF Turnstile token', 'YP-003');
-
-      if (
-        signature &&
-        isValidBitcoinSignature(signingMessage, signature, bitcoinAddress)
-      ) {
-        setIsSubmitting(true);
-
-        try {
-          const signedMessages =
-            signedMessagesRef.current ??
-            (await generateSignedMessagesTaskRef.current.waitForResult());
-
-          if (!signedMessages)
-            throw new ErrorWithCode('Invalid signedMessages result', 'YP-004');
-
-          signedMessagesRef.current = signedMessages;
-
-          await createProof(
-            {
-              btcAddress: bitcoinAddress,
-              btcSignedMessage: signature,
-              mldsa44Address: signedMessages.ML_DSA_44.address,
-              mldsa44PublicKey: signedMessages.ML_DSA_44.publicKey,
-              mldsa44SignedMessage: signedMessages.ML_DSA_44.signedMessage,
-              slhdsaSha2S128Address: signedMessages.SLH_DSA_SHA2_S_128.address,
-              slhdsaSha2S128PublicKey:
-                signedMessages.SLH_DSA_SHA2_S_128.publicKey,
-              slhdsaSha2S128SignedMessage:
-                signedMessages.SLH_DSA_SHA2_S_128.signedMessage
-            },
-            cfTurnstileToken
-          );
-
-          const proof = await searchYellowpagesByBtcAddress(bitcoinAddress);
-
-          setProof(proof);
-
-          router.push('/registration-complete');
-        } catch (e) {
-          setCfTurnstileToken(null);
-          cfTurnstileRef.current?.reset();
-          setShowErrorDialog(true);
-
-          if (hasErrorCode(e)) {
-            setErrorCode(e.code);
-          }
-        }
-
-        setIsSubmitting(false);
-      } else {
-        setShowInvalidSignatureAlert(true);
-      }
-    } catch (e) {
-      setShowErrorDialog(true);
-
-      if (hasErrorCode(e)) {
-        setErrorCode(e.code);
-      }
-    }
+    return null;
   }, [
     router,
     signature,
@@ -365,11 +295,9 @@ export function RegistrationStep3() {
           <Button
             variant='primary'
             onClick={completeRegistration}
-            disabled={
-              !isSignaturePopulated || !cfTurnstileToken || isSubmitting
-            }
+            disabled={true}
           >
-            Complete {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}
+            Complete {true ? <LoaderCircleIcon /> : <ArrowRightIcon />}
           </Button>
         </RegistrationFooterActions>
       </div>
