@@ -72,7 +72,6 @@ export function RegistrationStep1() {
   }, [router]);
 
   const continueToNextStep = useCallback(() => {
-    return null;
     router.push('/register/step-2');
   }, [router]);
 

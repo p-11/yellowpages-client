@@ -36,8 +36,8 @@ export function HomeContent() {
         </p>
       </div>
       <div className={styles.links}>
-        <Link className={styles.primaryLink} href='/'>
-          Registraion is temporarily paused
+        <Link className={styles.primaryLink} href='/register/step-1'>
+          Register <ArrowRightIcon />
         </Link>
         <Link className={styles.secondaryLink} href='/search'>
           Check the directory <ArrowRightIcon />
