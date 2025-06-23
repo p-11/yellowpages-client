@@ -27,7 +27,7 @@ export function HomeContent() {
           <Link href='/resources'>resources</Link>, or{' '}
           <Link href='/changelog'>changelog</Link> to learn more.
         </p>
-        {!process.env.NEXT_PUBLIC_BOT_PROTECTION_ENABLED && (
+        {process.env.NEXT_PUBLIC_BOT_PROTECTION_ENABLED !== 'true' && (
           <p className={styles.emailCta}>
             Learn more by{' '}
             <button onClick={toggleEmailDialog} className={styles.emailButton}>

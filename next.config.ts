@@ -3,7 +3,7 @@ import { domains } from '@/lib/domains';
 
 const scriptSrcDirective = [
   "'self'",
-  process.env.BOT_PROTECTION_ENABLED
+  process.env.BOT_PROTECTION_ENABLED === 'true'
     ? null
     : 'https://challenges.cloudflare.com',
   "'unsafe-inline'",

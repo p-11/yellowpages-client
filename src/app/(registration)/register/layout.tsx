@@ -6,7 +6,7 @@ export default function RegisterLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  if (process.env.BOT_PROTECTION_ENABLED) {
+  if (process.env.BOT_PROTECTION_ENABLED === 'true') {
     return <RegistrationsPausedNotice />;
   }
 
