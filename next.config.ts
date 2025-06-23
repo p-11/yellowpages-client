@@ -13,12 +13,21 @@ const scriptSrcDirective = [
   .filter(Boolean)
   .join(' ');
 
+const frameSrcDirective = [
+  'https://status.projecteleven.com',
+  process.env.BOT_PROTECTION_ENABLED === 'true'
+    ? null
+    : 'https://challenges.cloudflare.com'
+]
+  .filter(Boolean)
+  .join(' ');
+
 const contentSecurityPolicy = `
 default-src 'self';
 connect-src 'self' ${domains.proofService} ${domains.verificationService};
 script-src ${scriptSrcDirective};
 style-src 'self' 'unsafe-inline';
-frame-src https://challenges.cloudflare.com https://status.projecteleven.com;
+frame-src ${frameSrcDirective};
 img-src 'self';
 font-src 'self';
 object-src 'none';
