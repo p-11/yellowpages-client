@@ -37,7 +37,7 @@ export function HomeContent() {
       </div>
       <div className={styles.links}>
         <Link className={styles.primaryLink} href='/'>
-          Registraion is temporarily disabled
+          Registraion is temporarily paused
         </Link>
         <Link className={styles.secondaryLink} href='/search'>
           Check the directory <ArrowRightIcon />
