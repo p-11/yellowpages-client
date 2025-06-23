@@ -14,7 +14,7 @@ export function RegistrationsPausedNotice() {
 
   return (
     <main>
-      <h1 className={styles.title}>Registraion is temporarily paused</h1>
+      <h1 className={styles.title}>Registration is temporarily paused</h1>
       <div className={styles.content}>
         <p>Please check back later and try again.</p>
         <div className={styles.footer}>
