@@ -3,7 +3,9 @@ import { domains } from '@/lib/domains';
 
 const scriptSrcDirective = [
   "'self'",
-  'https://challenges.cloudflare.com',
+  process.env.NEXT_PUBLIC_BOT_PROTECTION_ENABLED
+    ? null
+    : 'https://challenges.cloudflare.com',
   "'unsafe-inline'",
   "'wasm-unsafe-eval'", // required for running WASM, which we need for attestation document verification
   process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : null
