@@ -61,7 +61,6 @@ export function RegistrationStep3() {
   const { seedPhrase, pqAddresses, generateAddressesTaskRef, setPqAddresses } =
     useRegistrationSessionContext();
   const { setProof } = useRegistrationContext();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const copyTextToolbarButtonRef = useRef<{ showSuccessIndicator: () => void }>(
     null
   );
@@ -298,7 +297,7 @@ export function RegistrationStep3() {
             onClick={completeRegistration}
             disabled={true}
           >
-            Complete {isSubmitting ? <LoaderCircleIcon /> : <ArrowRightIcon />}
+            Complete {true ? <LoaderCircleIcon /> : <ArrowRightIcon />}
           </Button>
         </RegistrationFooterActions>
       </div>
