@@ -7,6 +7,29 @@ import { wordlist } from '@scure/bip39/wordlists/english';
 
 /* eslint no-console: "off" */
 
+let skipTests = false;
+
+test.beforeAll(async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  await page.goto('/register/step-1');
+
+  if (
+    await page
+      .getByText('Registration is temporarily paused', { exact: true })
+      .isVisible()
+  ) {
+    skipTests = true;
+  }
+});
+
+test.beforeEach(() => {
+  if (skipTests) {
+    test.skip(true, 'Skipping test due to paused registrations.');
+  }
+});
+
 const generateBtcWallet = () => {
   const mnemonic = generateMnemonic(wordlist, 256);
   const seed = mnemonicToSeedSync(mnemonic);

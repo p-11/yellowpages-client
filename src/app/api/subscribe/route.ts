@@ -4,6 +4,10 @@ const client = new BeehiivClient({ token: process.env.BEEHIV_API_KEY || '' });
 
 export async function POST(request: Request) {
   try {
+    if (process.env.BOT_PROTECTION_ENABLED === 'true') {
+      return Response.json({}, { status: 500 });
+    }
+
     const cfTurnstileToken = request.headers.get('X-CF-Turnstile-Token');
     const body = await request.json();
 
