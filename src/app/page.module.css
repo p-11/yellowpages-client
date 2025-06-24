@@ -13,7 +13,7 @@
 }
 
 .content {
-    margin-bottom: 80px;
+    margin-bottom: 20px;
 }
 
 .links {
@@ -21,6 +21,7 @@
     flex-direction: column;
     width: 100%;
     gap: 24px;
+    margin-bottom: 16px;
 }
 
 .primaryLink,
@@ -101,5 +102,31 @@
     .secondaryLink {
         font-size: 15px;
         flex: 1
+    }
+}
+
+.emailCta {
+    text-align: left;
+    font-weight: 700;
+}
+
+.emailButton {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #635b34;
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+    text-align: left;
+}
+
+@media only screen and (min-height: 720px) {
+    .links {
+        margin-bottom: 0;
+    }
+
+    .content {
+        margin-bottom: 80px;
     }
 }
