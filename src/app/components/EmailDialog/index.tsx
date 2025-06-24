@@ -65,7 +65,7 @@ export function EmailDialog({ onExit }: { onExit: () => void }) {
     }
   }, [email, cfTurnstileToken]);
 
-  if (!isSuccess) {
+  if (isSuccess) {
     return (
       <Dialog large>
         <DialogTitle>Subscribe to our e-mail bulletin</DialogTitle>
