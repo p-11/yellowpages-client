@@ -72,7 +72,10 @@ export function EmailDialog({ onExit }: { onExit: () => void }) {
         <div className={styles.emailSection}>
           <div className={styles.successMessage}>
             <CheckIcon />
-            <p>Subscribed!</p>
+            <p>
+              Welcome! Please confirm your subscription via the opt-in email we
+              just sent.
+            </p>
           </div>
         </div>
         <div className={styles.emailDialogFooter}>
