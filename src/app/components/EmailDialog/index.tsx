@@ -65,13 +65,12 @@ export function EmailDialog({ onExit }: { onExit: () => void }) {
     }
   }, [email, cfTurnstileToken]);
 
-  if (isSuccess) {
+  if (!isSuccess) {
     return (
       <Dialog large>
         <DialogTitle>Subscribe to our e-mail bulletin</DialogTitle>
         <div className={styles.emailSection}>
           <div className={styles.successMessage}>
-            <CheckIcon />
             <p>
               Welcome! Please confirm your subscription via the opt-in email we
               just sent.
