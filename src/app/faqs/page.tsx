@@ -264,9 +264,10 @@ export default function FaqsPage() {
             The proof only exposes two items: your Bitcoin address (already
             public once you transact) and your new post-quantum addresses (which
             reveals nothing about balances). It does not publish the signatures,
-            verification keys, IP data or any personal identifiers. We
-            don&apos;t log or store any client IP addresses, but as an extra
-            precaution you could opt to use a VPN during registration.
+            verification keys, IP data or any personal identifiers. We use
+            third-party bot prevention tools that temporarily store client IP
+            addresses for analytics, discarding them after a short period. As an
+            extra precaution you could opt to use a VPN during registration.
           </p>
         </AccordionItem>
         <AccordionItem title='How are the proofs stored and who can see them?'>
