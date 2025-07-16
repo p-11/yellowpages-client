@@ -254,22 +254,22 @@ export async function createProof(
     }
 
     // Step 6: Verify the attestation document
-    // const attestationDoc =
-    //   handshakeResponse.auth_attestation_doc as AttestationDocBase64;
-    // try {
-    //   await verifyAttestationDoc(
-    //     attestationDoc,
-    //     expectedPCR8,
-    //     mlKem768CiphertextBytes
-    //   );
-    // } catch (error) {
-    //   const errorMessage =
-    //     error instanceof Error ? error.message : String(error);
-    //   throw new ErrorWithCode(
-    //     `Failed to verify attestation document`,
-    //     'YP-008'
-    //   );
-    // }
+    const attestationDoc =
+      handshakeResponse.auth_attestation_doc as AttestationDocBase64;
+    try {
+      await verifyAttestationDoc(
+        attestationDoc,
+        expectedPCR8,
+        mlKem768CiphertextBytes
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new ErrorWithCode(
+        `Failed to verify attestation document`,
+        'YP-008'
+      );
+    }
 
     // Step 7: Create and encrypt proof request
     const proofRequest = {

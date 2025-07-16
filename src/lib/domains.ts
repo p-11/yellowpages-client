@@ -8,5 +8,5 @@ export const domains = {
     : 'https://verification-api.yellowpages-development.xyz',
   proofService: IS_PROD
     ? 'wss://yellowpages-proof-service.app-d1312b66384d.enclave.evervault.com'
-    : 'ws://localhost:8008'
+    : 'wss://yellowpages-proof-service.app-0883710b5780.enclave.evervault.com'
 };

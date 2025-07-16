@@ -171,11 +171,11 @@ export function RegistrationStep3() {
   const completeRegistration = useCallback(async () => {
     try {
       if (!signingMessage)
-        throw new ErrorWithCode('Invalid signing message', 'YP-001');
+        throw new ErrorWithCode('Invalid signing message.', 'YP-001');
       if (!bitcoinAddress)
-        throw new ErrorWithCode('Invalid Bitcoin address', 'YP-002');
+        throw new ErrorWithCode('Invalid Bitcoin address.', 'YP-002');
       if (!cfTurnstileToken)
-        throw new ErrorWithCode('Invalid CF Turnstile token', 'YP-003');
+        throw new ErrorWithCode('Invalid CF Turnstile token.', 'YP-003');
 
       if (
         signature &&
@@ -189,7 +189,7 @@ export function RegistrationStep3() {
             (await generateSignedMessagesTaskRef.current.waitForResult());
 
           if (!signedMessages)
-            throw new ErrorWithCode('Message signing failed', 'YP-004');
+            throw new ErrorWithCode('Message signing failed.', 'YP-004');
 
           signedMessagesRef.current = signedMessages;
 
