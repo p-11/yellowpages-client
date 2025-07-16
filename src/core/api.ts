@@ -467,7 +467,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
           'The maximum number of registrations for this Bitcoin address has been reached.';
       } else if (event.code === WebSocketCloseCode.InsufficientBtcBalance) {
         errorMessage =
-          'The submitted Bitcoin address is an empty wallet: As a spam mitigation, we only allow yellowpages registrations for mainnet Bitcoin wallets that have a non-zero balance.';
+          'The submitted Bitcoin address is empty: As a spam mitigation, we only allow registrations for mainnet Bitcoin addresses that have a non-zero balance.';
       }
 
       const error = new ErrorWithCode(errorMessage, event.code);
