@@ -147,6 +147,10 @@ export default function FaqsPage() {
             button, you&apos;re good to go. The currently supported Bitcoin
             address types are P2PKH and P2WPKH.
           </p>
+          <p>
+            As a spam mitigation, we only allow registrations for mainnet
+            Bitcoin addresses that have a non-zero balance.
+          </p>
         </AccordionItem>
         <AccordionItem title='How do I create a signature?'>
           <p>
@@ -187,6 +191,10 @@ export default function FaqsPage() {
           <p>
             Because there&apos;s no blockchain transaction, there&apos;s no
             miner fee. yellowpages is free to use.
+          </p>
+          <p>
+            As a spam mitigation, we only allow registrations for mainnet
+            Bitcoin addresses that have a non-zero balance.
           </p>
         </AccordionItem>
         <h2>3. Key Management</h2>
