@@ -408,8 +408,7 @@ export function RegistrationStep3() {
         <Dialog>
           <DialogTitle>An error occurred:</DialogTitle>
           <DialogDescription>
-            {errorMessage ||
-              'Please make sure that your Bitcoin address and signature are correct and try again.'}
+            {errorMessage || 'An unexpected error occurred.'}
           </DialogDescription>
           <Alert>
             If the error persists, please reach out to{' '}
