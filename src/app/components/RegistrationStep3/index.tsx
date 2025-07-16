@@ -406,10 +406,14 @@ export function RegistrationStep3() {
       )}
       {showErrorDialog && (
         <Dialog>
-          <DialogTitle>An error occurred:</DialogTitle>
-          <DialogDescription>
-            {errorMessage || 'An unexpected error occurred.'}
-          </DialogDescription>
+          <DialogTitle>
+            {errorMessage
+              ? 'An error occurred:'
+              : 'An unexpected error occurred.'}
+          </DialogTitle>
+          {errorMessage && (
+            <DialogDescription>{errorMessage}</DialogDescription>
+          )}
           <Alert>
             If the error persists, please reach out to{' '}
             <a
