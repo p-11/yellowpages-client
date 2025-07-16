@@ -62,6 +62,7 @@ export function RegistrationStep3() {
     useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorCode, setErrorCode] = useState<string | number>();
+  const [errorMessage, setErrorMessage] = useState<string>();
   const { seedPhrase, pqAddresses, generateAddressesTaskRef, setPqAddresses } =
     useRegistrationSessionContext();
   const { setProof } = useRegistrationContext();
@@ -108,6 +109,7 @@ export function RegistrationStep3() {
   const acknowledgeErrorDialog = useCallback(() => {
     setShowErrorDialog(false);
     setErrorCode(undefined);
+    setErrorMessage(undefined);
   }, []);
 
   const confirmBitcoinAddress = useCallback(async () => {
@@ -219,6 +221,7 @@ export function RegistrationStep3() {
 
           if (hasErrorCode(e)) {
             setErrorCode(e.code);
+            setErrorMessage(e.message);
           }
         }
 
@@ -231,6 +234,7 @@ export function RegistrationStep3() {
 
       if (hasErrorCode(e)) {
         setErrorCode(e.code);
+        setErrorMessage(e.message);
       }
     }
   }, [
@@ -404,8 +408,7 @@ export function RegistrationStep3() {
         <Dialog>
           <DialogTitle>Oops, something went wrong</DialogTitle>
           <DialogDescription>
-            Please make sure that your Bitcoin address and signature are correct
-            and try again.
+            {errorMessage || 'Please make sure that your Bitcoin address and signature are correct and try again.'}
           </DialogDescription>
           <Alert>
             If the error persists, please reach out to{' '}

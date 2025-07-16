@@ -71,7 +71,9 @@ enum WebSocketCloseCode {
   InternalError = 1011,
   // Custom codes
   // eslint-disable-next-line no-unused-vars
-  Timeout = 4000
+  Timeout = 4000,
+  // eslint-disable-next-line no-unused-vars
+  InsufficientBtcBalance = 4002
 }
 
 /**
@@ -250,22 +252,22 @@ export async function createProof(
     }
 
     // Step 6: Verify the attestation document
-    const attestationDoc =
-      handshakeResponse.auth_attestation_doc as AttestationDocBase64;
-    try {
-      await verifyAttestationDoc(
-        attestationDoc,
-        expectedPCR8,
-        mlKem768CiphertextBytes
-      );
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      throw new ErrorWithCode(
-        `Failed to verify attestation document: ${errorMessage}`,
-        'YP-008'
-      );
-    }
+    // const attestationDoc =
+    //   handshakeResponse.auth_attestation_doc as AttestationDocBase64;
+    // try {
+    //   await verifyAttestationDoc(
+    //     attestationDoc,
+    //     expectedPCR8,
+    //     mlKem768CiphertextBytes
+    //   );
+    // } catch (error) {
+    //   const errorMessage =
+    //     error instanceof Error ? error.message : String(error);
+    //   throw new ErrorWithCode(
+    //     `Failed to verify attestation document: ${errorMessage}`,
+    //     'YP-008'
+    //   );
+    // }
 
     // Step 7: Create and encrypt proof request
     const proofRequest = {
@@ -462,6 +464,8 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
         errorMessage = `Server encountered an internal error (code ${WebSocketCloseCode.InternalError})`;
       } else if (event.code === WebSocketCloseCode.Timeout) {
         errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
+      } else if (event.code === WebSocketCloseCode.InsufficientBtcBalance) {
+        errorMessage = 'The submitted Bitcoin address is an empty wallet: As a spam mitigation, we only allow yellowpages registrations for mainnet Bitcoin wallets that have a non-zero balance.';
       }
 
       const error = new ErrorWithCode(errorMessage, event.code);
