@@ -73,6 +73,8 @@ enum WebSocketCloseCode {
   // eslint-disable-next-line no-unused-vars
   Timeout = 4000,
   // eslint-disable-next-line no-unused-vars
+  MaxRegistrationsExceeded = 4001,
+  // eslint-disable-next-line no-unused-vars
   InsufficientBtcBalance = 4002
 }
 
@@ -464,6 +466,8 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
         errorMessage = `The server encountered an internal error.`;
       } else if (event.code === WebSocketCloseCode.Timeout) {
         errorMessage = `The server timed out.`;
+      } else if (event.code === WebSocketCloseCode.MaxRegistrationsExceeded) {
+        errorMessage = 'The maximum number of registrations for this Bitcoin address has been reached.';
       } else if (event.code === WebSocketCloseCode.InsufficientBtcBalance) {
         errorMessage = 'The submitted Bitcoin address is an empty wallet: As a spam mitigation, we only allow yellowpages registrations for mainnet Bitcoin wallets that have a non-zero balance.';
       }
