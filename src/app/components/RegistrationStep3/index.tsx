@@ -406,7 +406,7 @@ export function RegistrationStep3() {
       )}
       {showErrorDialog && (
         <Dialog>
-          <DialogTitle>Oops, something went wrong</DialogTitle>
+          <DialogTitle>An error occurred:</DialogTitle>
           <DialogDescription>
             {errorMessage || 'Please make sure that your Bitcoin address and signature are correct and try again.'}
           </DialogDescription>

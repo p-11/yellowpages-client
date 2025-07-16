@@ -108,7 +108,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   } catch (e) {
     // networkError is e.g. DNS failure, offline, CORS issues, etc.
     throw new ErrorWithCode(
-      `A network error occurred`,
+      `A network error occurred.`,
       'YP-005'
     );
   }
@@ -340,7 +340,7 @@ async function raceWithTimeout<T>(
     timeoutId = setTimeout(() => {
       reject(
         new ErrorWithCode(
-          `Operation "${operation}" timed out after ${timeoutMs / 1000} seconds`,
+          `Operation "${operation}" timed out after ${timeoutMs / 1000} seconds.`,
           'YP-006'
         )
       );
@@ -456,14 +456,14 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
   // Handle WebSocket close error events
   const closeErrorHandler = (event: CloseEvent) => {
     if (event.code !== WebSocketCloseCode.Normal) {
-      let errorMessage = `Connection closed unexpectedly`;
+      let errorMessage = `The connection to the server closed unexpectedly.`;
 
       if (event.code === WebSocketCloseCode.PolicyViolation) {
         errorMessage = `Policy violation. Please make sure that your Bitcoin address and signature are correct and try again.`;
       } else if (event.code === WebSocketCloseCode.InternalError) {
-        errorMessage = `The server encountered an internal error`;
+        errorMessage = `The server encountered an internal error.`;
       } else if (event.code === WebSocketCloseCode.Timeout) {
-        errorMessage = `The server timed out`;
+        errorMessage = `The server timed out.`;
       } else if (event.code === WebSocketCloseCode.InsufficientBtcBalance) {
         errorMessage = 'The submitted Bitcoin address is an empty wallet: As a spam mitigation, we only allow yellowpages registrations for mainnet Bitcoin wallets that have a non-zero balance.';
       }
