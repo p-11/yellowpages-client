@@ -443,7 +443,7 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
 
   // Handle WebSocket network error events
   const networkErrorHandler = () => {
-    const error = new Error('Network error while connecting to proof service');
+    const error = new ErrorWithCode('A network error occurred.', 'YP-009');
     abortController.abort(error);
   };
 
