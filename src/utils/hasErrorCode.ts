@@ -1,3 +1,5 @@
-export const hasErrorCode = (e: unknown): e is { code: string | number } => {
-  return typeof e === 'object' && e !== null && 'code' in e;
+import { ErrorWithCode } from './errorWithCode';
+
+export const hasErrorCode = (e: unknown): e is ErrorWithCode => {
+  return e instanceof ErrorWithCode;
 };
