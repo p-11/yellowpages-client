@@ -108,7 +108,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   } catch (e) {
     // networkError is e.g. DNS failure, offline, CORS issues, etc.
     throw new ErrorWithCode(
-      `Network error while fetching ${url}: ${e}`,
+      `A network error occurred`,
       'YP-005'
     );
   }
@@ -264,7 +264,7 @@ export async function createProof(
     //   const errorMessage =
     //     error instanceof Error ? error.message : String(error);
     //   throw new ErrorWithCode(
-    //     `Failed to verify attestation document: ${errorMessage}`,
+    //     `Failed to verify attestation document`,
     //     'YP-008'
     //   );
     // }
@@ -456,14 +456,14 @@ function setupWebSocketErrorHandlers(ws: WebSocket) {
   // Handle WebSocket close error events
   const closeErrorHandler = (event: CloseEvent) => {
     if (event.code !== WebSocketCloseCode.Normal) {
-      let errorMessage = `Connection closed unexpectedly: code ${event.code}`;
+      let errorMessage = `Connection closed unexpectedly`;
 
       if (event.code === WebSocketCloseCode.PolicyViolation) {
-        errorMessage = `Policy violation (code ${WebSocketCloseCode.PolicyViolation})`;
+        errorMessage = `Policy violation. Please make sure that your Bitcoin address and signature are correct and try again.`;
       } else if (event.code === WebSocketCloseCode.InternalError) {
-        errorMessage = `Server encountered an internal error (code ${WebSocketCloseCode.InternalError})`;
+        errorMessage = `The server encountered an internal error`;
       } else if (event.code === WebSocketCloseCode.Timeout) {
-        errorMessage = `Operation timed out on server (code ${WebSocketCloseCode.Timeout})`;
+        errorMessage = `The server timed out`;
       } else if (event.code === WebSocketCloseCode.InsufficientBtcBalance) {
         errorMessage = 'The submitted Bitcoin address is an empty wallet: As a spam mitigation, we only allow yellowpages registrations for mainnet Bitcoin wallets that have a non-zero balance.';
       }

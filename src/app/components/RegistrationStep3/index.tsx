@@ -189,7 +189,7 @@ export function RegistrationStep3() {
             (await generateSignedMessagesTaskRef.current.waitForResult());
 
           if (!signedMessages)
-            throw new ErrorWithCode('Invalid signedMessages result', 'YP-004');
+            throw new ErrorWithCode('Message signing failed', 'YP-004');
 
           signedMessagesRef.current = signedMessages;
 
