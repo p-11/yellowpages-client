@@ -147,6 +147,10 @@ export default function FaqsPage() {
             button, you&apos;re good to go. The currently supported Bitcoin
             address types are P2PKH and P2WPKH.
           </p>
+          <p>
+            As a spam mitigation, we only allow registrations for mainnet
+            Bitcoin addresses that have a non-zero balance.
+          </p>
         </AccordionItem>
         <AccordionItem title='How do I create a signature?'>
           <p>
@@ -187,6 +191,10 @@ export default function FaqsPage() {
           <p>
             Because there&apos;s no blockchain transaction, there&apos;s no
             miner fee. yellowpages is free to use.
+          </p>
+          <p>
+            As a spam mitigation, we only allow registrations for mainnet
+            Bitcoin addresses that have a non-zero balance.
           </p>
         </AccordionItem>
         <h2>3. Key Management</h2>
@@ -264,9 +272,10 @@ export default function FaqsPage() {
             The proof only exposes two items: your Bitcoin address (already
             public once you transact) and your new post-quantum addresses (which
             reveals nothing about balances). It does not publish the signatures,
-            verification keys, IP data or any personal identifiers. We
-            don&apos;t log or store any client IP addresses, but as an extra
-            precaution you could opt to use a VPN during registration.
+            verification keys, IP data or any personal identifiers. We use
+            third-party bot prevention tools that temporarily store client IP
+            addresses for analytics, discarding them after a short period. As an
+            extra precaution you could opt to use a VPN during registration.
           </p>
         </AccordionItem>
         <AccordionItem title='How are the proofs stored and who can see them?'>
