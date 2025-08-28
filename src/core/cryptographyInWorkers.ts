@@ -40,73 +40,61 @@ export const createGenerateSignedMessagesTask = () =>
  *
  * Returns:
  * - `start(input: TInput)`: Starts a new worker task with the specified input.
- * - `waitForResult(): Promise<TOutput | null>`: Resolves with the result or throws on error.
- * - `terminate()`: Cancels any running worker task and releases resources.
+ * - `waitForResult(): Promise<TOutput | null>`: Resolves with the result or rejects.
+ * - `terminate()`: Cancels any running worker task and promise.
  */
 function createWorkerTask<TInput, TOutput>(createWorker: () => Worker) {
-  let worker: Worker | null = null;
-  let resolvePromise: (() => void) | null = null;
-  let promise: Promise<void> | null = null;
-  let result: TOutput | null = null;
-  let error: Error | null = null;
+  let currentWorker: Worker | null = null;
+  let currentPromise: Promise<TOutput | null> | null = null;
+  let resolveCurrentPromise: ((_value: TOutput | null) => void) | null = null;
 
   const terminate = () => {
-    result = null; // clear result
-
-    if (worker) {
-      worker.terminate();
-      worker = null;
-    }
-    if (resolvePromise) {
-      resolvePromise();
-      resolvePromise = null;
-    }
+    currentWorker?.terminate();
+    currentWorker = null;
+    currentPromise = null;
+    resolveCurrentPromise?.(null);
+    resolveCurrentPromise = null;
   };
 
   const start = (input: TInput) => {
     terminate();
 
-    promise = new Promise<void>(resolve => {
-      resolvePromise = resolve;
+    currentWorker = createWorker();
+
+    currentPromise = new Promise<TOutput | null>((resolve, reject) => {
+      resolveCurrentPromise = resolve;
+
+      const onMessage = (event: MessageEvent<TOutput>) => {
+        cleanup();
+        resolve(event.data);
+      };
+
+      const onError = (event: ErrorEvent) => {
+        cleanup();
+        reject(new Error(event.message));
+      };
+
+      const cleanup = () => {
+        currentWorker?.removeEventListener('message', onMessage);
+        currentWorker?.removeEventListener('error', onError);
+        currentWorker?.terminate();
+        currentWorker = null;
+        resolveCurrentPromise = null;
+      };
+
+      currentWorker?.addEventListener('message', onMessage);
+      currentWorker?.addEventListener('error', onError);
+      currentWorker?.postMessage(input);
     });
-
-    worker = createWorker();
-
-    const cleanup = () => {
-      if (worker) {
-        worker.removeEventListener('message', onMessage);
-        worker.removeEventListener('error', onError);
-        worker.terminate();
-        worker = null;
-      }
-      resolvePromise?.();
-      resolvePromise = null;
-    };
-
-    const onMessage = (event: MessageEvent<TOutput>) => {
-      result = event.data;
-      cleanup();
-    };
-
-    const onError = (event: ErrorEvent) => {
-      error = new Error(event.message);
-      cleanup();
-    };
-
-    worker.addEventListener('message', onMessage);
-    worker.addEventListener('error', onError);
-
-    worker.postMessage(input);
   };
 
   const waitForResult = async (): Promise<TOutput | null> => {
-    if (promise) {
-      await promise;
+    if (!currentPromise) return null;
+    try {
+      return await currentPromise;
+    } finally {
+      terminate();
     }
-    if (error) throw error;
-    const output = result;
-    result = null; // clear result
-    return output;
   };
 
   return {

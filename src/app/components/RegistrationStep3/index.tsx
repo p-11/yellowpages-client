@@ -62,6 +62,7 @@ export function RegistrationStep3() {
     useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorCode, setErrorCode] = useState<string | number>();
+  const [errorMessage, setErrorMessage] = useState<string>();
   const { seedPhrase, pqAddresses, generateAddressesTaskRef, setPqAddresses } =
     useRegistrationSessionContext();
   const { setProof } = useRegistrationContext();
@@ -108,6 +109,7 @@ export function RegistrationStep3() {
   const acknowledgeErrorDialog = useCallback(() => {
     setShowErrorDialog(false);
     setErrorCode(undefined);
+    setErrorMessage(undefined);
   }, []);
 
   const confirmBitcoinAddress = useCallback(async () => {
@@ -169,11 +171,11 @@ export function RegistrationStep3() {
   const completeRegistration = useCallback(async () => {
     try {
       if (!signingMessage)
-        throw new ErrorWithCode('Invalid signing message', 'YP-001');
+        throw new ErrorWithCode('Invalid signing message.', 'YP-001');
       if (!bitcoinAddress)
-        throw new ErrorWithCode('Invalid Bitcoin address', 'YP-002');
+        throw new ErrorWithCode('Invalid Bitcoin address.', 'YP-002');
       if (!cfTurnstileToken)
-        throw new ErrorWithCode('Invalid CF Turnstile token', 'YP-003');
+        throw new ErrorWithCode('Invalid CF Turnstile token.', 'YP-003');
 
       if (
         signature &&
@@ -187,7 +189,7 @@ export function RegistrationStep3() {
             (await generateSignedMessagesTaskRef.current.waitForResult());
 
           if (!signedMessages)
-            throw new ErrorWithCode('Invalid signedMessages result', 'YP-004');
+            throw new ErrorWithCode('Message signing failed.', 'YP-004');
 
           signedMessagesRef.current = signedMessages;
 
@@ -219,6 +221,7 @@ export function RegistrationStep3() {
 
           if (hasErrorCode(e)) {
             setErrorCode(e.code);
+            setErrorMessage(e.message);
           }
         }
 
@@ -231,6 +234,7 @@ export function RegistrationStep3() {
 
       if (hasErrorCode(e)) {
         setErrorCode(e.code);
+        setErrorMessage(e.message);
       }
     }
   }, [
@@ -402,11 +406,14 @@ export function RegistrationStep3() {
       )}
       {showErrorDialog && (
         <Dialog>
-          <DialogTitle>Oops, something went wrong</DialogTitle>
-          <DialogDescription>
-            Please make sure that your Bitcoin address and signature are correct
-            and try again.
-          </DialogDescription>
+          <DialogTitle>
+            {errorMessage
+              ? 'An error occurred:'
+              : 'An unexpected error occurred.'}
+          </DialogTitle>
+          {errorMessage && (
+            <DialogDescription>{errorMessage}</DialogDescription>
+          )}
           <Alert>
             If the error persists, please reach out to{' '}
             <a
