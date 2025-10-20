@@ -36,7 +36,7 @@
     "@babel/preset-env": "^7.27.2",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.24.0",
-    "@playwright/test": "1.52.0",
+    "@playwright/test": "1.56.1",
     "@types/jest": "^29.5.14",
     "@types/node": "22.14.0",
     "@types/react": "19.1.0",
