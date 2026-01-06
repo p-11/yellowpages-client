@@ -94,7 +94,7 @@ git push origin <feature|fix|chore>/title
 
 ## Security
 
-If you find a security issue or vulnerability, please don’t open a public issue. Instead, email the maintainers at security@projecteleven.com with details. We’ll acknowledge and fix it ASAP.
+If you find a security issue or vulnerability, please open a public issue here on GitHub. A maintainer will acknowledge and fix it ASAP.
 
 ## License
 
