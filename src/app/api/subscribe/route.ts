@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
     await client.subscriptions.create(process.env.BEEHIV_PUB_ID as string, {
       email: body.email,
-      referringSite: 'https://www.yellowpages.xyz'
+      referring_site: 'https://www.yellowpages.xyz'
     });
     return Response.json({ status: 'ok' });
   } catch (error) {
