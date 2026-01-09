@@ -26,13 +26,15 @@ export default function GlobalError() {
           <p>Please refresh your browser and try again.</p>
           <div className={styles.alertSection}>
             <Alert>
-              If the error persists, please reach out to{' '}
+              If the error persists, please{' '}
               <a
-                href='mailto:support@projecteleven.com'
+                href='https://www.projecteleven.com/contact'
+                target='_blank'
                 className={styles.contactLink}
               >
-                support@projecteleven.com
+                contact us
               </a>
+              .
             </Alert>
           </div>
         </main>
