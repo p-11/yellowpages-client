@@ -3,16 +3,8 @@
 import Link from 'next/link';
 import styles from '../../page.module.css';
 import { ArrowRightIcon } from '../../icons/ArrowRightIcon';
-import { EmailDialog } from '@/app/components/EmailDialog';
-import { useCallback, useState } from 'react';
 
 export function HomeContent() {
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
-
-  const toggleEmailDialog = useCallback(() => {
-    setShowEmailDialog(!showEmailDialog);
-  }, [showEmailDialog]);
-
   return (
     <main className={styles.homepage}>
       <h1 className={styles.title}>yellowpages.xyz</h1>
@@ -27,15 +19,13 @@ export function HomeContent() {
           <Link href='/resources'>resources</Link>, or{' '}
           <Link href='/changelog'>changelog</Link> to learn more.
         </p>
-        {process.env.NEXT_PUBLIC_BOT_PROTECTION_ENABLED !== 'true' && (
-          <p className={styles.emailCta}>
-            Learn more by{' '}
-            <button onClick={toggleEmailDialog} className={styles.emailButton}>
-              signing up to our e-mail bulletin
-            </button>
-            .
-          </p>
-        )}
+        <p className={styles.emailCta}>
+          Learn more by{' '}
+          <Link href='https://www.projecteleven.com/subscribe' target='_blank'>
+            signing up to our e-mail bulletin
+          </Link>
+          .
+        </p>
       </div>
       <div className={styles.links}>
         <Link className={styles.primaryLink} href='/register/step-1'>
@@ -59,7 +49,6 @@ export function HomeContent() {
           </Link>
         </p>
       </div>
-      {showEmailDialog && <EmailDialog onExit={toggleEmailDialog} />}
     </main>
   );
 }
