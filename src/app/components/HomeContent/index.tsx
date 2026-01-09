@@ -19,13 +19,13 @@ export function HomeContent() {
           <Link href='/resources'>resources</Link>, or{' '}
           <Link href='/changelog'>changelog</Link> to learn more.
         </p>
-          <p className={styles.emailCta}>
-            Learn more by{' '}
-            <Link href='https://www.projecteleven.com/subscribe'>
-              signing up to our e-mail bulletin
-            </Link>
-            .
-          </p>
+        <p className={styles.emailCta}>
+          Learn more by{' '}
+          <Link href='https://www.projecteleven.com/subscribe'>
+            signing up to our e-mail bulletin
+          </Link>
+          .
+        </p>
       </div>
       <div className={styles.links}>
         <Link className={styles.primaryLink} href='/register/step-1'>
