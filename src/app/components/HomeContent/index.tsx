@@ -21,7 +21,7 @@ export function HomeContent() {
         </p>
         <p className={styles.emailCta}>
           Learn more by{' '}
-          <Link href='https://www.projecteleven.com/subscribe'>
+          <Link href='https://www.projecteleven.com/subscribe' target='_blank'>
             signing up to our e-mail bulletin
           </Link>
           .
