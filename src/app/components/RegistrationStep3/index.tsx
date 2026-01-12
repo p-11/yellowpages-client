@@ -415,18 +415,18 @@ export function RegistrationStep3() {
             <DialogDescription>{errorMessage}</DialogDescription>
           )}
           <Alert>
-            If the error persists, please{' '}
-            <a
-              href='https://www.projecteleven.com/contact'
-              target='_blank'
-              className={styles.contactLink}
-            >
-              contact us
-            </a>
-            .
-            {errorCode && (
-              <span className={styles.errorCode}>Error code: {errorCode}</span>
-            )}
+            <span className={styles.alertErrorMessage}>
+              If the error persists, please{' '}
+              <a href='https://www.projecteleven.com/contact' target='_blank'>
+                contact us
+              </a>
+              .
+              {errorCode && (
+                <span className={styles.errorCode}>
+                  Error code: {errorCode}
+                </span>
+              )}
+            </span>
           </Alert>
           <DialogFooter>
             <Button variant='primary' onClick={acknowledgeErrorDialog}>
