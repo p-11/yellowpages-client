@@ -134,6 +134,10 @@
 }
 
 .errorCode {
-    display: inline-block;
+    display: block;
     margin-top: 10px;
+}
+
+.alertErrorMessage {
+    line-height: 0.8rem;
 }
