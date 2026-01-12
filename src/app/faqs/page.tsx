@@ -310,10 +310,11 @@ export default function FaqsPage() {
         <h2>6. Support &amp; Feedback</h2>
         <AccordionItem title='Found a bug or got feedback?'>
           <p>
-            Please email{' '}
-            <a href='mailto:support@projecteleven.com'>
-              support@projecteleven.com
+            Please{' '}
+            <a href='https://www.projecteleven.com/contact' target='_blank'>
+              contact us
             </a>
+            .
           </p>
         </AccordionItem>
       </div>
