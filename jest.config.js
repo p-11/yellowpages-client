@@ -19,7 +19,7 @@ module.exports = {
   },
   transformIgnorePatterns: [
     // Transform ESM modules that we need
-    '/node_modules/(?!(bitcoin-address-validation|base58-js|@evervault)/)'
+    'node_modules/(?!(?:.pnpm/)?(bitcoin-address-validation|base58-js|@evervault))'
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'

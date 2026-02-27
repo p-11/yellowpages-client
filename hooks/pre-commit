@@ -4,12 +4,12 @@
 
 # Lint and prettier check for clients
 echo "Pre commit check for clients"
-npm run l:c
+pnpm l:c
 if [ $? -ne 0 ]; then
   echo "Lint check failed"
   exit 1
 fi
-npm run p:c
+pnpm p:c
 if [ $? -ne 0 ]; then
   echo "Prettier check failed"
   exit 1
