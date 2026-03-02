@@ -2,13 +2,13 @@
 
 ## Getting Started
 
-- Run `npm install` to install dependencies.
+- Run `pnpm install --frozen-lockfile` to install dependencies.
 - Run `./setup.sh` to install the pre-commit and pre-push git hooks.
 - Copy the contents of `./env.local` into a `./.env` file.
 
 ## Local Development
 
-- Run `npm run dev` to launch the development build.
+- Run `pnpm dev` to launch the development build.
 
 ## Running E2E tests
 

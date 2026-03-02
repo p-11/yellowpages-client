@@ -28,7 +28,7 @@ git checkout -b <feature|fix|chore>/title
 3. **Install dependencies**:
 
 ```bash
-npm install
+pnpm install
 ```
 
 4. **Implement your change.**
@@ -36,21 +36,21 @@ npm install
 5. **Format your code**:
 
 ```bash
-npm run p:f     # Format with Prettier
+pnpm p:f     # Format with Prettier
 ```
 
 6. **Lint your code**:
 
 ```bash
-npm run l:c     # Check ESLint
-npm run l:f     # Fix ESLint issues
-npm run type-check  # TypeScript type checking
+pnpm l:c     # Check ESLint
+pnpm l:f     # Fix ESLint issues
+pnpm type-check  # TypeScript type checking
 ```
 
 7. **Run tests and add new ones if needed**:
 
 ```bash
-npm test
+pnpm test
 ```
 
 8. **Commit your changes**:
