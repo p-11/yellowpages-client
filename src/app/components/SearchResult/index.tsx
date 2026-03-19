@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Button } from '@/app/components/Button';
 import { useSearchContext } from '@/app/providers/SearchProvider';
 import { ArrowLeftIcon } from '@/app/icons/ArrowLeftIcon';
@@ -68,10 +67,6 @@ export function SearchResult() {
             Bitcoin address &quot;
             <span className={styles.bitcoinAddressText}>{bitcoinAddress}</span>
             &quot; is not in the directory.
-          </p>
-          <p>
-            Do you own this address?{' '}
-            <Link href='/register/step-1'>Register now</Link>.
           </p>
         </div>
       )}
