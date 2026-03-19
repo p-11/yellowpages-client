@@ -8,14 +8,11 @@ async function globalSetup(config: FullConfig) {
   await page.goto(baseURL!);
 
   const isDevelopmentBannerVisible = await page
-    .getByText(
-      'Note, this is a development environment. Do not register a Bitcoin address with mainnet funds.',
-      { exact: true }
-    )
+    .getByText('Note, this is a development environment.', { exact: true })
     .isVisible();
 
   if (isDevelopmentBannerVisible) {
-    await browser.close(); // and continue
+    await browser.close();
   } else {
     throw new Error('Development banner not found. Cancelling all tests.');
   }
