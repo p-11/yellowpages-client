@@ -5,11 +5,11 @@
   "packageManager": "pnpm@10.29.3",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "build:test": "NEXT_PUBLIC_VERCEL_ENV=test NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY=1x00000000000000000000AA next build",
     "start": "next start",
-    "lint": "next lint",
-    "test": "BIP85_APP_NO=0  jest",
+    "lint": "pnpm l:c",
+    "test": "cross-env BIP85_APP_NO=0 jest",
     "l:c": "eslint \"./**/*.tsx\"",
     "l:f": "eslint \"./**/*.tsx\" --fix",
     "p:c": "prettier --config .prettierrc \"./**/*.+(js|mjs|json|ts|tsx)\" --check --ignore-unknown",
@@ -19,7 +19,7 @@
   "dependencies": {
     "@project-eleven/pq-address": "^0.2.0",
     "bitcoin-address-validation": "3.0.0",
-    "next": "^15.5.10",
+    "next": "^16.1.6",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
@@ -33,6 +33,7 @@
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.2",
     "babel-plugin-transform-import-meta": "^2.3.3",
+    "cross-env": "7.0.3",
     "eslint": "^9.34.0",
     "eslint-config-next": "15.2.5",
     "eslint-config-prettier": "10.1.1",
